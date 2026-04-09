@@ -49,11 +49,22 @@ header{
 .logo-text .logo-sub{font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .logo-strip{height:2px;width:100px;margin-top:4px;background:linear-gradient(to right,#99F6E4,#EEF3C7,#C4B5FD,#FF9B9B,#FFD4D9);border-radius:2px}
 .portal-label{font-family:'Cormorant Garamond',serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+.header-right{display:flex;align-items:center;gap:14px}
 .toggle-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
 .toggle-lbl{font-size:11px;color:var(--muted);min-width:30px}
 .toggle-track{width:38px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .3s;flex-shrink:0;border:1px solid var(--border)}
 .toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--toggle-knob);position:absolute;top:2px;left:2px;transition:transform .25s ease,background .3s}
 [data-theme="dark"] .toggle-thumb{transform:translateX(18px)}
+
+.logout-btn{
+  padding:6px 14px;border:1px solid var(--border);border-radius:18px;
+  font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);background:transparent;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:500;
+  transition:border-color .2s,color .2s;
+}
+.logout-btn:hover{border-color:var(--bad);color:var(--bad)}
 
 /* PAGE */
 .page{max-width:1400px;margin:0 auto;padding:28px 20px 60px}
@@ -111,7 +122,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .branch-col-name{font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text)}
 .branch-col-sub{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.05em}
 .branch-col-accent{height:2px;border-radius:2px;margin-top:8px}
-
 .branch-col-body{padding:10px 12px}
 
 /* YEAR SECTION */
@@ -168,13 +178,22 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 
 /* LOGIN */
 .login-wrap{max-width:380px;margin:80px auto;background:var(--surface);border-radius:16px;padding:32px;border:1px solid var(--border);box-shadow:var(--shadow)}
+
+/* PASSWORD FIELD */
+.pw-field-wrap{position:relative}
+.pw-field-wrap input{padding-right:40px}
+.pw-eye{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--muted);
+  font-size:15px;line-height:1;padding:2px 4px;transition:color .2s;
+}
+.pw-eye:hover{color:var(--text)}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-
     <div class="logo-text">
       <div class="logo-name">Tara Rose</div>
       <div class="logo-sub">Salon</div>
@@ -182,9 +201,13 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
       <div class="portal-label">Upload Portal</div>
     </div>
   </div>
-  <div class="toggle-wrap" onclick="toggleTheme()" role="button">
-    <span class="toggle-lbl" id="themeLbl">Dark</span>
-    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+  <div class="header-right">
+    <!-- logout only shown when logged in -->
+    <button class="logout-btn" id="logoutBtn" style="display:none" onclick="logout()">Log out</button>
+    <div class="toggle-wrap" onclick="toggleTheme()" role="button">
+      <span class="toggle-lbl" id="themeLbl">Dark</span>
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    </div>
   </div>
 </header>
 
@@ -196,7 +219,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
     <div class="card-sub" style="margin-bottom:16px">Enter your password to continue</div>
     <div class="field" style="margin-bottom:12px">
       <label class="field-label">Password</label>
-      <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+      <div class="pw-field-wrap">
+        <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+        <button class="pw-eye" id="pwEye" type="button" onclick="togglePwVis()" title="Show/hide password">👁️</button>
+      </div>
     </div>
     <button class="btn" onclick="login()">Enter Portal</button>
     <div class="err" id="loginErr"></div>
@@ -262,119 +288,146 @@ const BRANCHES = {
 
 let selectedFile = null;
 let allData = [];
-// track open/closed state per branch/year/month
 const openState = {};
 
-// THEME
+// ── THEME ──
 function toggleTheme() {
   const dark = document.documentElement.getAttribute('data-theme')==='dark';
   document.documentElement.setAttribute('data-theme', dark?'light':'dark');
   document.getElementById('themeLbl').textContent = dark?'Light':'Dark';
 }
 
-// LOGIN
-function login() {
-  if (document.getElementById('pwInput').value === PASS) {
-    document.getElementById('loginSection').style.display='none';
-    document.getElementById('portalSection').style.display='block';
-    loadData();
-  } else {
-    document.getElementById('loginErr').textContent='Incorrect password.';
-  }
+// ── PASSWORD VISIBILITY ──
+function togglePwVis() {
+  const inp = document.getElementById('pwInput');
+  const eye = document.getElementById('pwEye');
+  const isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  eye.textContent = isHidden ? '🙈' : '👁️';
 }
 
-// FILE
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('fileInput').addEventListener('change',e=>{
-    selectedFile=e.target.files[0];
-    document.getElementById('fileName').textContent=selectedFile?selectedFile.name:'';
-    document.getElementById('uploadBtn').disabled=!selectedFile;
+// ── AUTH (persisted) ──
+// Check if already logged in from a previous session
+window.addEventListener('DOMContentLoaded', () => {
+  const loggedIn = sessionStorage.getItem('tr_auth') === '1';
+  if (loggedIn) showPortal();
+
+  // file input
+  document.getElementById('fileInput').addEventListener('change', e => {
+    selectedFile = e.target.files[0];
+    document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : '';
+    document.getElementById('uploadBtn').disabled = !selectedFile;
   });
-  const dz=document.getElementById('dropZone');
-  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
-  dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
-  dz.addEventListener('drop',e=>{
-    e.preventDefault();dz.classList.remove('dragover');
-    selectedFile=e.dataTransfer.files[0];
-    document.getElementById('fileName').textContent=selectedFile?selectedFile.name:'';
-    document.getElementById('uploadBtn').disabled=!selectedFile;
+
+  // drag & drop
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    selectedFile = e.dataTransfer.files[0];
+    document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : '';
+    document.getElementById('uploadBtn').disabled = !selectedFile;
   });
 });
 
-// HELPERS
+function login() {
+  if (document.getElementById('pwInput').value === PASS) {
+    sessionStorage.setItem('tr_auth', '1');
+    showPortal();
+  } else {
+    document.getElementById('loginErr').textContent = 'Incorrect password.';
+  }
+}
+
+function showPortal() {
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('portalSection').style.display = 'block';
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+  loadData();
+}
+
+function logout() {
+  sessionStorage.removeItem('tr_auth');
+  document.getElementById('portalSection').style.display = 'none';
+  document.getElementById('loginSection').style.display = 'block';
+  document.getElementById('logoutBtn').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginErr').textContent = '';
+}
+
+// ── HELPERS ──
 function extractYear(label, uploaded_at) {
   const m = label && label.match(/20\d\d/);
   if (m) return m[0];
   return uploaded_at ? new Date(uploaded_at).getFullYear().toString() : '2026';
 }
 function extractMonth(label, uploaded_at) {
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  for (const mo of months) { if (label&&label.includes(mo)) return mo; }
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for (const mo of months) { if (label && label.includes(mo)) return mo; }
   if (uploaded_at) return new Date(uploaded_at).toLocaleDateString('en-GB',{month:'short'});
   return '—';
 }
-const MONTH_ORDER=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// LOAD
+// ── LOAD ──
 async function loadData() {
-  const {data,error}=await sb.from('weekly_data').select('id,branch,week_label,uploaded_at').order('uploaded_at',{ascending:false});
-  allData = (error||!data) ? [] : data;
+  const {data,error} = await sb.from('weekly_data').select('id,branch,week_label,uploaded_at').order('uploaded_at',{ascending:false});
+  allData = (error || !data) ? [] : data;
   renderColumns();
 }
 
-// RENDER 5 COLUMNS
+// ── RENDER COLUMNS ──
 function renderColumns() {
   const grid = document.getElementById('branchesGrid');
-  grid.innerHTML = Object.entries(BRANCHES).map(([code,info])=>{
-    const rows = allData.filter(d=>d.branch===code);
-    // group by year → month
+  grid.innerHTML = Object.entries(BRANCHES).map(([code,info]) => {
+    const rows = allData.filter(d => d.branch === code);
     const byYear = {};
-    rows.forEach(d=>{
-      const yr = extractYear(d.week_label,d.uploaded_at);
-      const mo = extractMonth(d.week_label,d.uploaded_at);
-      if (!byYear[yr]) byYear[yr]={};
-      if (!byYear[yr][mo]) byYear[yr][mo]=[];
+    rows.forEach(d => {
+      const yr = extractYear(d.week_label, d.uploaded_at);
+      const mo = extractMonth(d.week_label, d.uploaded_at);
+      if (!byYear[yr]) byYear[yr] = {};
+      if (!byYear[yr][mo]) byYear[yr][mo] = [];
       byYear[yr][mo].push(d);
     });
-    const years = Object.keys(byYear).sort((a,b)=>b-a);
+    const years = Object.keys(byYear).sort((a,b) => b - a);
 
-    const colId = 'col_'+code;
     return `
-      <div class="branch-col" id="${colId}">
+      <div class="branch-col">
         <div class="branch-col-header">
           <div class="branch-col-name">${info.name}</div>
           <div class="branch-col-sub">${info.sub}</div>
           <div class="branch-col-accent" style="background:${info.color}"></div>
         </div>
         <div class="branch-col-body">
-          ${rows.length===0
+          ${rows.length === 0
             ? `<div class="empty-col">No uploads yet</div>`
-            : years.map(yr=>{
-                const yrKey=code+'_'+yr;
-                if(openState[yrKey]===undefined) openState[yrKey]=true;
-                const yrOpen=openState[yrKey];
-                const moKeys=Object.keys(byYear[yr]).sort((a,b)=>MONTH_ORDER.indexOf(b)-MONTH_ORDER.indexOf(a));
+            : years.map(yr => {
+                const yrKey = code + '_' + yr;
+                if (openState[yrKey] === undefined) openState[yrKey] = true;
+                const yrOpen = openState[yrKey];
+                const moKeys = Object.keys(byYear[yr]).sort((a,b) => MONTH_ORDER.indexOf(b) - MONTH_ORDER.indexOf(a));
                 return `
                   <div class="year-section">
                     <div class="year-toggle" onclick="toggleSection('${yrKey}')">
                       <span>${yr}</span>
-                      <span class="year-arrow ${yrOpen?'open':''}">▼</span>
+                      <span class="year-arrow ${yrOpen ? 'open' : ''}">▼</span>
                     </div>
-                    <div id="ys_${yrKey}" style="display:${yrOpen?'block':'none'}">
-                      ${moKeys.map(mo=>{
-                        const moKey=yrKey+'_'+mo;
-                        if(openState[moKey]===undefined) openState[moKey]=true;
-                        const moOpen=openState[moKey];
-                        const moRows=byYear[yr][mo];
+                    <div id="ys_${yrKey}" style="display:${yrOpen ? 'block' : 'none'}">
+                      ${moKeys.map(mo => {
+                        const moKey = yrKey + '_' + mo;
+                        if (openState[moKey] === undefined) openState[moKey] = true;
+                        const moOpen = openState[moKey];
+                        const moRows = byYear[yr][mo];
                         return `
                           <div class="month-section">
                             <div class="month-toggle" onclick="toggleSection('${moKey}')">
                               <span>${mo}<span class="month-count">(${moRows.length})</span></span>
-                              <span class="month-arrow ${moOpen?'open':''}">▼</span>
+                              <span class="month-arrow ${moOpen ? 'open' : ''}">▼</span>
                             </div>
-                            <div id="ms_${moKey}" style="display:${moOpen?'block':'none'}">
+                            <div id="ms_${moKey}" style="display:${moOpen ? 'block' : 'none'}">
                               <div class="weeks-list">
-                                ${moRows.map(w=>weekItemHTML(w,code,info.color)).join('')}
+                                ${moRows.map(w => weekItemHTML(w, code, info.color)).join('')}
                               </div>
                             </div>
                           </div>`;
@@ -390,12 +443,14 @@ function renderColumns() {
 
 function weekItemHTML(w, code, color) {
   const date = new Date(w.uploaded_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  // Escape single quotes in week_label for use inside onclick attributes
+  const escapedLabel = (w.week_label || '').replace(/'/g, "\\'");
   return `
     <div class="week-item" id="item_${w.id}">
       <div style="flex:1;min-width:0">
         <div class="week-label-text" id="lbl_${w.id}">${w.week_label}</div>
         <div class="week-date">${date}</div>
-        <input class="edit-input" id="einp_${w.id}" value="${w.week_label}" style="display:none"
+        <input class="edit-input" id="einp_${w.id}" value="${escapedLabel}" style="display:none"
           onkeydown="if(event.key==='Enter')saveLabel('${w.id}');if(event.key==='Escape')cancelEdit('${w.id}')">
       </div>
       <div class="week-actions">
@@ -407,15 +462,14 @@ function weekItemHTML(w, code, color) {
     </div>`;
 }
 
+// ── TOGGLE SECTIONS ──
 function toggleSection(key) {
   openState[key] = !openState[key];
-  // find year or month container
-  const ysEl = document.getElementById('ys_'+key);
-  const msEl = document.getElementById('ms_'+key);
+  const ysEl = document.getElementById('ys_' + key);
+  const msEl = document.getElementById('ms_' + key);
   const el = ysEl || msEl;
   if (!el) return;
-  el.style.display = openState[key]?'block':'none';
-  // update arrow
+  el.style.display = openState[key] ? 'block' : 'none';
   const toggle = el.previousElementSibling;
   if (toggle) {
     const arrow = toggle.querySelector('.year-arrow,.month-arrow');
@@ -423,84 +477,107 @@ function toggleSection(key) {
   }
 }
 
-// EDIT
+// ── EDIT (FIX: read input value directly from DOM at save time) ──
 function startEdit(id) {
-  document.getElementById('lbl_'+id).style.display='none';
-  document.getElementById('einp_'+id).style.display='block';
-  document.getElementById('ebtn_'+id).style.display='none';
-  document.getElementById('sbtn_'+id).style.display='inline';
-  document.getElementById('cbtn_'+id).style.display='inline';
-  document.getElementById('einp_'+id).focus();
-}
-function cancelEdit(id) {
-  document.getElementById('lbl_'+id).style.display='block';
-  document.getElementById('einp_'+id).style.display='none';
-  document.getElementById('ebtn_'+id).style.display='inline';
-  document.getElementById('sbtn_'+id).style.display='none';
-  document.getElementById('cbtn_'+id).style.display='none';
-}
-async function saveLabel(id) {
-  const val = document.getElementById('einp_'+id).value.trim();
-  if (!val) return;
-  const {error} = await sb.from('weekly_data').update({week_label:val}).eq('id',id);
-  if (!error) { await loadData(); }
-  else alert('Error: '+error.message);
+  document.getElementById('lbl_' + id).style.display = 'none';
+  document.getElementById('einp_' + id).style.display = 'block';
+  document.getElementById('ebtn_' + id).style.display = 'none';
+  document.getElementById('sbtn_' + id).style.display = 'inline';
+  document.getElementById('cbtn_' + id).style.display = 'inline';
+  document.getElementById('einp_' + id).focus();
+  document.getElementById('einp_' + id).select();
 }
 
-// DELETE
+function cancelEdit(id) {
+  document.getElementById('lbl_' + id).style.display = 'block';
+  document.getElementById('einp_' + id).style.display = 'none';
+  document.getElementById('ebtn_' + id).style.display = 'inline';
+  document.getElementById('sbtn_' + id).style.display = 'none';
+  document.getElementById('cbtn_' + id).style.display = 'none';
+}
+
+async function saveLabel(id) {
+  // Read live value from the input at the moment of save
+  const inp = document.getElementById('einp_' + id);
+  const val = inp.value.trim();
+  if (!val) { alert('Label cannot be empty.'); return; }
+
+  // Optimistically update the visible label immediately
+  document.getElementById('lbl_' + id).textContent = val;
+  cancelEdit(id);
+
+  const { error } = await sb.from('weekly_data').update({ week_label: val }).eq('id', id);
+  if (error) {
+    alert('Save failed: ' + error.message);
+    // reload to restore correct state on error
+    await loadData();
+  } else {
+    // Silently refresh data in background to keep allData in sync
+    const { data } = await sb.from('weekly_data').select('id,branch,week_label,uploaded_at').order('uploaded_at',{ascending:false});
+    if (data) allData = data;
+    // No full re-render needed — label already updated above
+  }
+}
+
+// ── DELETE ──
 async function deleteWeek(id) {
   if (!confirm('Delete this entry? This cannot be undone.')) return;
-  await sb.from('weekly_data').delete().eq('id',id);
+  await sb.from('weekly_data').delete().eq('id', id);
   await loadData();
 }
 
-// UPLOAD
-function parseAED(s){return parseFloat((s||'').replace(/AED|,|\s/g,'').replace(/[^\d.\-]/g,''))||0;}
-function parseHairRow(c){return{name:c[0],salon:parseInt(c[3])||0,newC:parseInt(c[4])||0,rebooked:parseInt(c[5])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0,total:parseInt(c[7])||0,hairSales:parseAED(c[8]),hairSalesNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,col:parseInt(c[11])||0,colPct:parseFloat((c[12]||'').replace('%',''))||0,retail:parseAED(c[22]),treatments:parseAED(c[29]),totalNet:parseAED(c[31])};}
-function parseBeautyRow(c){return{name:c[0],total:parseInt(c[7])||0,beautySales:parseAED(c[8]),beautyNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0};}
-function parseTSV(text){
-  const lines=text.split('\n').map(l=>l.split('\t'));
-  const hairStaff=[],beautyStaff=[];
-  let summary={},inBeauty=false,hairHeaderFound=false,beautyHeaderFound=false;
-  for(let i=0;i<lines.length;i++){
-    const cols=lines[i].map(c=>(c||'').trim());
-    const first=cols[0];
-    if(!first&&cols.every(c=>!c))continue;
-    if(cols.includes('HAIR SALES TAKE')&&!inBeauty){hairHeaderFound=true;continue;}
-    if(cols.includes('BEAUTY SALES TAKE')){inBeauty=true;beautyHeaderFound=true;continue;}
-    if(first==='TOTAL CLIENTS'){summary.totalClients=parseInt(cols[1])||0;continue;}
-    if(first==='HAIR RETAIL SALES'){summary.hairRetail=parseAED(cols[1]);summary.hairRetailPct=parseFloat(cols[2])||0;continue;}
-    if(first==='TREATMENT SALES'){summary.treatmentSales=parseAED(cols[1]);summary.treatmentPct=parseFloat(cols[2])||0;continue;}
-    if(first==='COL TAKE AED'){summary.colTake=parseAED(cols[1]);summary.colPct=parseFloat(cols[2])||0;continue;}
-    if(first==='BEAUTY SALES'){summary.beautySales=parseAED(cols[1]);summary.beautyPct=parseFloat(cols[2])||0;continue;}
-    if(first==='NET SALON TAKE'){summary.netTake=parseAED(cols[1]);summary.avgBill=parseFloat(cols[2])||0;continue;}
-    if(!inBeauty&&hairHeaderFound&&first&&first!=='STAFF'&&first!=='TOTALS'){const s=parseHairRow(cols);if(s&&s.total>0)hairStaff.push(s);}
-    if(inBeauty&&beautyHeaderFound&&first&&first!=='STAFF'&&first!=='TOTALS'){const s=parseBeautyRow(cols);if(s&&s.total>0)beautyStaff.push(s);}
-    if(!inBeauty&&first==='TOTALS'){summary.totals=parseHairRow(cols);}
+// ── UPLOAD ──
+function parseAED(s){ return parseFloat((s||'').replace(/AED|,|\s/g,'').replace(/[^\d.\-]/g,'')) || 0; }
+function parseHairRow(c){ return {name:c[0],salon:parseInt(c[3])||0,newC:parseInt(c[4])||0,rebooked:parseInt(c[5])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0,total:parseInt(c[7])||0,hairSales:parseAED(c[8]),hairSalesNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,col:parseInt(c[11])||0,colPct:parseFloat((c[12]||'').replace('%',''))||0,retail:parseAED(c[22]),treatments:parseAED(c[29]),totalNet:parseAED(c[31])}; }
+function parseBeautyRow(c){ return {name:c[0],total:parseInt(c[7])||0,beautySales:parseAED(c[8]),beautyNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0}; }
+
+function parseTSV(text) {
+  const lines = text.split('\n').map(l => l.split('\t'));
+  const hairStaff=[], beautyStaff=[];
+  let summary={}, inBeauty=false, hairHeaderFound=false, beautyHeaderFound=false;
+  for (let i=0; i<lines.length; i++) {
+    const cols = lines[i].map(c => (c||'').trim());
+    const first = cols[0];
+    if (!first && cols.every(c=>!c)) continue;
+    if (cols.includes('HAIR SALES TAKE') && !inBeauty) { hairHeaderFound=true; continue; }
+    if (cols.includes('BEAUTY SALES TAKE')) { inBeauty=true; beautyHeaderFound=true; continue; }
+    if (first==='TOTAL CLIENTS')       { summary.totalClients=parseInt(cols[1])||0; continue; }
+    if (first==='HAIR RETAIL SALES')   { summary.hairRetail=parseAED(cols[1]); summary.hairRetailPct=parseFloat(cols[2])||0; continue; }
+    if (first==='TREATMENT SALES')     { summary.treatmentSales=parseAED(cols[1]); summary.treatmentPct=parseFloat(cols[2])||0; continue; }
+    if (first==='COL TAKE AED')        { summary.colTake=parseAED(cols[1]); summary.colPct=parseFloat(cols[2])||0; continue; }
+    if (first==='BEAUTY SALES')        { summary.beautySales=parseAED(cols[1]); summary.beautyPct=parseFloat(cols[2])||0; continue; }
+    if (first==='NET SALON TAKE')      { summary.netTake=parseAED(cols[1]); summary.avgBill=parseFloat(cols[2])||0; continue; }
+    if (!inBeauty && hairHeaderFound && first && first!=='STAFF' && first!=='TOTALS') { const s=parseHairRow(cols); if(s&&s.total>0) hairStaff.push(s); }
+    if (inBeauty && beautyHeaderFound && first && first!=='STAFF' && first!=='TOTALS') { const s=parseBeautyRow(cols); if(s&&s.total>0) beautyStaff.push(s); }
+    if (!inBeauty && first==='TOTALS') { summary.totals=parseHairRow(cols); }
   }
-  return{hairStaff,beautyStaff,summary};
+  return { hairStaff, beautyStaff, summary };
 }
 
 async function uploadData() {
-  const branch=document.getElementById('branchSelect').value;
-  const weekLabel=document.getElementById('weekLabel').value.trim();
-  const btn=document.getElementById('uploadBtn');
-  const statusEl=document.getElementById('statusMsg');
-  if(!weekLabel){alert('Please enter a week label.');return;}
-  if(!selectedFile){alert('Please select a TSV file.');return;}
-  btn.disabled=true;btn.textContent='Uploading...';statusEl.className='status';
-  const text=await selectedFile.text();
-  const data=parseTSV(text);
-  const{error}=await sb.from('weekly_data').insert({branch,week_label:weekLabel,data});
-  if(error){statusEl.className='status error';statusEl.textContent='Upload failed: '+error.message;}
-  else{
-    statusEl.className='status success';statusEl.textContent='Uploaded successfully!';
-    document.getElementById('weekLabel').value='';
-    selectedFile=null;document.getElementById('fileName').textContent='';
-    document.getElementById('uploadBtn').disabled=true;
+  const branch = document.getElementById('branchSelect').value;
+  const weekLabel = document.getElementById('weekLabel').value.trim();
+  const btn = document.getElementById('uploadBtn');
+  const statusEl = document.getElementById('statusMsg');
+  if (!weekLabel) { alert('Please enter a week label.'); return; }
+  if (!selectedFile) { alert('Please select a TSV file.'); return; }
+  btn.disabled = true; btn.textContent = 'Uploading...'; statusEl.className = 'status';
+  const text = await selectedFile.text();
+  const data = parseTSV(text);
+  const { error } = await sb.from('weekly_data').insert({ branch, week_label: weekLabel, data });
+  if (error) {
+    statusEl.className = 'status error';
+    statusEl.textContent = 'Upload failed: ' + error.message;
+  } else {
+    statusEl.className = 'status success';
+    statusEl.textContent = 'Uploaded successfully!';
+    document.getElementById('weekLabel').value = '';
+    selectedFile = null;
+    document.getElementById('fileName').textContent = '';
+    document.getElementById('uploadBtn').disabled = true;
     await loadData();
   }
-  btn.disabled=false;btn.textContent='Upload';
+  btn.disabled = false; btn.textContent = 'Upload';
 }
 </script>
 </body>
