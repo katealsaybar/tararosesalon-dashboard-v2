@@ -170,7 +170,7 @@ th:not(.sort-asc):not(.sort-desc).sortable::after{content:' ⇅';font-size:9px;o
 
 /* RESPONSIVE */
 @media(max-width:1100px){.top3-grid{grid-template-columns:repeat(3,1fr)}.metrics-r1,.metrics-r2{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:900px){.top-row{grid-template-columns:1fr !important}.charts-row,.branch-compare-row{grid-template-columns:1fr}.top3-grid{grid-template-columns:repeat(2,1fr)}header{padding:12px 18px}.controls{padding:14px 18px 0}main{padding:18px 18px 40px}.last-updated{display:none}}
+@media(max-width:900px){.charts-row,.branch-compare-row{grid-template-columns:1fr}.top3-grid{grid-template-columns:repeat(2,1fr)}header{padding:12px 18px}.controls{padding:14px 18px 0}main{padding:18px 18px 40px}.last-updated{display:none}main>[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}}
 @media(max-width:560px){.top3-grid{grid-template-columns:1fr 1fr}.metrics-r1,.metrics-r2{grid-template-columns:1fr 1fr}.ms-btn{min-width:110px;font-size:11px}}
 </style>
 </head>
@@ -478,7 +478,7 @@ function renderDashboard(){
 
   main.innerHTML=`
     <!-- TOP ROW: METRICS LEFT + BRANCH COMPARISON RIGHT -->
-    <div class="top-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;margin-top:4px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;margin-top:4px">
       <!-- LEFT: METRICS -->
       <div>
         <div class="section-label">${branchLabel} &nbsp;·&nbsp; Key Metrics</div>
@@ -494,9 +494,9 @@ function renderDashboard(){
         </div>
       </div>
       <!-- RIGHT: BRANCH COMPARISON -->
-      <div>
+      <div style="display:flex;flex-direction:column">
         <div class="section-label">Branch Comparison</div>
-        <div class="card" style="margin-bottom:0;height:calc(100% - 22px)">
+        <div class="card" style="margin-bottom:0;flex:1">
           <div class="card-title">Performance Across Branches</div>
           <div class="card-sub">Side-by-side · select metric below</div>
           <div class="f-pills" id="cmpFilters">
@@ -506,7 +506,7 @@ function renderDashboard(){
             <button class="f-pill" data-m="rebookPct">Rebook %</button>
             <button class="f-pill" data-m="treatmentPct">Treatment %</button>
           </div>
-          <div class="canvas-wrap"><canvas id="cmpChart"></canvas></div>
+          <div class="canvas-wrap" style="height:200px"><canvas id="cmpChart"></canvas></div>
         </div>
       </div>
     </div>
