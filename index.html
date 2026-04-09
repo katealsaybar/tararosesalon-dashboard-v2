@@ -26,7 +26,7 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
 
 /* HEADER */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);transition:background .3s,border-color .3s}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);transition:background .3s,border-color .3s}
 .logo{display:flex;align-items:center;gap:12px}
 .logo img{width:36px;height:36px;object-fit:contain}
 .logo-text .logo-name{font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text);line-height:1}
@@ -42,7 +42,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 [data-theme="dark"] .toggle-thumb{transform:translateX(18px)}
 
 /* CONTROLS */
-.controls{display:flex;flex-wrap:wrap;gap:10px;padding:14px 20px 0;align-items:flex-end}
+.controls{display:flex;flex-wrap:wrap;gap:10px;padding:18px 28px 0;align-items:flex-end}
 .ctrl-group{display:flex;flex-direction:column;gap:4px}
 .ctrl-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
 
@@ -61,7 +61,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .ms-opt.all-opt.selected{color:var(--accent)}
 
 /* MAIN */
-main{max-width:100%;margin:0;padding:18px 20px 48px}
+main{max-width:1400px;margin:0 auto;padding:22px 28px 48px}
 .section-label{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 
 /* METRICS */
@@ -161,7 +161,7 @@ tr:last-child td{border-bottom:none}
 
 .empty{text-align:center;padding:4rem;color:var(--muted);font-size:14px}
 .loading{text-align:center;padding:4rem;color:var(--muted);letter-spacing:0.1em;font-size:12px;text-transform:uppercase}
-footer{text-align:center;padding:18px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--muted2);transition:border-color .3s;line-height:1.8}
+footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);font-size:11px;color:var(--muted2);transition:border-color .3s;line-height:1.8}
 th.sortable{cursor:pointer;user-select:none}
 th.sortable:hover{color:var(--text)}
 th.sort-asc::after{content:' ▲';font-size:9px;opacity:0.7}
@@ -170,8 +170,8 @@ th:not(.sort-asc):not(.sort-desc).sortable::after{content:' ⇅';font-size:9px;o
 
 /* RESPONSIVE */
 @media(max-width:1100px){.top3-grid{grid-template-columns:repeat(3,1fr)}.metrics-r1,.metrics-r2{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:900px){.charts-row,.branch-compare-row{grid-template-columns:1fr}.top3-grid{grid-template-columns:repeat(2,1fr)}header{padding:12px 14px}.controls{padding:12px 14px 0}main{padding:14px 14px 40px}.last-updated{display:none}}
-@media(max-width:560px){.top3-grid{grid-template-columns:1fr 1fr}.metrics-r1,.metrics-r2{grid-template-columns:1fr 1fr}.ms-btn{min-width:100px;font-size:11px}}
+@media(max-width:900px){.top-row{grid-template-columns:1fr !important}.charts-row,.branch-compare-row{grid-template-columns:1fr}.top3-grid{grid-template-columns:repeat(2,1fr)}header{padding:12px 18px}.controls{padding:14px 18px 0}main{padding:18px 18px 40px}.last-updated{display:none}}
+@media(max-width:560px){.top3-grid{grid-template-columns:1fr 1fr}.metrics-r1,.metrics-r2{grid-template-columns:1fr 1fr}.ms-btn{min-width:110px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -477,33 +477,38 @@ function renderDashboard(){
   const branchLabel=sel.branch.includes('all')?'All Branches':sel.branch.map(b=>BRANCH_INFO[b]?.name||b).join(', ');
 
   main.innerHTML=`
-    <div class="section-label" style="margin-top:4px">${branchLabel} &nbsp;·&nbsp; Key Metrics</div>
-    <div class="metrics-grid metrics-r1">
-      <div class="metric m-rose"><div class="metric-label">Net Revenue</div><div class="metric-value">${fmtAED(s.netTake)}</div><div class="metric-target">Target: AED 660,000 / mo</div></div>
-      <div class="metric m-coral"><div class="metric-label">Total Clients</div><div class="metric-value">${s.totalClients}</div><div class="metric-target">Target: 943 / mo</div></div>
-      <div class="metric m-lav"><div class="metric-label">Avg Bill</div><div class="metric-value ${sc(s.avgBill,TARGETS.hairAvgBill)}">${fmtAED(s.avgBill)}</div><div class="metric-target">Target: AED ${TARGETS.hairAvgBill}</div></div>
-      <div class="metric m-turq"><div class="metric-label">Rebooking %</div><div class="metric-value ${sc(s.rebookPct,TARGETS.rebookPct)}">${fmtPct(s.rebookPct)}</div><div class="metric-target">Target: ${TARGETS.rebookPct}%</div></div>
-    </div>
-    <div class="metrics-grid metrics-r2">
-      <div class="metric m-lime"><div class="metric-label">Treatment %</div><div class="metric-value ${sc(s.treatmentPct,TARGETS.treatmentPct)}">${fmtPct(s.treatmentPct)}</div><div class="metric-target">Target: ${TARGETS.treatmentPct}%</div></div>
-      <div class="metric m-pink"><div class="metric-label">Retail %</div><div class="metric-value ${sc(s.hairRetailPct,TARGETS.retailPct)}">${fmtPct(s.hairRetailPct)}</div><div class="metric-target">Target: ${TARGETS.retailPct}%</div></div>
-      <div class="metric m-sage"><div class="metric-label">Beauty Sales</div><div class="metric-value">${fmtAED(s.beautySales)}</div><div class="metric-target">${fmtPct(s.beautyPct)} of total</div></div>
-      <div class="metric m-peach"><div class="metric-label">Colour Take</div><div class="metric-value">${fmtAED(s.colTake)}</div><div class="metric-target">${fmtPct(s.colPct||0)} of hair</div></div>
-    </div>
-
-    <!-- BRANCH COMPARISON -->
-    <div class="section-label">Branch Comparison</div>
-    <div class="card" style="margin-bottom:12px">
-      <div class="card-title">Performance Across Branches</div>
-      <div class="card-sub">Side-by-side comparison · select metric below</div>
-      <div class="f-pills" id="cmpFilters">
-        <button class="f-pill active" data-m="netTake">Revenue</button>
-        <button class="f-pill" data-m="totalClients">Clients</button>
-        <button class="f-pill" data-m="avgBill">Avg Bill</button>
-        <button class="f-pill" data-m="rebookPct">Rebook %</button>
-        <button class="f-pill" data-m="treatmentPct">Treatment %</button>
+    <!-- TOP ROW: METRICS LEFT + BRANCH COMPARISON RIGHT -->
+    <div class="top-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;margin-top:4px">
+      <!-- LEFT: METRICS -->
+      <div>
+        <div class="section-label">${branchLabel} &nbsp;·&nbsp; Key Metrics</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="metric m-rose"><div class="metric-label">Net Revenue</div><div class="metric-value" style="font-size:22px">${fmtAED(s.netTake)}</div><div class="metric-target">Target: AED 660,000 / mo</div></div>
+          <div class="metric m-coral"><div class="metric-label">Total Clients</div><div class="metric-value" style="font-size:22px">${s.totalClients}</div><div class="metric-target">Target: 943 / mo</div></div>
+          <div class="metric m-lav"><div class="metric-label">Avg Bill</div><div class="metric-value ${sc(s.avgBill,TARGETS.hairAvgBill)}" style="font-size:22px">${fmtAED(s.avgBill)}</div><div class="metric-target">Target: AED ${TARGETS.hairAvgBill}</div></div>
+          <div class="metric m-turq"><div class="metric-label">Rebooking %</div><div class="metric-value ${sc(s.rebookPct,TARGETS.rebookPct)}" style="font-size:22px">${fmtPct(s.rebookPct)}</div><div class="metric-target">Target: ${TARGETS.rebookPct}%</div></div>
+          <div class="metric m-lime"><div class="metric-label">Treatment %</div><div class="metric-value ${sc(s.treatmentPct,TARGETS.treatmentPct)}" style="font-size:22px">${fmtPct(s.treatmentPct)}</div><div class="metric-target">Target: ${TARGETS.treatmentPct}%</div></div>
+          <div class="metric m-pink"><div class="metric-label">Retail %</div><div class="metric-value ${sc(s.hairRetailPct,TARGETS.retailPct)}" style="font-size:22px">${fmtPct(s.hairRetailPct)}</div><div class="metric-target">Target: ${TARGETS.retailPct}%</div></div>
+          <div class="metric m-sage"><div class="metric-label">Beauty Sales</div><div class="metric-value" style="font-size:22px">${fmtAED(s.beautySales)}</div><div class="metric-target">${fmtPct(s.beautyPct)} of total</div></div>
+          <div class="metric m-peach"><div class="metric-label">Colour Take</div><div class="metric-value" style="font-size:22px">${fmtAED(s.colTake)}</div><div class="metric-target">${fmtPct(s.colPct||0)} of hair</div></div>
+        </div>
       </div>
-      <div class="canvas-wrap"><canvas id="cmpChart"></canvas></div>
+      <!-- RIGHT: BRANCH COMPARISON -->
+      <div>
+        <div class="section-label">Branch Comparison</div>
+        <div class="card" style="margin-bottom:0;height:calc(100% - 22px)">
+          <div class="card-title">Performance Across Branches</div>
+          <div class="card-sub">Side-by-side · select metric below</div>
+          <div class="f-pills" id="cmpFilters">
+            <button class="f-pill active" data-m="netTake">Revenue</button>
+            <button class="f-pill" data-m="totalClients">Clients</button>
+            <button class="f-pill" data-m="avgBill">Avg Bill</button>
+            <button class="f-pill" data-m="rebookPct">Rebook %</button>
+            <button class="f-pill" data-m="treatmentPct">Treatment %</button>
+          </div>
+          <div class="canvas-wrap"><canvas id="cmpChart"></canvas></div>
+        </div>
+      </div>
     </div>
 
     <!-- TOP 3 PER BRANCH -->
