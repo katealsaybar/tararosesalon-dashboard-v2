@@ -45,8 +45,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .controls{display:flex;flex-wrap:wrap;gap:10px;padding:18px 28px 0;align-items:flex-end}
 .ctrl-group{display:flex;flex-direction:column;gap:4px}
 .ctrl-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
-
-/* MULTI-SELECT DROPDOWN */
 .ms-wrap{position:relative}
 .ms-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;border:1px solid var(--border);border-radius:18px;font-size:12px;color:var(--text);background:var(--surface);font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;min-width:140px;transition:all .2s}
 .ms-btn:hover,.ms-btn.open{border-color:var(--accent)}
@@ -65,9 +63,6 @@ main{max-width:1400px;margin:0 auto;padding:22px 28px 48px}
 .section-label{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 
 /* METRICS */
-.metrics-grid{display:grid;gap:10px;margin-bottom:10px}
-.metrics-r1{grid-template-columns:repeat(4,1fr)}
-.metrics-r2{grid-template-columns:repeat(4,1fr);margin-bottom:22px}
 .metric{background:var(--surface);border-radius:13px;padding:18px 16px;border:1px solid var(--border);box-shadow:var(--shadow);position:relative;overflow:hidden;transition:background .3s,border-color .3s}
 .metric::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0}
 .m-rose::before{background:#FFD4D9}.m-coral::before{background:#FF9B9B}.m-lav::before{background:#C4B5FD}.m-turq::before{background:#99F6E4}
@@ -82,20 +77,19 @@ main{max-width:1400px;margin:0 auto;padding:22px 28px 48px}
 .card{background:var(--surface);border-radius:13px;padding:22px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:12px;transition:background .3s,border-color .3s}
 .card-title{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:16px;color:var(--text);margin-bottom:3px}
 .card-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 
 /* DONUT */
-.donut-inner{display:flex;align-items:center;gap:24px}
-.donut-wrap{position:relative;width:140px;height:140px;flex-shrink:0}
+.donut-inner{display:flex;align-items:center;gap:20px}
+.donut-wrap{position:relative;width:110px;height:110px;flex-shrink:0}
 .donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
-.donut-center-val{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);line-height:1}
-.donut-center-lbl{font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px}
-.legend{display:flex;flex-direction:column;gap:8px;flex:1}
-.legend-item{display:flex;align-items:center;justify-content:space-between;font-size:12px}
-.legend-l{display:flex;align-items:center;gap:7px}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.donut-center-val{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);line-height:1}
+.donut-center-lbl{font-size:8px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px}
+.legend{display:flex;flex-direction:column;gap:6px;flex:1}
+.legend-item{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.legend-l{display:flex;align-items:center;gap:6px}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .legend-name{color:var(--muted)}
-.legend-r{display:flex;gap:8px}
+.legend-r{display:flex;gap:6px}
 .legend-n{color:var(--text);font-weight:500}
 .legend-p{color:var(--muted2)}
 
@@ -122,19 +116,20 @@ td{padding:8px 9px;border-bottom:1px solid var(--border2);color:var(--text)}
 tr:last-child td{border-bottom:none}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:500}
 .badge.good{background:var(--good-bg);color:var(--good)}.badge.warn{background:var(--warn-bg);color:var(--warn)}.badge.bad{background:var(--bad-bg);color:var(--bad)}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--text)}
+th.sort-asc::after{content:' ▲';font-size:9px;opacity:0.7}
+th.sort-desc::after{content:' ▼';font-size:9px;opacity:0.7}
+th:not(.sort-asc):not(.sort-desc).sortable::after{content:' ⇅';font-size:9px;opacity:0.3}
 
-/* COMBO / F-PILLS */
+/* F-PILLS */
 .f-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .f-pill{padding:4px 12px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s}
 .f-pill:hover{border-color:var(--accent);color:var(--accent)}
 .f-pill.active{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:700}
 .canvas-wrap{position:relative;height:230px}
-.canvas-wrap-tall{position:relative;height:280px}
 
-/* BRANCH COMPARISON */
-.branch-compare-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-
-/* TOP 3 grid — 3 on top, 2 centered below */
+/* TOP 3 */
 .top3-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
 .top3-grid-row2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;max-width:66%;margin-left:auto;margin-right:auto}
 .top3-col{background:var(--surface);border-radius:13px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
@@ -143,10 +138,10 @@ tr:last-child td{border-bottom:none}
 .top3-accent{height:2px;border-radius:2px;margin-top:6px}
 .top3-col-body{padding:10px 12px}
 .top3-metric-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
-.top3-tab{padding:3px 9px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:0.04em}
+.top3-tab{padding:3px 9px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
 .top3-tab:hover{border-color:var(--accent);color:var(--accent)}
 .top3-tab.active{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:700}
-.top3-subtabs{display:flex;gap:0;margin-bottom:10px;border-bottom:1px solid var(--border)}
+.top3-subtabs{display:flex;margin-bottom:10px;border-bottom:1px solid var(--border)}
 .top3-subtab{padding:5px 10px;font-size:10px;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);margin-bottom:-1px;text-transform:uppercase;font-family:'DM Sans',sans-serif;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:0.06em;transition:color .2s}
 .top3-subtab.active{color:var(--text);border-bottom-color:var(--accent)}
 .top3-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border2)}
@@ -162,16 +157,10 @@ tr:last-child td{border-bottom:none}
 .empty{text-align:center;padding:4rem;color:var(--muted);font-size:14px}
 .loading{text-align:center;padding:4rem;color:var(--muted);letter-spacing:0.1em;font-size:12px;text-transform:uppercase}
 footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);font-size:11px;color:var(--muted2);transition:border-color .3s;line-height:1.8}
-th.sortable{cursor:pointer;user-select:none}
-th.sortable:hover{color:var(--text)}
-th.sort-asc::after{content:' ▲';font-size:9px;opacity:0.7}
-th.sort-desc::after{content:' ▼';font-size:9px;opacity:0.7}
-th:not(.sort-asc):not(.sort-desc).sortable::after{content:' ⇅';font-size:9px;opacity:0.3}
 
-/* RESPONSIVE */
-@media(max-width:1100px){.top3-grid{grid-template-columns:repeat(3,1fr)}.metrics-r1,.metrics-r2{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:900px){.charts-row,.branch-compare-row{grid-template-columns:1fr}.top3-grid{grid-template-columns:repeat(2,1fr)}header{padding:12px 18px}.controls{padding:14px 18px 0}main{padding:18px 18px 40px}.last-updated{display:none}main>[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}}
-@media(max-width:560px){.top3-grid{grid-template-columns:1fr 1fr}.metrics-r1,.metrics-r2{grid-template-columns:1fr 1fr}.ms-btn{min-width:110px;font-size:11px}}
+@media(max-width:1100px){.top3-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){header{padding:12px 18px}.controls{padding:14px 18px 0}main{padding:18px 18px 40px}.last-updated{display:none}}
+@media(max-width:560px){.top3-grid{grid-template-columns:1fr 1fr}.ms-btn{min-width:110px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -260,10 +249,8 @@ const MONTH_ORDER=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','
 
 let allData=[];
 let charts={};
-// multi-select state
 const sel={branch:['all'],year:['all'],month:['all'],week:['all']};
 
-// ── THEME ──
 function toggleTheme(){
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
   document.documentElement.setAttribute('data-theme',dark?'light':'dark');
@@ -272,7 +259,6 @@ function toggleTheme(){
 }
 const isDark=()=>document.documentElement.getAttribute('data-theme')==='dark';
 
-// ── HELPERS ──
 const sc=(v,t)=>{const p=v/t;return p>=0.95?'good':p>=0.75?'warn':'bad';};
 const fmtAED=n=>'AED '+Math.round(n||0).toLocaleString();
 const fmtPct=n=>(+(n||0)).toFixed(1)+'%';
@@ -289,12 +275,10 @@ function getMonth(label,uploaded_at){
   return '—';
 }
 
-// ── MULTI-SELECT DROPDOWNS ──
 function toggleDrop(key){
   const drop=document.getElementById('drop-'+key);
   const btn=document.getElementById('btn-'+key);
   const isOpen=drop.classList.contains('open');
-  // close all
   document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
   document.querySelectorAll('.ms-btn').forEach(b=>b.classList.remove('open'));
   if(!isOpen){drop.classList.add('open');btn.classList.add('open');}
@@ -315,15 +299,13 @@ function buildDrop(key,options){
       const active=!isAll&&sel[key].includes(o.val);
       const dot=BRANCH_INFO[o.val]?`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${BRANCH_INFO[o.val].color};flex-shrink:0;margin-right:2px"></span>`:'';
       return `<div class="ms-opt ${active?'selected':''}" data-val="${o.val}" onclick="toggleOpt('${key}','${o.val}')">${dot}${o.label}</div>`;
-    }).join('')}
-  `;
+    }).join('')}`;
   updateLabel(key,options);
 }
 
 function toggleOpt(key,val){
-  if(val==='all'){
-    sel[key]=['all'];
-  } else {
+  if(val==='all'){sel[key]=['all'];}
+  else{
     sel[key]=sel[key].filter(x=>x!=='all');
     if(sel[key].includes(val)) sel[key]=sel[key].filter(x=>x!==val);
     else sel[key].push(val);
@@ -332,22 +314,15 @@ function toggleOpt(key,val){
   if(key==='branch'||key==='year'){sel.month=['all'];}
   if(key==='branch'||key==='year'||key==='month'){sel.week=['all'];}
   rebuildDependentDrops();
-  // re-highlight just the current dropdown without rebuilding it
   const drop=document.getElementById('drop-'+key);
-  // re-highlight current dropdown
-  const isAllNow = sel[key].includes('all');
+  const isAllNow=sel[key].includes('all');
   drop.querySelectorAll('.ms-opt').forEach(el=>{
-    const v = el.dataset.val;
-    if(el.classList.contains('all-opt')){
-      el.classList.toggle('selected', isAllNow);
-    } else {
-      el.classList.toggle('selected', !isAllNow && sel[key].includes(v));
-    }
+    const v=el.dataset.val;
+    if(el.classList.contains('all-opt')) el.classList.toggle('selected',isAllNow);
+    else el.classList.toggle('selected',!isAllNow&&sel[key].includes(v));
   });
-  // keep dropdown open
   drop.classList.add('open');
   document.getElementById('btn-'+key).classList.add('open');
-  // update button label
   const allOptions=[...drop.querySelectorAll('.ms-opt:not(.all-opt)')].map(el=>({val:el.dataset.val,label:el.textContent.trim()}));
   updateLabel(key,allOptions);
   renderDashboard();
@@ -357,24 +332,16 @@ function updateLabel(key,options){
   const lbl=document.getElementById('lbl-'+key);
   const isAll=sel[key].includes('all');
   if(isAll){lbl.textContent='All '+key+'s';}
-  else if(sel[key].length===1){
-    const found=options.find(o=>o.val===sel[key][0]);
-    lbl.textContent=found?found.label:sel[key][0];
-  } else {
-    lbl.textContent=sel[key].length+' selected';
-  }
+  else if(sel[key].length===1){const found=options.find(o=>o.val===sel[key][0]);lbl.textContent=found?found.label:sel[key][0];}
+  else{lbl.textContent=sel[key].length+' selected';}
 }
 
 function rebuildDependentDrops(){
-  const filtered=getFilteredData(true);
-  // years
   const years=[...new Set(allData.map(d=>getYear(d.week_label,d.uploaded_at)))].sort((a,b)=>b-a);
   buildDrop('year',years.map(y=>({val:y,label:y})));
-  // months (based on branch+year filter)
   const f1=getFilteredData(false,true);
   const months=[...new Set(f1.map(d=>getMonth(d.week_label,d.uploaded_at)))].filter(m=>m!=='—').sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
   buildDrop('month',months.map(m=>({val:m,label:m})));
-  // weeks — deduplicated by label across all branches, filtered by year+month
   const f2=allData.filter(d=>{
     const yr=getYear(d.week_label,d.uploaded_at);
     const mo=getMonth(d.week_label,d.uploaded_at);
@@ -382,13 +349,11 @@ function rebuildDependentDrops(){
     if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
     return true;
   });
-  // dedupe by week_label
   const seenLabels=new Set();
   const weeks=f2.filter(d=>{if(seenLabels.has(d.week_label))return false;seenLabels.add(d.week_label);return true;}).map(d=>({val:d.week_label,label:d.week_label}));
   buildDrop('week',weeks);
 }
 
-// ── FILTER DATA ──
 function getFilteredData(ignoreBranch=false,ignoreMonth=false,ignoreWeek=false){
   return allData.filter(d=>{
     if(!ignoreBranch&&!sel.branch.includes('all')&&!sel.branch.includes(d.branch))return false;
@@ -396,18 +361,15 @@ function getFilteredData(ignoreBranch=false,ignoreMonth=false,ignoreWeek=false){
     if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
     const mo=getMonth(d.week_label,d.uploaded_at);
     if(!ignoreMonth&&!sel.month.includes('all')&&!sel.month.includes(mo))return false;
-    // match by week_label instead of id
     if(!ignoreWeek&&!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
     return true;
   });
 }
 
-// ── LOAD ──
 async function loadData(){
   const{data,error}=await sb.from('weekly_data').select('*').order('uploaded_at',{ascending:true});
   if(error||!data){document.getElementById('mainContent').innerHTML='<div class="empty">No data available yet.</div>';return;}
   allData=data;
-  // build branch drop
   const branches=Object.entries(BRANCH_INFO).map(([k,v])=>({val:k,label:v.name}));
   buildDrop('branch',branches);
   rebuildDependentDrops();
@@ -418,7 +380,6 @@ async function loadData(){
   }
 }
 
-// ── AGG DATA ──
 function aggData(datasets){
   if(!datasets.length)return null;
   const hairMap={},beautyMap={};
@@ -466,10 +427,8 @@ function aggByBranch(){
   return result;
 }
 
-// ── DESTROY ──
 function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
 
-// ── RENDER ──
 function renderDashboard(){
   const filtered=getFilteredData();
   const main=document.getElementById('mainContent');
@@ -485,14 +444,11 @@ function renderDashboard(){
   const ttStyle={backgroundColor:dark?'#2D2E37':'#fff',titleColor:dark?'#FAF8F3':'#5C5557',bodyColor:dark?'rgba(250,248,243,.7)':'#9a8a87',borderColor:dark?'rgba(250,248,243,.1)':'#e8d5cc',borderWidth:1};
   const gc=dark?'rgba(250,248,243,0.06)':'rgba(92,85,87,0.07)';
   const tc=dark?'rgba(250,248,243,0.45)':'#9a8a87';
-
-  // selected branch label
   const branchLabel=sel.branch.includes('all')?'All Branches':sel.branch.map(b=>BRANCH_INFO[b]?.name||b).join(', ');
 
   main.innerHTML=`
-    <!-- TOP ROW: METRICS LEFT + BRANCH COMPARISON RIGHT -->
+    <!-- ROW 1: METRICS + BRANCH COMPARISON -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;margin-top:4px">
-      <!-- LEFT: METRICS -->
       <div>
         <div class="section-label">${branchLabel} &nbsp;·&nbsp; Key Metrics</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -506,7 +462,6 @@ function renderDashboard(){
           <div class="metric m-peach"><div class="metric-label">Colour Take</div><div class="metric-value" style="font-size:22px">${fmtAED(s.colTake)}</div><div class="metric-target">${fmtPct(s.colPct||0)} of hair</div></div>
         </div>
       </div>
-      <!-- RIGHT: BRANCH COMPARISON -->
       <div style="display:flex;flex-direction:column">
         <div class="section-label">Branch Comparison</div>
         <div class="card" style="margin-bottom:0;flex:1">
@@ -519,21 +474,38 @@ function renderDashboard(){
             <button class="f-pill" data-m="rebookPct">Rebook %</button>
             <button class="f-pill" data-m="treatmentPct">Treatment %</button>
           </div>
-          <div class="canvas-wrap" style="height:200px"><canvas id="cmpChart"></canvas></div>
+          <div style="position:relative;height:200px"><canvas id="cmpChart"></canvas></div>
         </div>
       </div>
     </div>
 
-    <!-- TOP 3 PER BRANCH -->
+    <!-- ROW 2: TOP 3 PER BRANCH -->
     <div class="section-label">Top Performers per Branch</div>
     <div class="top3-grid" id="top3Grid"></div>
     <div class="top3-grid-row2" id="top3Grid2"></div>
 
-    <!-- CHARTS ROW -->
-    <div class="charts-row">
-      <div class="card">
+    <!-- ROW 3: AQ + FRATELLI + DONUT (3 cols) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <!-- AQ Ladies top 3 -->
+      <div class="top3-col" id="aqCard">
+        <div class="top3-col-hdr">
+          <div class="top3-col-name">AQ Ladies</div>
+          <div class="top3-accent" style="background:#FF9B9B"></div>
+        </div>
+        <div class="top3-col-body" id="t3_AQ_inline"></div>
+      </div>
+      <!-- Fratelli top 3 -->
+      <div class="top3-col" id="frtCard">
+        <div class="top3-col-hdr">
+          <div class="top3-col-name">Fratelli</div>
+          <div class="top3-accent" style="background:#EEF3C7"></div>
+        </div>
+        <div class="top3-col-body" id="t3_FRT_inline"></div>
+      </div>
+      <!-- Revenue Mix donut (compressed) -->
+      <div class="card" style="margin-bottom:0">
         <div class="card-title">Revenue Mix</div>
-        <div class="card-sub">Hair · Beauty · Retail breakdown</div>
+        <div class="card-sub">Hair · Beauty · Retail</div>
         <div class="donut-inner">
           <div class="donut-wrap"><canvas id="donutChart"></canvas>
             <div class="donut-center">
@@ -544,15 +516,19 @@ function renderDashboard(){
           <div class="legend" id="donutLegend"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title">Rebooking by Stylist</div>
-        <div class="card-sub">Rebook rate per team member</div>
-        <div id="rebookBars"></div>
-        <div class="target-line">Target: 45%</div>
+    </div>
+
+    <!-- ROW 4: REBOOKING FULL WIDTH -->
+    <div class="card">
+      <div class="card-title">Rebooking by Stylist</div>
+      <div class="card-sub">Rebook rate per team member · Target: 45%</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div id="rebookBarsLeft"></div>
+        <div id="rebookBarsRight"></div>
       </div>
     </div>
 
-    <!-- COMBO -->
+    <!-- ROW 5: COMBO CHART -->
     <div class="card">
       <div class="card-title">Performance by Stylist / Beautician</div>
       <div class="card-sub">Bar = selected period · Dashed = team average</div>
@@ -569,7 +545,7 @@ function renderDashboard(){
       <div class="canvas-wrap"><canvas id="comboChart"></canvas></div>
     </div>
 
-    <!-- STYLIST TABLE -->
+    <!-- ROW 6: STYLIST TABLE -->
     <div class="card">
       <div class="tabs">
         <button class="tab active" onclick="switchTab(this,'hair')">Hair Stylists</button>
@@ -580,88 +556,26 @@ function renderDashboard(){
     </div>
   `;
 
-  // sort state
+  // ── SORT STATE ──
   let hairSort={col:'hairSalesNet',dir:'desc'};
   let beautySort={col:'beautySales',dir:'desc'};
 
   function renderHairTable(){
-    const sorted=[...d.hairStaff].sort((a,b)=>{
-      const v=hairSort.dir==='asc'?(a[hairSort.col]||0)-(b[hairSort.col]||0):(b[hairSort.col]||0)-(a[hairSort.col]||0);
-      return v;
-    });
-    const cols=[
-      {key:'name',label:'Stylist'},
-      {key:'total',label:'Clients'},
-      {key:'newC',label:'New'},
-      {key:'rebookPct',label:'Rebook %'},
-      {key:'hairSalesNet',label:'Hair Sales'},
-      {key:'avgBill',label:'Avg Bill'},
-      {key:'retail',label:'Retail'},
-      {key:'treatments',label:'Treatments'},
-    ];
-    document.getElementById('tab-hair').innerHTML=`<table>
-      <thead><tr>
-        <th style="width:30px">#</th>
-        ${cols.map(c=>`<th class="sortable${hairSort.col===c.key?' sort-'+hairSort.dir:''}" onclick="sortHair('${c.key}')">${c.label}</th>`).join('')}
-      </tr></thead>
-      <tbody>
-        ${sorted.map((st,i)=>`<tr>
-          <td style="color:var(--muted2);font-size:11px">${i+1}</td>
-          <td><span style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:22px;border-radius:50%;background:${st.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#2D2E37;flex-shrink:0">${initials(st.name)}</span>${st.name}</span></td>
-          <td>${st.total}</td><td>${st.newC}</td>
-          <td><span class="badge ${sc(st.rebookPct,TARGETS.rebookPct)}">${fmtPct(st.rebookPct)}</span></td>
-          <td>${fmtAED(st.hairSalesNet)}</td>
-          <td><span class="badge ${sc(st.avgBill,TARGETS.hairAvgBill)}">${fmtAED(st.avgBill)}</span></td>
-          <td>${fmtAED(st.retail)}</td><td>${fmtAED(st.treatments)}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
+    const sorted=[...d.hairStaff].sort((a,b)=>hairSort.dir==='asc'?(a[hairSort.col]||0)-(b[hairSort.col]||0):(b[hairSort.col]||0)-(a[hairSort.col]||0));
+    const cols=[{key:'name',label:'Stylist'},{key:'total',label:'Clients'},{key:'newC',label:'New'},{key:'rebookPct',label:'Rebook %'},{key:'hairSalesNet',label:'Hair Sales'},{key:'avgBill',label:'Avg Bill'},{key:'retail',label:'Retail'},{key:'treatments',label:'Treatments'}];
+    document.getElementById('tab-hair').innerHTML=`<table><thead><tr><th style="width:30px">#</th>${cols.map(c=>`<th class="sortable${hairSort.col===c.key?' sort-'+hairSort.dir:''}" onclick="sortHair('${c.key}')">${c.label}</th>`).join('')}</tr></thead><tbody>${sorted.map((st,i)=>`<tr><td style="color:var(--muted2);font-size:11px">${i+1}</td><td><span style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:22px;border-radius:50%;background:${st.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#2D2E37;flex-shrink:0">${initials(st.name)}</span>${st.name}</span></td><td>${st.total}</td><td>${st.newC}</td><td><span class="badge ${sc(st.rebookPct,TARGETS.rebookPct)}">${fmtPct(st.rebookPct)}</span></td><td>${fmtAED(st.hairSalesNet)}</td><td><span class="badge ${sc(st.avgBill,TARGETS.hairAvgBill)}">${fmtAED(st.avgBill)}</span></td><td>${fmtAED(st.retail)}</td><td>${fmtAED(st.treatments)}</td></tr>`).join('')}</tbody></table>`;
   }
-
   function renderBeautyTable(){
-    const sorted=[...d.beautyStaff].sort((a,b)=>{
-      const v=beautySort.dir==='asc'?(a[beautySort.col]||0)-(b[beautySort.col]||0):(b[beautySort.col]||0)-(a[beautySort.col]||0);
-      return v;
-    });
-    const cols=[
-      {key:'name',label:'Therapist'},
-      {key:'total',label:'Clients'},
-      {key:'beautySales',label:'Beauty Sales'},
-      {key:'avgBill',label:'Avg Bill'},
-      {key:'rebookPct',label:'Rebook %'},
-    ];
-    document.getElementById('tab-beauty').innerHTML=`<table>
-      <thead><tr>
-        <th style="width:30px">#</th>
-        ${cols.map(c=>`<th class="sortable${beautySort.col===c.key?' sort-'+beautySort.dir:''}" onclick="sortBeauty('${c.key}')">${c.label}</th>`).join('')}
-      </tr></thead>
-      <tbody>
-        ${sorted.map((st,i)=>`<tr>
-          <td style="color:var(--muted2);font-size:11px">${i+1}</td>
-          <td><span style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:22px;border-radius:50%;background:${st.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#2D2E37;flex-shrink:0">${initials(st.name)}</span>${st.name}</span></td>
-          <td>${st.total}</td><td>${fmtAED(st.beautySales)}</td>
-          <td><span class="badge ${sc(st.avgBill,TARGETS.beautyAvgBill)}">${fmtAED(st.avgBill)}</span></td>
-          <td><span class="badge ${sc(st.rebookPct,30)}">${fmtPct(st.rebookPct)}</span></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
+    const sorted=[...d.beautyStaff].sort((a,b)=>beautySort.dir==='asc'?(a[beautySort.col]||0)-(b[beautySort.col]||0):(b[beautySort.col]||0)-(a[beautySort.col]||0));
+    const cols=[{key:'name',label:'Therapist'},{key:'total',label:'Clients'},{key:'beautySales',label:'Beauty Sales'},{key:'avgBill',label:'Avg Bill'},{key:'rebookPct',label:'Rebook %'}];
+    document.getElementById('tab-beauty').innerHTML=`<table><thead><tr><th style="width:30px">#</th>${cols.map(c=>`<th class="sortable${beautySort.col===c.key?' sort-'+beautySort.dir:''}" onclick="sortBeauty('${c.key}')">${c.label}</th>`).join('')}</tr></thead><tbody>${sorted.map((st,i)=>`<tr><td style="color:var(--muted2);font-size:11px">${i+1}</td><td><span style="display:flex;align-items:center;gap:7px"><span style="width:22px;height:22px;border-radius:50%;background:${st.color};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#2D2E37;flex-shrink:0">${initials(st.name)}</span>${st.name}</span></td><td>${st.total}</td><td>${fmtAED(st.beautySales)}</td><td><span class="badge ${sc(st.avgBill,TARGETS.beautyAvgBill)}">${fmtAED(st.avgBill)}</span></td><td><span class="badge ${sc(st.rebookPct,30)}">${fmtPct(st.rebookPct)}</span></td></tr>`).join('')}</tbody></table>`;
   }
-
-  window.sortHair=function(col){
-    hairSort.dir=hairSort.col===col?(hairSort.dir==='asc'?'desc':'asc'):'desc';
-    hairSort.col=col;
-    renderHairTable();
-  };
-  window.sortBeauty=function(col){
-    beautySort.dir=beautySort.col===col?(beautySort.dir==='asc'?'desc':'asc'):'desc';
-    beautySort.col=col;
-    renderBeautyTable();
-  };
-
+  window.sortHair=col=>{hairSort.dir=hairSort.col===col?(hairSort.dir==='asc'?'desc':'asc'):'desc';hairSort.col=col;renderHairTable();};
+  window.sortBeauty=col=>{beautySort.dir=beautySort.col===col?(beautySort.dir==='asc'?'desc':'asc'):'desc';beautySort.col=col;renderBeautyTable();};
   renderHairTable();
   renderBeautyTable();
 
-  // ── BRANCH COMPARISON CHART ──
+  // ── BRANCH COMPARISON ──
   const byBranch=aggByBranch();
   let cmpMetric='netTake';
   buildCmpChart(byBranch,cmpMetric,dark,ttStyle,gc,tc);
@@ -673,8 +587,14 @@ function renderDashboard(){
     buildCmpChart(byBranch,cmpMetric,dark,ttStyle,gc,tc);
   });
 
-  // ── TOP 3 ──
+  // ── TOP 3 (rows 1-3 = KCA, SAA, MC) ──
   renderTop3(byBranch);
+
+  // ── AQ + FRT inline in row 3 ──
+  const aqD=byBranch['AQ'];
+  const frtD=byBranch['FRT'];
+  renderTop3InlineCard('AQ',aqD,byBranch);
+  renderTop3InlineCard('FRT',frtD,byBranch);
 
   // ── DONUT ──
   const hairTx=Math.max(0,s.netTake-s.beautySales-s.hairRetail);
@@ -692,17 +612,14 @@ function renderDashboard(){
       <div class="legend-r"><span class="legend-n">${fmtAED(donutData[i])}</span><span class="legend-p">${Math.round(donutData[i]/donutTotal*100)}%</span></div>
     </div>`).join('');
 
-  // ── REBOOK BARS ──
+  // ── REBOOKING — split into 2 columns ──
   const sortedRebook=[...d.hairStaff].sort((a,b)=>b.rebookPct-a.rebookPct);
   const avgRebook=sortedRebook.length?sortedRebook.reduce((acc,st)=>acc+st.rebookPct,0)/sortedRebook.length:0;
-  document.getElementById('rebookBars').innerHTML=`
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding:6px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2)">
-      <span style="font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">Team Average</span>
-      <span style="font-size:13px;font-weight:700;color:var(--accent);margin-left:auto">${fmtPct(avgRebook)}</span>
-    </div>
-    ${sortedRebook.map((st,i)=>`
+  const avgHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding:6px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2)"><span style="font-size:10px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase">Team Average</span><span style="font-size:13px;font-weight:700;color:var(--accent);margin-left:auto">${fmtPct(avgRebook)}</span></div>`;
+  const half=Math.ceil(sortedRebook.length/2);
+  const barHTML=arr=>arr.map((st,i)=>`
     <div class="bar-row">
-      <span style="font-size:10px;color:var(--muted2);min-width:16px;text-align:right;flex-shrink:0">${i+1}</span>
+      <span style="font-size:10px;color:var(--muted2);min-width:16px;text-align:right;flex-shrink:0">${sortedRebook.indexOf(st)+1}</span>
       <div class="bar-stylist"><div class="stylist-av" style="background:${st.color}">${initials(st.name)}</div><span class="bar-name">${st.name.split(' ')[0]}</span></div>
       <span class="bar-clients">${st.total}</span>
       <div class="bar-track">
@@ -710,50 +627,34 @@ function renderDashboard(){
         <div style="position:absolute;top:0;left:${Math.min(avgRebook,100)}%;width:2px;height:100%;background:var(--accent);opacity:0.6"></div>
       </div>
       <span class="bar-pct">${fmtPct(st.rebookPct)}</span>
-    </div>`).join('')}
-  `;
-
+    </div>`).join('');
+  document.getElementById('rebookBarsLeft').innerHTML=avgHTML+barHTML(sortedRebook.slice(0,half));
+  document.getElementById('rebookBarsRight').innerHTML=barHTML(sortedRebook.slice(half));
 
   // ── COMBO ──
   let comboMetric='hairSalesNet';
   let comboTeam='hair';
   buildCombo(d.hairStaff,comboMetric,dark,ttStyle,gc,tc);
-
   window._comboHairStaff=d.hairStaff;
   window._comboBeautyStaff=d.beautyStaff;
-  window._comboDark=dark;
-  window._comboTT=ttStyle;
-  window._comboGC=gc;
-  window._comboTC=tc;
+  window._comboDark=dark;window._comboTT=ttStyle;window._comboGC=gc;window._comboTC=tc;
 
   window.switchComboTab=function(team){
     comboTeam=team;
     document.getElementById('comboTabHair').classList.toggle('active',team==='hair');
     document.getElementById('comboTabBeauty').classList.toggle('active',team==='beauty');
-    // update metric pills for beauty (no hairSalesNet)
     const filters=document.getElementById('comboFilters');
     if(team==='beauty'){
-      filters.innerHTML=`
-        <button class="f-pill active" data-m="beautySales">Revenue</button>
-        <button class="f-pill" data-m="total">Clients</button>
-        <button class="f-pill" data-m="avgBill">Avg Bill</button>
-        <button class="f-pill" data-m="rebookPct">Rebook %</button>`;
+      filters.innerHTML=`<button class="f-pill active" data-m="beautySales">Revenue</button><button class="f-pill" data-m="total">Clients</button><button class="f-pill" data-m="avgBill">Avg Bill</button><button class="f-pill" data-m="rebookPct">Rebook %</button>`;
       comboMetric='beautySales';
     } else {
-      filters.innerHTML=`
-        <button class="f-pill active" data-m="hairSalesNet">Revenue</button>
-        <button class="f-pill" data-m="total">Clients</button>
-        <button class="f-pill" data-m="avgBill">Avg Bill</button>
-        <button class="f-pill" data-m="rebookPct">Rebook %</button>`;
+      filters.innerHTML=`<button class="f-pill active" data-m="hairSalesNet">Revenue</button><button class="f-pill" data-m="total">Clients</button><button class="f-pill" data-m="avgBill">Avg Bill</button><button class="f-pill" data-m="rebookPct">Rebook %</button>`;
       comboMetric='hairSalesNet';
     }
     if(charts.combo)charts.combo.destroy();
-    const staff=team==='hair'?window._comboHairStaff:window._comboBeautyStaff;
-    buildCombo(staff,comboMetric,window._comboDark,window._comboTT,window._comboGC,window._comboTC);
-    // re-attach filter listener
+    buildCombo(comboTeam==='hair'?window._comboHairStaff:window._comboBeautyStaff,comboMetric,window._comboDark,window._comboTT,window._comboGC,window._comboTC);
     attachComboFilter();
   };
-
   attachComboFilter();
   function attachComboFilter(){
     document.getElementById('comboFilters').addEventListener('click',e=>{
@@ -761,21 +662,41 @@ function renderDashboard(){
       comboMetric=btn.dataset.m;
       document.querySelectorAll('#comboFilters .f-pill').forEach(p=>p.classList.toggle('active',p===btn));
       if(charts.combo)charts.combo.destroy();
-      const staff=comboTeam==='hair'?window._comboHairStaff:window._comboBeautyStaff;
-      buildCombo(staff,comboMetric,dark,ttStyle,gc,tc);
+      buildCombo(comboTeam==='hair'?window._comboHairStaff:window._comboBeautyStaff,comboMetric,dark,ttStyle,gc,tc);
     });
   }
 }
 
+// ── TOP 3 INLINE (for AQ + FRT in row 3) ──
+function renderTop3InlineCard(code,branchData,byBranch){
+  const hairStaff=branchData?branchData.hairStaff:[];
+  const beautyStaff=branchData?branchData.beautyStaff:[];
+  const body=document.getElementById('t3_'+code+'_inline');
+  if(!body)return;
+  const tabsDiv=document.createElement('div');
+  tabsDiv.className='top3-metric-tabs';
+  tabsDiv.innerHTML=TOP3_METRICS.map((m,i)=>`<button class="top3-tab${i===0?' active':''}" data-m="${m.key}" onclick="switchTop3Inline('${code}',this,'${m.key}')">${m.label}</button>`).join('');
+  body.innerHTML=renderTop3Col(hairStaff,beautyStaff,'overall',code+'i');
+  body.prepend(tabsDiv);
+}
+
+window.switchTop3Inline=function(code,btn,metricKey){
+  btn.closest('.top3-metric-tabs').querySelectorAll('.top3-tab').forEach(t=>t.classList.toggle('active',t===btn));
+  const body=document.getElementById('t3_'+code+'_inline');
+  const tabsDiv=body.querySelector('.top3-metric-tabs');
+  const byBranch=aggByBranch();
+  const bd=byBranch[code];
+  const hairStaff=bd?bd.hairStaff:[];
+  const beautyStaff=bd?bd.beautyStaff:[];
+  [...body.children].forEach(c=>{if(c!==tabsDiv)c.remove();});
+  body.insertAdjacentHTML('beforeend',renderTop3Col(hairStaff,beautyStaff,metricKey,code+'i'));
+  btn.classList.add('active');
+};
+
 function buildCmpChart(byBranch,metric,dark,ttStyle,gc,tc){
   const activeBranches=sel.branch.includes('all')?Object.keys(BRANCH_INFO):sel.branch;
   const labels=activeBranches.map(b=>BRANCH_INFO[b]?.name||b);
-  const vals=activeBranches.map(b=>{
-    const d=byBranch[b];
-    if(!d)return 0;
-    const v=d.summary[metric]||0;
-    return +v.toFixed(1);
-  });
+  const vals=activeBranches.map(b=>{const d=byBranch[b];if(!d)return 0;return +(d.summary[metric]||0).toFixed(1);});
   const colors=activeBranches.map(b=>BRANCH_INFO[b]?.color||'#ccc');
   const metricLabels={netTake:'Revenue (AED)',totalClients:'Clients',avgBill:'Avg Bill (AED)',rebookPct:'Rebook %',treatmentPct:'Treatment %'};
   charts.cmp=new Chart(document.getElementById('cmpChart'),{
@@ -785,63 +706,47 @@ function buildCmpChart(byBranch,metric,dark,ttStyle,gc,tc){
   });
 }
 
-// ── TOP 3 ──
-const TOP3_METRICS=[
-  {key:'overall',label:'Overall'},
-  {key:'hairSalesNet',label:'Revenue'},
-  {key:'rebookPct',label:'Rebook %'},
-  {key:'avgBill',label:'Avg Bill'},
-  {key:'total',label:'Clients'},
-];
+const TOP3_METRICS=[{key:'overall',label:'Overall'},{key:'hairSalesNet',label:'Revenue'},{key:'rebookPct',label:'Rebook %'},{key:'avgBill',label:'Avg Bill'},{key:'total',label:'Clients'}];
 const rankColors=['gold','silver','bronze'];
 const rankSymbols=['🥇','🥈','🥉'];
 
 function overallScore(st,isBeauty){
-  if(isBeauty){
-    return (st.beautySales||0)/10000+(st.avgBill||0)/200+(st.rebookPct||0);
-  }
-  return (st.hairSalesNet||0)/10000+(st.avgBill||0)/650+(st.rebookPct||0);
+  return isBeauty?(st.beautySales||0)/10000+(st.avgBill||0)/200+(st.rebookPct||0):(st.hairSalesNet||0)/10000+(st.avgBill||0)/650+(st.rebookPct||0);
 }
-
 function getTop3(staff,metricKey,isBeauty){
-  const sorted=[...staff].sort((a,b)=>{
+  return [...staff].sort((a,b)=>{
     if(metricKey==='overall') return overallScore(b,isBeauty)-overallScore(a,isBeauty);
     const ka=isBeauty&&metricKey==='hairSalesNet'?'beautySales':metricKey;
     return (b[ka]||0)-(a[ka]||0);
-  });
-  return sorted.slice(0,3);
+  }).slice(0,3);
 }
 
+// ── TOP 3 ROWS 1-3 (KCA, SAA, MC only) ──
 function renderTop3(byBranch){
   const activeBranches=sel.branch.includes('all')?Object.keys(BRANCH_INFO):sel.branch;
-  const row1=activeBranches.slice(0,3);
-  const row2=activeBranches.slice(3);
+  // Only show KCA, SAA, MC in the top row (AQ & FRT handled in row 3)
+  const mainBranches=activeBranches.filter(b=>b!=='AQ'&&b!=='FRT');
+  const extraBranches=activeBranches.filter(b=>b==='AQ'||b==='FRT');
 
   function colHTML(code){
     const info=BRANCH_INFO[code]||{name:code,color:'#ccc'};
-    const d=byBranch[code];
-    const hairStaff=d?d.hairStaff:[];
-    const beautyStaff=d?d.beautyStaff:[];
-    return `
-      <div class="top3-col">
-        <div class="top3-col-hdr">
-          <div class="top3-col-name">${info.name}</div>
-          <div class="top3-accent" style="background:${info.color}"></div>
-        </div>
-        <div class="top3-col-body" id="t3_${code}">
-          ${renderTop3Col(hairStaff,beautyStaff,'overall',code)}
-        </div>
-      </div>`;
+    const bd=byBranch[code];
+    const hairStaff=bd?bd.hairStaff:[];
+    const beautyStaff=bd?bd.beautyStaff:[];
+    return `<div class="top3-col">
+      <div class="top3-col-hdr"><div class="top3-col-name">${info.name}</div><div class="top3-accent" style="background:${info.color}"></div></div>
+      <div class="top3-col-body" id="t3_${code}">${renderTop3Col(hairStaff,beautyStaff,'overall',code)}</div>
+    </div>`;
   }
 
-  document.getElementById('top3Grid').innerHTML=row1.map(colHTML).join('');
-  document.getElementById('top3Grid2').innerHTML=row2.map(colHTML).join('');
-  document.getElementById('top3Grid2').style.display=row2.length?'grid':'none';
+  document.getElementById('top3Grid').innerHTML=mainBranches.map(colHTML).join('');
+  // Hide row2 — AQ & FRT now live in row 3
+  document.getElementById('top3Grid2').style.display='none';
 
-  activeBranches.forEach(code=>{
-    const d=byBranch[code];
-    const hairStaff=d?d.hairStaff:[];
-    const beautyStaff=d?d.beautyStaff:[];
+  mainBranches.forEach(code=>{
+    const bd=byBranch[code];
+    const hairStaff=bd?bd.hairStaff:[];
+    const beautyStaff=bd?bd.beautyStaff:[];
     const body=document.getElementById('t3_'+code);
     const tabsDiv=document.createElement('div');
     tabsDiv.className='top3-metric-tabs';
@@ -858,43 +763,30 @@ function renderTop3Col(hairStaff,beautyStaff,metricKey,code){
       <button class="top3-subtab active" onclick="switchTop3Sub('${code}',this,'hair')">Hair</button>
       <button class="top3-subtab" onclick="switchTop3Sub('${code}',this,'beauty')">Beauty</button>
     </div>
-    <div id="t3hair_${code}">
-      ${hair.length?hair.map((st,i)=>top3ItemHTML(st,i,metricKey,false)).join(''):'<div class="top3-empty">No data</div>'}
-    </div>
-    <div id="t3beauty_${code}" style="display:none">
-      ${beauty.length?beauty.map((st,i)=>top3ItemHTML(st,i,metricKey,true)).join(''):'<div class="top3-empty">No data</div>'}
-    </div>`;
+    <div id="t3hair_${code}">${hair.length?hair.map((st,i)=>top3ItemHTML(st,i,metricKey,false)).join(''):'<div class="top3-empty">No data</div>'}</div>
+    <div id="t3beauty_${code}" style="display:none">${beauty.length?beauty.map((st,i)=>top3ItemHTML(st,i,metricKey,true)).join(''):'<div class="top3-empty">No data</div>'}</div>`;
 }
 
 function top3ItemHTML(st,i,metricKey,isBeauty){
   const val=isBeauty
     ?(metricKey==='hairSalesNet'?fmtAED(st.beautySales):metricKey==='rebookPct'?fmtPct(st.rebookPct):metricKey==='avgBill'?fmtAED(st.avgBill):metricKey==='total'?st.total+' clients':fmtAED(st.beautySales))
     :(metricKey==='rebookPct'?fmtPct(st.rebookPct):metricKey==='avgBill'?fmtAED(st.avgBill):metricKey==='total'?st.total+' clients':fmtAED(st.hairSalesNet));
-  return `
-    <div class="top3-item">
-      <span class="top3-rank ${rankColors[i]}">${rankSymbols[i]}</span>
-      <div class="top3-av" style="background:${st.color}">${initials(st.name)}</div>
-      <div class="top3-info">
-        <div class="top3-name">${st.name}</div>
-        <div class="top3-val">${val}</div>
-      </div>
-    </div>`;
+  return `<div class="top3-item">
+    <span class="top3-rank ${rankColors[i]}">${rankSymbols[i]}</span>
+    <div class="top3-av" style="background:${st.color}">${initials(st.name)}</div>
+    <div class="top3-info"><div class="top3-name">${st.name}</div><div class="top3-val">${val}</div></div>
+  </div>`;
 }
 
 function switchTop3(code,btn,metricKey){
-  // update metric tab styles
   btn.closest('.top3-metric-tabs').querySelectorAll('.top3-tab').forEach(t=>t.classList.toggle('active',t===btn));
-  // re-render content below tabs
   const body=document.getElementById('t3_'+code);
   const tabsDiv=body.querySelector('.top3-metric-tabs');
-  const d=aggByBranch();
-  const bd=d[code];
+  const bd=aggByBranch()[code];
   const hairStaff=bd?bd.hairStaff:[];
   const beautyStaff=bd?bd.beautyStaff:[];
-  // remove old content
   [...body.children].forEach(c=>{if(c!==tabsDiv)c.remove();});
   body.insertAdjacentHTML('beforeend',renderTop3Col(hairStaff,beautyStaff,metricKey,code));
-  // re-mark active tab
   btn.classList.add('active');
 }
 
@@ -904,14 +796,14 @@ function switchTop3Sub(code,btn,tab){
   document.getElementById('t3beauty_'+code).style.display=tab==='beauty'?'':'none';
 }
 
-function buildCombo(hairStaff,metric,dark,ttStyle,gc,tc){
-  const labels=hairStaff.map(s=>s.name.split(' ')[0]);
-  const vals=hairStaff.map(s=>+(s[metric]||0).toFixed(1));
+function buildCombo(staff,metric,dark,ttStyle,gc,tc){
+  const labels=staff.map(s=>s.name.split(' ')[0]);
+  const vals=staff.map(s=>+(s[metric]||0).toFixed(1));
   const avg=vals.reduce((a,b)=>a+b,0)/(vals.length||1);
   const lc=dark?'#C4B5FD':'#5C5557';
   charts.combo=new Chart(document.getElementById('comboChart'),{
     data:{labels,datasets:[
-      {type:'bar',label:{hairSalesNet:'Revenue (AED)',total:'Clients',avgBill:'Avg Bill (AED)',rebookPct:'Rebook %'}[metric]||metric,data:vals,backgroundColor:hairStaff.map(s=>s.color+'cc'),borderColor:hairStaff.map(s=>s.color),borderWidth:1.5,borderRadius:6,yAxisID:'y'},
+      {type:'bar',label:{hairSalesNet:'Revenue (AED)',beautySales:'Revenue (AED)',total:'Clients',avgBill:'Avg Bill (AED)',rebookPct:'Rebook %'}[metric]||metric,data:vals,backgroundColor:staff.map(s=>s.color+'cc'),borderColor:staff.map(s=>s.color),borderWidth:1.5,borderRadius:6,yAxisID:'y'},
       {type:'line',label:'Team Avg',data:vals.map(()=>+avg.toFixed(1)),borderColor:lc,backgroundColor:'transparent',borderWidth:2,borderDash:[6,4],pointRadius:0,tension:0,yAxisID:'y'}
     ]},
     options:{animation:{duration:500,easing:'easeInOutQuart'},responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:tc,font:{family:'DM Sans',size:11},boxWidth:12}},tooltip:ttStyle},scales:{x:{ticks:{color:tc,font:{family:'DM Sans',size:11}},grid:{color:gc}},y:{ticks:{color:tc,font:{family:'DM Sans',size:11}},grid:{color:gc}}}}
