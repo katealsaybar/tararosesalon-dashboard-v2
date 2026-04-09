@@ -105,7 +105,7 @@ main{max-width:1400px;margin:0 auto;padding:22px 28px 48px}
 .stylist-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#2D2E37;flex-shrink:0}
 .bar-name{font-size:11px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65px}
 .bar-clients{font-size:11px;color:var(--muted);min-width:20px;text-align:center}
-.bar-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.bar-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:visible;position:relative}
 .bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
 .bar-pct{font-size:11px;font-weight:500;color:var(--text);min-width:34px;text-align:right}
 .target-line{font-size:10px;color:var(--muted2);margin-top:6px}
@@ -694,8 +694,7 @@ function renderDashboard(){
       <span class="bar-pct">${fmtPct(st.rebookPct)}</span>
     </div>`).join('')}
   `;
-  // make bar-track relative for avg line
-  document.querySelectorAll('.bar-track').forEach(t=>t.style.position='relative');
+
 
   // ── COMBO ──
   let comboMetric='hairSalesNet';
