@@ -12,21 +12,19 @@
   --bg:#F9E8DF;--surface:#fff;--surface2:#fdf8f6;--border:#e8d5cc;--border2:#f0e8e4;
   --text:#5C5557;--muted:#9a8a87;--muted2:#a09898;--accent:#5C5557;--accent-fg:#F9E8DF;
   --shadow:0 2px 12px rgba(92,85,87,0.08);--btn:#5C5557;--btn-hover:#4a4344;--btn-fg:#F9E8DF;
-  --good:#0F6E56;--good-bg:#E1F5EE;--bad:#A32D2D;--bad-bg:#FCEBEB;
-  --logo-color:#5C5557;--toggle-knob:#5C5557;--col-header:#f0e8e4;
+  --good:#0F6E56;--good-bg:#E1F5EE;--bad:#A32D2D;--bad-bg:#FCEBEB;--warn:#BA7517;--warn-bg:#FAEEDA;
+  --toggle-knob:#5C5557;--col-header:#f0e8e4;
 }
 [data-theme="dark"]{
   --bg:#2D2E37;--surface:#383944;--surface2:#3f4052;--border:rgba(250,248,243,0.09);--border2:rgba(250,248,243,0.05);
   --text:#FAF8F3;--muted:rgba(250,248,243,0.55);--muted2:rgba(250,248,243,0.38);--accent:#FFD4D9;--accent-fg:#2D2E37;
   --shadow:0 2px 16px rgba(0,0,0,0.28);--btn:#FFD4D9;--btn-hover:#ffc0c8;--btn-fg:#2D2E37;
-  --good:#99F6E4;--good-bg:rgba(153,246,228,0.12);--bad:#FF9B9B;--bad-bg:rgba(255,155,155,0.12);
-  --logo-color:#FAF8F3;--toggle-knob:#FFD4D9;--col-header:#3f4052;
+  --good:#99F6E4;--good-bg:rgba(153,246,228,0.12);--bad:#FF9B9B;--bad-bg:rgba(255,155,155,0.12);--warn:#EEF3C7;--warn-bg:rgba(238,243,199,0.12);
+  --toggle-knob:#FFD4D9;--col-header:#3f4052;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
 
-/* HEADER */
-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);transition:background .3s,border-color .3s;position:sticky;top:0;z-index:20}
-.logo{display:flex;align-items:center;gap:12px}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:20}
 .logo-text .logo-name{font-family:'DM Sans',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text);line-height:1}
 .logo-text .logo-sub{font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted);margin-top:2px}
 .logo-strip{height:2px;width:100px;margin-top:4px;background:linear-gradient(to right,#99F6E4,#EEF3C7,#C4B5FD,#FF9B9B,#FFD4D9);border-radius:2px}
@@ -35,46 +33,75 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .toggle-wrap{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none}
 .toggle-lbl{font-size:11px;color:var(--muted);min-width:30px}
 .toggle-track{width:38px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .3s;flex-shrink:0;border:1px solid var(--border)}
-.toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--toggle-knob);position:absolute;top:2px;left:2px;transition:transform .25s ease,background .3s}
+.toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--toggle-knob);position:absolute;top:2px;left:2px;transition:transform .25s ease}
 [data-theme="dark"] .toggle-thumb{transform:translateX(18px)}
 .logout-btn{padding:6px 14px;border:1px solid var(--border);border-radius:18px;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:border-color .2s,color .2s}
 .logout-btn:hover{border-color:var(--bad);color:var(--bad)}
 
-/* PAGE */
 .page{max-width:1400px;margin:0 auto;padding:28px 20px 60px}
 
 /* UPLOAD CARD */
-.upload-card{background:var(--surface);border-radius:16px;padding:24px;border:1px solid var(--border);box-shadow:var(--shadow);transition:background .3s,border-color .3s;margin-bottom:24px}
+.upload-card{background:var(--surface);border-radius:16px;padding:24px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:24px}
 .card-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);margin-bottom:3px}
 .card-sub{font-size:11px;color:var(--muted);letter-spacing:0.05em;margin-bottom:18px}
-.upload-grid{display:grid;grid-template-columns:repeat(3,1fr) 1fr;gap:12px;align-items:end}
-@media(max-width:700px){.upload-grid{grid-template-columns:1fr 1fr}}
 .field{display:flex;flex-direction:column;gap:5px}
 .field-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
-input[type=text],input[type=password],select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--text);background:var(--surface2);font-family:'DM Sans',sans-serif;transition:border-color .2s,background .3s,color .3s;appearance:none}
+input[type=text],input[type=password],select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--text);background:var(--surface2);font-family:'DM Sans',sans-serif;transition:border-color .2s;appearance:none}
 input:focus,select:focus{outline:none;border-color:var(--accent)}
-.drop-zone{border:1.5px dashed var(--border);border-radius:10px;padding:18px 12px;text-align:center;cursor:pointer;background:var(--surface2);transition:border-color .2s}
-.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent)}
-.drop-zone p{color:var(--muted);font-size:11px;margin-top:4px}
-.drop-zone .drop-icon{font-size:20px;opacity:.4}
-.file-name{font-size:11px;color:var(--text);font-weight:500;margin-top:4px}
 .btn{width:100%;padding:11px;background:var(--btn);color:var(--btn-fg);border:none;border-radius:10px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;transition:background .2s,opacity .2s;white-space:nowrap}
 .btn:hover{background:var(--btn-hover)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .status{padding:10px 14px;border-radius:10px;font-size:12px;margin-top:10px;text-align:center;display:none}
 .status.success{background:var(--good-bg);color:var(--good);display:block}
 .status.error{background:var(--bad-bg);color:var(--bad);display:block}
-.err{color:var(--bad);font-size:13px;text-align:center;margin-top:8px}
+
+/* WEEK LABEL ROW */
+.week-label-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:16px}
+
+/* FILE SLOTS GRID */
+.file-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:900px){.file-slots{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.file-slots{grid-template-columns:1fr 1fr}}
+
+.file-slot{border:1.5px dashed var(--border);border-radius:12px;padding:12px 10px;background:var(--surface2);transition:border-color .2s,background .2s;position:relative;cursor:pointer}
+.file-slot:hover,.file-slot.dragover{border-color:var(--accent);background:var(--bg)}
+.file-slot.has-file{border-style:solid;border-color:var(--good);background:var(--good-bg)}
+.file-slot.has-file .slot-icon{opacity:1}
+.slot-branch-name{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);margin-bottom:2px}
+.slot-branch-sub{font-size:10px;color:var(--muted);margin-bottom:8px}
+.slot-accent{height:2px;border-radius:2px;margin-bottom:10px}
+.slot-drop-area{text-align:center;padding:6px 0}
+.slot-icon{font-size:18px;opacity:.3;transition:opacity .2s;display:block;margin-bottom:4px}
+.slot-hint{font-size:10px;color:var(--muted);line-height:1.4}
+.slot-filename{font-size:10px;color:var(--good);font-weight:600;margin-top:4px;word-break:break-all;line-height:1.3}
+.slot-clear{position:absolute;top:6px;right:7px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;line-height:1;padding:2px;transition:color .2s}
+.slot-clear:hover{color:var(--bad)}
+.slot-override{margin-top:8px}
+.slot-override select{font-size:10px;padding:5px 8px;border-radius:7px}
+.slot-auto-tag{font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:0.06em;text-transform:uppercase}
+.slot-auto-tag.detected{color:var(--good)}
+
+/* UPLOAD PROGRESS */
+.upload-progress{margin-top:12px}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px}
+.prog-branch{min-width:100px;color:var(--muted)}
+.prog-bar-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-bar-fill{height:100%;border-radius:3px;transition:width .4s ease;width:0}
+.prog-status{min-width:60px;text-align:right;font-size:11px}
+.prog-status.ok{color:var(--good)}
+.prog-status.err{color:var(--bad)}
+.prog-status.pending{color:var(--muted2)}
+.prog-status.loading{color:var(--warn)}
 
 /* 5-COLUMN GRID */
 .branches-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 @media(max-width:1100px){.branches-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.branches-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.branches-grid{grid-template-columns:1fr}}
-.branch-col{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:background .3s,border-color .3s}
-.branch-col-header{padding:14px 16px;background:var(--col-header);border-bottom:1px solid var(--border);transition:background .3s}
+.branch-col{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.branch-col-header{padding:14px 16px;background:var(--col-header);border-bottom:1px solid var(--border)}
 .branch-col-name{font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text)}
-.branch-col-sub{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:0.05em}
+.branch-col-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .branch-col-accent{height:2px;border-radius:2px;margin-top:8px}
 .branch-col-body{padding:10px 12px}
 
@@ -85,14 +112,14 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .year-arrow{font-size:10px;transition:transform .2s;color:var(--muted)}
 .year-arrow.open{transform:rotate(180deg)}
 .month-section{margin-left:4px;margin-bottom:4px}
-.month-toggle{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;cursor:pointer;font-size:11px;color:var(--muted);letter-spacing:0.05em;user-select:none;transition:background .15s}
+.month-toggle{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;cursor:pointer;font-size:11px;color:var(--muted);user-select:none;transition:background .15s}
 .month-toggle:hover{background:var(--surface2);color:var(--text)}
 .month-arrow{font-size:9px;transition:transform .2s}
 .month-arrow.open{transform:rotate(180deg)}
 .month-count{font-size:10px;color:var(--muted2);margin-left:4px}
-
-/* WEEK ITEMS */
 .weeks-list{margin-left:8px;padding-bottom:4px}
+
+/* WEEK ITEM */
 .week-item{padding:7px 8px;border-radius:7px;margin-bottom:3px;border:1px solid var(--border2);background:var(--surface2);transition:background .2s}
 .week-item:hover{background:var(--border2)}
 .week-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
@@ -102,42 +129,60 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .icon-btn{background:none;border:none;cursor:pointer;padding:3px 5px;color:var(--muted);font-size:13px;line-height:1;transition:color .2s;border-radius:5px}
 .icon-btn:hover{color:var(--text)}
 .icon-btn.del:hover{color:var(--bad)}
-
-/* EDIT AREA */
 .edit-area{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
-.edit-input{padding:7px 10px;border:1px solid var(--accent);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;width:100%;transition:border-color .2s}
-.edit-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,212,217,0.15)}
+.edit-input{padding:7px 10px;border:1px solid var(--accent);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;width:100%}
+.edit-input:focus{outline:none}
 .edit-btns{display:flex;gap:6px;margin-top:7px}
 .save-btn{flex:1;padding:7px 0;background:var(--good-bg);color:var(--good);border:1px solid var(--good);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;transition:opacity .2s}
 .save-btn:hover{opacity:.8}
 .save-btn:disabled{opacity:.4;cursor:not-allowed}
-.cancel-btn{padding:7px 12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s,border-color .2s}
-.cancel-btn:hover{color:var(--text);border-color:var(--text)}
+.cancel-btn{padding:7px 12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
+.cancel-btn:hover{color:var(--text)}
+
+/* BULK RENAME SECTION */
+.bulk-rename-card{background:var(--surface);border-radius:16px;padding:20px 24px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:24px}
+.bulk-week-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.bulk-week-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2)}
+.bulk-week-label{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.bulk-week-count{font-size:11px;color:var(--muted2);flex-shrink:0}
+.bulk-edit-btn{padding:5px 12px;background:transparent;border:1px solid var(--border);border-radius:18px;font-size:11px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap}
+.bulk-edit-btn:hover{border-color:var(--accent);color:var(--accent)}
+.bulk-inline-edit{display:none;align-items:center;gap:8px;margin-top:8px}
+.bulk-inline-edit input{flex:1;padding:7px 10px;border:1px solid var(--accent);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif}
+.bulk-inline-edit input:focus{outline:none}
+.bulk-save-btn{padding:7px 14px;background:var(--good-bg);color:var(--good);border:1px solid var(--good);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:opacity .2s}
+.bulk-save-btn:hover{opacity:.8}
+.bulk-cancel-btn{padding:7px 10px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
 
 .empty-col{font-size:11px;color:var(--muted2);text-align:center;padding:16px 8px}
 
 /* LOGIN */
 .login-wrap{max-width:380px;margin:80px auto;background:var(--surface);border-radius:16px;padding:32px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.err{color:var(--bad);font-size:13px;text-align:center;margin-top:8px}
 .pw-field-wrap{position:relative}
 .pw-field-wrap input{padding-right:40px}
-.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:2px 4px;transition:color .2s}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:2px 4px}
 .pw-eye:hover{color:var(--text)}
 
-/* CONFIRM MODAL */
+/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);opacity:0;transition:opacity .2s;pointer-events:none}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 26px;max-width:400px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.35);transform:translateY(10px);transition:transform .2s}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 26px;max-width:420px;width:90%;box-shadow:0 8px 40px rgba(0,0,0,0.35);transform:translateY(10px);transition:transform .2s}
 .modal-overlay.open .modal{transform:translateY(0)}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);margin-bottom:6px}
 .modal-sub{font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6}
 .modal-change{background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12px;line-height:1.7;border:1px solid var(--border2)}
 .modal-from{color:var(--muted);text-decoration:line-through}
 .modal-to{color:var(--good);font-weight:600}
+.modal-branches{font-size:11px;color:var(--muted2);margin-top:6px}
 .modal-btns{display:flex;gap:8px}
 .modal-confirm{flex:1;padding:10px;background:var(--good-bg);color:var(--good);border:1px solid var(--good);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;transition:opacity .2s}
 .modal-confirm:hover{opacity:.8}
-.modal-cancel{padding:10px 16px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s,border-color .2s}
+.modal-cancel{padding:10px 16px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
 .modal-cancel:hover{color:var(--text);border-color:var(--text)}
+
+/* TOAST */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--good-bg);color:var(--good);border:1px solid var(--good);padding:10px 20px;border-radius:20px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;z-index:999;transition:opacity .4s;pointer-events:none;opacity:0}
 </style>
 </head>
 <body>
@@ -145,12 +190,13 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 <!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
-    <div class="modal-title">Save Changes?</div>
-    <div class="modal-sub">You're about to rename this week entry.</div>
+    <div class="modal-title" id="modalTitle">Save Changes?</div>
+    <div class="modal-sub" id="modalSub">You're about to rename this week entry.</div>
     <div class="modal-change">
       <div class="modal-from" id="modalFrom"></div>
       <div style="font-size:11px;color:var(--muted2);margin:3px 0">↓ new name</div>
       <div class="modal-to" id="modalTo"></div>
+      <div class="modal-branches" id="modalBranches"></div>
     </div>
     <div class="modal-btns">
       <button class="modal-confirm" id="modalConfirmBtn">Yes, Save It</button>
@@ -158,6 +204,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
     </div>
   </div>
 </div>
+
+<div id="toast"></div>
 
 <header>
   <div class="logo">
@@ -186,7 +234,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
       <label class="field-label">Password</label>
       <div class="pw-field-wrap">
         <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
-        <button class="pw-eye" id="pwEye" type="button" onclick="togglePwVis()" title="Show/hide password">👁️</button>
+        <button class="pw-eye" id="pwEye" type="button" onclick="togglePwVis()">👁️</button>
       </div>
     </div>
     <button class="btn" onclick="login()">Enter Portal</button>
@@ -195,39 +243,38 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 
   <!-- PORTAL -->
   <div id="portalSection" style="display:none">
+
+    <!-- BULK UPLOAD CARD -->
     <div class="upload-card">
       <div class="card-title">Upload Weekly Data</div>
-      <div class="card-sub">Select branch and week, then upload your TSV file</div>
-      <div class="upload-grid">
+      <div class="card-sub">Enter the week label once — it applies to all branches you upload</div>
+
+      <!-- WEEK LABEL -->
+      <div class="week-label-row">
         <div class="field">
-          <label class="field-label">Branch</label>
-          <select id="branchSelect">
-            <option value="KCA">Khalifa City (KCA)</option>
-            <option value="SAA">Saadiyat (SAA)</option>
-            <option value="MC">Motor City (MC)</option>
-            <option value="AQ">AQ Ladies</option>
-            <option value="FRT">Fratelli Barber</option>
-          </select>
-        </div>
-        <div class="field">
-          <label class="field-label">Week Label</label>
+          <label class="field-label">Week Label (applies to all files below)</label>
           <input type="text" id="weekLabel" placeholder="e.g. March 2026 Week 4 (23–29)">
         </div>
-        <div class="field">
-          <label class="field-label">TSV File (WEEKEND sheet)</label>
-          <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            <div class="drop-icon">↑</div>
-            <p>Click to browse or drag &amp; drop</p>
-            <div class="file-name" id="fileName"></div>
-          </div>
-          <input type="file" id="fileInput" accept=".tsv,.txt" style="display:none">
-        </div>
-        <div class="field" style="align-self:end">
-          <button class="btn" id="uploadBtn" onclick="uploadData()" disabled>Upload</button>
-        </div>
+        <button class="btn" id="uploadBtn" onclick="uploadAll()" disabled style="width:auto;padding:11px 28px">Upload All</button>
       </div>
+
+      <!-- 5 FILE SLOTS -->
+      <div class="file-slots" id="fileSlots"></div>
+
+      <!-- PROGRESS -->
+      <div class="upload-progress" id="uploadProgress" style="display:none"></div>
+
       <div class="status" id="statusMsg"></div>
     </div>
+
+    <!-- BULK RENAME CARD -->
+    <div class="bulk-rename-card">
+      <div class="card-title">Rename Week Labels</div>
+      <div class="card-sub">Each unique week label — editing one renames it across ALL branches at once</div>
+      <div class="bulk-week-list" id="bulkWeekList"></div>
+    </div>
+
+    <!-- 5 BRANCH COLUMNS (read-only overview) -->
     <div class="branches-grid" id="branchesGrid"></div>
   </div>
 </div>
@@ -245,10 +292,21 @@ const BRANCHES = {
   AQ: { name:'AQ Ladies',    sub:'Al Quoz',     color:'#FF9B9B' },
   FRT:{ name:'Fratelli',     sub:'Barber Shop', color:'#EEF3C7' },
 };
+const BRANCH_KEYS = Object.keys(BRANCHES);
+// Keywords to auto-detect branch from filename
+const BRANCH_DETECT = {
+  KCA: ['kca','khalifa'],
+  SAA: ['saa','saadiyat'],
+  MC:  ['mc','motor'],
+  AQ:  ['aq','ladies','quoz'],
+  FRT: ['frt','fratelli','barber'],
+};
 
-let selectedFile = null;
 let allData = [];
 const openState = {};
+// fileSlots: { [branchCode]: File|null }
+const fileSlots = {};
+BRANCH_KEYS.forEach(k => fileSlots[k] = null);
 
 // ── THEME ──
 function toggleTheme() {
@@ -256,60 +314,209 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
   document.getElementById('themeLbl').textContent = dark ? 'Light' : 'Dark';
 }
-
-// ── PASSWORD EYE ──
 function togglePwVis() {
-  const inp = document.getElementById('pwInput');
-  const eye = document.getElementById('pwEye');
-  const hidden = inp.type === 'password';
-  inp.type = hidden ? 'text' : 'password';
-  eye.textContent = hidden ? '🙈' : '👁️';
+  const inp = document.getElementById('pwInput'), eye = document.getElementById('pwEye');
+  const h = inp.type === 'password';
+  inp.type = h ? 'text' : 'password';
+  eye.textContent = h ? '🙈' : '👁️';
 }
 
 // ── AUTH ──
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('tr_auth') === '1') showPortal();
-
-  document.getElementById('fileInput').addEventListener('change', e => {
-    selectedFile = e.target.files[0];
-    document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : '';
-    document.getElementById('uploadBtn').disabled = !selectedFile;
-  });
-
-  const dz = document.getElementById('dropZone');
-  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-  dz.addEventListener('drop', e => {
-    e.preventDefault(); dz.classList.remove('dragover');
-    selectedFile = e.dataTransfer.files[0];
-    document.getElementById('fileName').textContent = selectedFile ? selectedFile.name : '';
-    document.getElementById('uploadBtn').disabled = !selectedFile;
-  });
+  buildFileSlots();
 });
 
 function login() {
   if (document.getElementById('pwInput').value === PASS) {
-    sessionStorage.setItem('tr_auth', '1');
-    showPortal();
-  } else {
-    document.getElementById('loginErr').textContent = 'Incorrect password.';
-  }
+    sessionStorage.setItem('tr_auth', '1'); showPortal();
+  } else { document.getElementById('loginErr').textContent = 'Incorrect password.'; }
 }
-
 function showPortal() {
   document.getElementById('loginSection').style.display = 'none';
   document.getElementById('portalSection').style.display = 'block';
   document.getElementById('logoutBtn').style.display = 'inline-block';
   loadData();
 }
-
 function logout() {
   sessionStorage.removeItem('tr_auth');
   document.getElementById('portalSection').style.display = 'none';
   document.getElementById('loginSection').style.display = 'block';
   document.getElementById('logoutBtn').style.display = 'none';
   document.getElementById('pwInput').value = '';
-  document.getElementById('loginErr').textContent = '';
+}
+
+// ── FILE SLOTS ──
+function buildFileSlots() {
+  const container = document.getElementById('fileSlots');
+  container.innerHTML = BRANCH_KEYS.map(code => {
+    const info = BRANCHES[code];
+    return `
+      <div class="file-slot" id="slot_${code}" onclick="slotClick('${code}')">
+        <div class="slot-accent" style="background:${info.color}"></div>
+        <div class="slot-branch-name">${info.name}</div>
+        <div class="slot-branch-sub">${info.sub}</div>
+        <div class="slot-drop-area" id="slotDrop_${code}">
+          <span class="slot-icon">📂</span>
+          <div class="slot-hint">Click or drag & drop<br>TSV file here</div>
+        </div>
+        <div class="slot-override" id="slotOverride_${code}" style="display:none">
+          <label class="field-label" style="margin-bottom:4px">Branch override</label>
+          <select id="slotSel_${code}" onchange="event.stopPropagation();slotOverride('${code}')">
+            ${BRANCH_KEYS.map(k => `<option value="${k}" ${k===code?'selected':''}>${BRANCHES[k].name}</option>`).join('')}
+          </select>
+        </div>
+        <button class="slot-clear" id="slotClear_${code}" style="display:none" onclick="event.stopPropagation();clearSlot('${code}')">✕</button>
+        <input type="file" id="slotInput_${code}" accept=".tsv,.txt" style="display:none"
+          onchange="slotFileChosen('${code}', this.files[0])">
+      </div>`;
+  }).join('');
+
+  // drag & drop per slot
+  BRANCH_KEYS.forEach(code => {
+    const el = document.getElementById('slot_' + code);
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+    el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+    el.addEventListener('drop', e => {
+      e.preventDefault(); el.classList.remove('dragover');
+      const f = e.dataTransfer.files[0];
+      if (f) slotFileChosen(code, f, true);
+    });
+  });
+}
+
+function slotClick(code) {
+  document.getElementById('slotInput_' + code).click();
+}
+
+function detectBranch(filename) {
+  const lower = filename.toLowerCase();
+  for (const [code, keywords] of Object.entries(BRANCH_DETECT)) {
+    if (keywords.some(kw => lower.includes(kw))) return code;
+  }
+  return null;
+}
+
+function slotFileChosen(slotCode, file, fromDrop = false) {
+  if (!file) return;
+  // Auto-detect branch from filename
+  const detected = detectBranch(file.name);
+  const targetCode = detected || slotCode;
+
+  // If detected branch differs from slot, move to correct slot
+  if (detected && detected !== slotCode) {
+    // put file in the detected slot
+    setSlotFile(detected, file, true);
+    // show a brief note
+    showToast(`Auto-assigned ${file.name} → ${BRANCHES[detected].name}`);
+  } else {
+    setSlotFile(slotCode, file, !!detected);
+  }
+  checkUploadBtn();
+}
+
+function setSlotFile(code, file, autoDetected) {
+  fileSlots[code] = file;
+  const slot = document.getElementById('slot_' + code);
+  const drop = document.getElementById('slotDrop_' + code);
+  const clear = document.getElementById('slotClear_' + code);
+  const override = document.getElementById('slotOverride_' + code);
+
+  slot.classList.add('has-file');
+  clear.style.display = 'block';
+  override.style.display = 'block';
+
+  drop.innerHTML = `
+    <span class="slot-icon" style="opacity:1">✅</span>
+    <div class="slot-filename">${file.name}</div>
+    <div class="slot-auto-tag ${autoDetected ? 'detected' : ''}">${autoDetected ? '⚡ auto-detected' : 'manually assigned'}</div>`;
+}
+
+function clearSlot(code) {
+  fileSlots[code] = null;
+  const slot = document.getElementById('slot_' + code);
+  slot.classList.remove('has-file');
+  document.getElementById('slotClear_' + code).style.display = 'none';
+  document.getElementById('slotOverride_' + code).style.display = 'none';
+  document.getElementById('slotDrop_' + code).innerHTML = `
+    <span class="slot-icon">📂</span>
+    <div class="slot-hint">Click or drag & drop<br>TSV file here</div>`;
+  document.getElementById('slotInput_' + code).value = '';
+  checkUploadBtn();
+}
+
+function slotOverride(code) {
+  const newCode = document.getElementById('slotSel_' + code).value;
+  if (newCode === code) return;
+  const file = fileSlots[code];
+  clearSlot(code);
+  setSlotFile(newCode, file, false);
+  checkUploadBtn();
+}
+
+function checkUploadBtn() {
+  const hasFile = BRANCH_KEYS.some(k => fileSlots[k]);
+  const hasLabel = document.getElementById('weekLabel').value.trim().length > 0;
+  document.getElementById('uploadBtn').disabled = !(hasFile && hasLabel);
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('weekLabel').addEventListener('input', checkUploadBtn);
+});
+
+// ── UPLOAD ALL ──
+async function uploadAll() {
+  const weekLabel = document.getElementById('weekLabel').value.trim();
+  if (!weekLabel) { alert('Please enter a week label.'); return; }
+
+  const toUpload = BRANCH_KEYS.filter(k => fileSlots[k]);
+  if (!toUpload.length) { alert('Please add at least one TSV file.'); return; }
+
+  document.getElementById('uploadBtn').disabled = true;
+  document.getElementById('uploadBtn').textContent = 'Uploading...';
+
+  // Build progress UI
+  const prog = document.getElementById('uploadProgress');
+  prog.style.display = 'block';
+  prog.innerHTML = toUpload.map(code => `
+    <div class="prog-row">
+      <span class="prog-branch">${BRANCHES[code].name}</span>
+      <div class="prog-bar-track"><div class="prog-bar-fill" id="pb_${code}" style="background:${BRANCHES[code].color}"></div></div>
+      <span class="prog-status pending" id="ps_${code}">Waiting…</span>
+    </div>`).join('');
+
+  let allOk = true;
+  for (const code of toUpload) {
+    document.getElementById('ps_' + code).textContent = 'Uploading…';
+    document.getElementById('ps_' + code).className = 'prog-status loading';
+    document.getElementById('pb_' + code).style.width = '40%';
+
+    try {
+      const text = await fileSlots[code].text();
+      const data = parseTSV(text);
+      const { error } = await sb.from('weekly_data').insert({ branch: code, week_label: weekLabel, data });
+      if (error) throw error;
+      document.getElementById('pb_' + code).style.width = '100%';
+      document.getElementById('ps_' + code).textContent = '✅ Done';
+      document.getElementById('ps_' + code).className = 'prog-status ok';
+    } catch(e) {
+      document.getElementById('pb_' + code).style.width = '100%';
+      document.getElementById('pb_' + code).style.background = 'var(--bad)';
+      document.getElementById('ps_' + code).textContent = '❌ Failed';
+      document.getElementById('ps_' + code).className = 'prog-status err';
+      allOk = false;
+    }
+  }
+
+  if (allOk) {
+    showToast('✅ All files uploaded!');
+    document.getElementById('weekLabel').value = '';
+    BRANCH_KEYS.forEach(k => { if (fileSlots[k]) clearSlot(k); });
+    setTimeout(() => { prog.style.display = 'none'; prog.innerHTML = ''; }, 2000);
+  }
+
+  document.getElementById('uploadBtn').disabled = false;
+  document.getElementById('uploadBtn').textContent = 'Upload All';
+  await loadData();
 }
 
 // ── HELPERS ──
@@ -330,10 +537,114 @@ const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'
 async function loadData() {
   const { data, error } = await sb.from('weekly_data').select('id,branch,week_label,uploaded_at').order('uploaded_at', { ascending: false });
   allData = (error || !data) ? [] : data;
+  renderBulkRename();
   renderColumns();
 }
 
-// ── RENDER ──
+// ── BULK RENAME ──
+function renderBulkRename() {
+  // Group by unique week_label
+  const labelMap = {}; // label → [{ id, branch }]
+  allData.forEach(d => {
+    if (!labelMap[d.week_label]) labelMap[d.week_label] = [];
+    labelMap[d.week_label].push({ id: d.id, branch: d.branch });
+  });
+
+  const sorted = Object.keys(labelMap).sort((a, b) => {
+    // Sort by most recent uploaded_at for that label
+    const aLatest = Math.max(...labelMap[a].map(r => new Date(allData.find(d=>d.id===r.id)?.uploaded_at||0)));
+    const bLatest = Math.max(...labelMap[b].map(r => new Date(allData.find(d=>d.id===r.id)?.uploaded_at||0)));
+    return bLatest - aLatest;
+  });
+
+  const container = document.getElementById('bulkWeekList');
+  if (!sorted.length) { container.innerHTML = '<div style="font-size:12px;color:var(--muted2);padding:12px 0">No data uploaded yet.</div>'; return; }
+
+  container.innerHTML = sorted.map(lbl => {
+    const rows = labelMap[lbl];
+    const branchNames = rows.map(r => BRANCHES[r.branch]?.name || r.branch).join(', ');
+    const safeId = 'bwr_' + btoa(encodeURIComponent(lbl)).replace(/[^a-zA-Z0-9]/g,'').slice(0,16);
+    const safeVal = lbl.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+    return `
+      <div class="bulk-week-row" id="${safeId}">
+        <div style="flex:1;min-width:0">
+          <div class="bulk-week-label" id="blbl_${safeId}">${lbl}</div>
+          <div class="bulk-week-count">${rows.length} branch${rows.length>1?'es':''}: ${branchNames}</div>
+          <div class="bulk-inline-edit" id="bedit_${safeId}">
+            <input type="text" value="${safeVal}" id="binp_${safeId}"
+              onkeydown="if(event.key==='Escape')cancelBulkEdit('${safeId}')">
+            <button class="bulk-save-btn" onclick="requestBulkSave('${safeId}')">💾 Save All</button>
+            <button class="bulk-cancel-btn" onclick="cancelBulkEdit('${safeId}')">Cancel</button>
+          </div>
+        </div>
+        <button class="bulk-edit-btn" id="bebtn_${safeId}" onclick="startBulkEdit('${safeId}')">✏️ Rename</button>
+      </div>`;
+  }).join('');
+
+  // Store mapping for save
+  window._bulkLabelMap = labelMap;
+}
+
+function startBulkEdit(safeId) {
+  document.getElementById('bedit_' + safeId).style.display = 'flex';
+  document.getElementById('bebtn_' + safeId).style.display = 'none';
+  document.getElementById('binp_' + safeId).focus();
+  document.getElementById('binp_' + safeId).select();
+}
+function cancelBulkEdit(safeId) {
+  document.getElementById('bedit_' + safeId).style.display = 'none';
+  document.getElementById('bebtn_' + safeId).style.display = 'inline-block';
+}
+
+// ── MODAL ──
+let _pendingModal = null;
+function requestBulkSave(safeId) {
+  const newVal = document.getElementById('binp_' + safeId).value.trim();
+  const oldVal = document.getElementById('blbl_' + safeId).textContent.trim();
+  if (!newVal) return;
+  if (newVal === oldVal) { cancelBulkEdit(safeId); return; }
+
+  const rows = window._bulkLabelMap[oldVal] || [];
+  const branchNames = rows.map(r => BRANCHES[r.branch]?.name || r.branch).join(', ');
+
+  document.getElementById('modalTitle').textContent = 'Rename Across All Branches?';
+  document.getElementById('modalSub').textContent = 'This will update the week label for all branches listed below.';
+  document.getElementById('modalFrom').textContent = oldVal;
+  document.getElementById('modalTo').textContent = newVal;
+  document.getElementById('modalBranches').textContent = '📍 Affects: ' + branchNames;
+  document.getElementById('modalConfirmBtn').onclick = () => confirmBulkSave(safeId, oldVal, newVal, rows);
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+}
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+async function confirmBulkSave(safeId, oldVal, newVal, rows) {
+  closeModal();
+  const btn = document.getElementById('bebtn_' + safeId);
+  const saveBtn = document.querySelector(`#bedit_${safeId} .bulk-save-btn`);
+  if (saveBtn) { saveBtn.textContent = '⏳ Saving...'; saveBtn.disabled = true; }
+
+  // Update all rows with this label
+  const { error } = await sb.from('weekly_data')
+    .update({ week_label: newVal })
+    .in('id', rows.map(r => r.id));
+
+  if (error) {
+    if (saveBtn) { saveBtn.textContent = '💾 Save All'; saveBtn.disabled = false; }
+    alert('Save failed: ' + error.message);
+    return;
+  }
+
+  showToast(`✅ Renamed across ${rows.length} branch${rows.length>1?'es':''}!`);
+  await loadData();
+}
+
+// ── COLUMNS ──
 function renderColumns() {
   const grid = document.getElementById('branchesGrid');
   grid.innerHTML = Object.entries(BRANCHES).map(([code, info]) => {
@@ -347,7 +658,6 @@ function renderColumns() {
       byYear[yr][mo].push(d);
     });
     const years = Object.keys(byYear).sort((a, b) => b - a);
-
     return `
       <div class="branch-col">
         <div class="branch-col-header">
@@ -365,10 +675,9 @@ function renderColumns() {
               return `
                 <div class="year-section">
                   <div class="year-toggle" onclick="toggleSection('${yrKey}')">
-                    <span>${yr}</span>
-                    <span class="year-arrow ${yrOpen ? 'open' : ''}">▼</span>
+                    <span>${yr}</span><span class="year-arrow ${yrOpen?'open':''}">▼</span>
                   </div>
-                  <div id="ys_${yrKey}" style="display:${yrOpen ? 'block' : 'none'}">
+                  <div id="ys_${yrKey}" style="display:${yrOpen?'block':'none'}">
                     ${moKeys.map(mo => {
                       const moKey = yrKey + '_' + mo;
                       if (openState[moKey] === undefined) openState[moKey] = true;
@@ -378,9 +687,9 @@ function renderColumns() {
                         <div class="month-section">
                           <div class="month-toggle" onclick="toggleSection('${moKey}')">
                             <span>${mo}<span class="month-count">(${moRows.length})</span></span>
-                            <span class="month-arrow ${moOpen ? 'open' : ''}">▼</span>
+                            <span class="month-arrow ${moOpen?'open':''}">▼</span>
                           </div>
-                          <div id="ms_${moKey}" style="display:${moOpen ? 'block' : 'none'}">
+                          <div id="ms_${moKey}" style="display:${moOpen?'block':'none'}">
                             <div class="weeks-list">
                               ${moRows.map(w => weekItemHTML(w)).join('')}
                             </div>
@@ -396,41 +705,20 @@ function renderColumns() {
   }).join('');
 }
 
-// ── WEEK ITEM — no inline onclick hacks, uses data-id ──
 function weekItemHTML(w) {
   const date = new Date(w.uploaded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  // Safe HTML escaping for the input value attribute
-  const safeVal = (w.week_label || '')
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
+  const safeVal = (w.week_label||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
   return `
-    <div class="week-item" id="item_${w.id}" data-id="${w.id}" data-label="${safeVal}">
+    <div class="week-item" id="item_${w.id}" data-label="${safeVal}">
       <div class="week-row">
-        <div>
-          <div class="week-label-text" id="lbl_${w.id}">${w.week_label}</div>
-          <div class="week-date">${date}</div>
-        </div>
+        <div><div class="week-label-text" id="lbl_${w.id}">${w.week_label}</div><div class="week-date">${date}</div></div>
         <div class="week-actions">
-          <button class="icon-btn" title="Edit" onclick="startEdit('${w.id}')">✏️</button>
           <button class="icon-btn del" title="Delete" onclick="deleteWeek('${w.id}')">✕</button>
-        </div>
-      </div>
-      <div class="edit-area" id="editarea_${w.id}">
-        <input class="edit-input" id="einp_${w.id}" type="text" value="${safeVal}"
-          placeholder="Enter new week label"
-          onkeydown="if(event.key==='Escape')cancelEdit('${w.id}')">
-        <div class="edit-btns">
-          <button class="save-btn" id="sbtn_${w.id}" onclick="requestSave('${w.id}')">💾 Save Changes</button>
-          <button class="cancel-btn" onclick="cancelEdit('${w.id}')">Cancel</button>
         </div>
       </div>
     </div>`;
 }
 
-// ── TOGGLE SECTIONS ──
 function toggleSection(key) {
   openState[key] = !openState[key];
   const el = document.getElementById('ys_' + key) || document.getElementById('ms_' + key);
@@ -440,188 +728,44 @@ function toggleSection(key) {
   if (arrow) arrow.classList.toggle('open', openState[key]);
 }
 
-// ── EDIT ──
-function startEdit(id) {
-  document.getElementById('lbl_' + id).style.opacity = '0.4';
-  document.getElementById('editarea_' + id).style.display = 'block';
-  const inp = document.getElementById('einp_' + id);
-  inp.focus();
-  inp.select();
-}
-
-function cancelEdit(id) {
-  document.getElementById('lbl_' + id).style.opacity = '1';
-  document.getElementById('editarea_' + id).style.display = 'none';
-  // reset input to original value
-  const item = document.getElementById('item_' + id);
-  if (item) document.getElementById('einp_' + id).value = item.dataset.label;
-}
-
-// ── MODAL ──
-let _pendingSaveId = null;
-let _pendingSaveVal = null;
-
-function requestSave(id) {
-  const inp = document.getElementById('einp_' + id);
-  const val = inp.value.trim();
-  if (!val) { inp.focus(); inp.style.borderColor = 'var(--bad)'; return; }
-
-  const oldVal = document.getElementById('lbl_' + id).textContent.trim();
-  if (val === oldVal) { cancelEdit(id); return; }
-
-  _pendingSaveId = id;
-  _pendingSaveVal = val;
-
-  document.getElementById('modalFrom').textContent = oldVal;
-  document.getElementById('modalTo').textContent = val;
-  document.getElementById('modalConfirmBtn').onclick = confirmSave;
-  document.getElementById('confirmModal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('confirmModal').classList.remove('open');
-  _pendingSaveId = null;
-  _pendingSaveVal = null;
-}
-
-// Close modal on overlay click
-document.getElementById('confirmModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
-async function confirmSave() {
-  const id = _pendingSaveId;
-  const val = _pendingSaveVal;
-  closeModal();
-
-  const sbtn = document.getElementById('sbtn_' + id);
-  sbtn.textContent = '⏳ Saving...';
-  sbtn.disabled = true;
-
-  console.log('Attempting update — id:', id, 'val:', val);
-
-  // Step 1: attempt the update
-  const { error: updateError } = await sb
-    .from('weekly_data')
-    .update({ week_label: val })
-    .eq('id', id);
-
-  if (updateError) {
-    console.error('UPDATE ERROR:', updateError);
-    sbtn.textContent = '💾 Save Changes';
-    sbtn.disabled = false;
-    alert('❌ Save failed!\n\nError: ' + updateError.message + '\nCode: ' + updateError.code + '\n\nThis is likely a Supabase RLS (Row Level Security) policy blocking the update. Screenshot this and send to your dev.');
-    return;
-  }
-
-  // Step 2: verify it actually saved by reading it back
-  const { data: verify, error: readError } = await sb
-    .from('weekly_data')
-    .select('id, week_label')
-    .eq('id', id)
-    .single();
-
-  console.log('Verify read back:', verify, readError);
-
-  if (readError) {
-    sbtn.textContent = '💾 Save Changes';
-    sbtn.disabled = false;
-    alert('⚠️ Could not verify save: ' + readError.message);
-    return;
-  }
-
-  if (verify.week_label !== val) {
-    sbtn.textContent = '💾 Save Changes';
-    sbtn.disabled = false;
-    alert('⚠️ Save did NOT stick!\n\nExpected: "' + val + '"\nActual in DB: "' + verify.week_label + '"\n\nThis is a Supabase RLS issue — the update ran without error but the DB rejected the change silently. You need to enable UPDATE policy in Supabase for the weekly_data table.');
-    return;
-  }
-
-  // ✅ Confirmed saved!
-  document.getElementById('lbl_' + id).textContent = val;
-  const item = document.getElementById('item_' + id);
-  if (item) item.dataset.label = val.replace(/"/g, '&quot;');
-  const row = allData.find(d => String(d.id) === String(id));
-  if (row) row.week_label = val;
-  cancelEdit(id);
-
-  // Show a little success toast
-  showToast('✅ Saved successfully!');
-}
-
-function showToast(msg) {
-  let t = document.getElementById('toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'toast';
-    t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--good-bg);color:var(--good);border:1px solid var(--good);padding:10px 20px;border-radius:20px;font-size:12px;font-weight:600;font-family:DM Sans,sans-serif;z-index:999;transition:opacity .4s;pointer-events:none';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  clearTimeout(t._hide);
-  t._hide = setTimeout(() => t.style.opacity = '0', 2500);
-}
-
-// ── DELETE ──
 async function deleteWeek(id) {
   if (!confirm('Delete this entry? This cannot be undone.')) return;
   await sb.from('weekly_data').delete().eq('id', id);
   await loadData();
 }
 
-// ── UPLOAD ──
+// ── PARSE ──
 function parseAED(s) { return parseFloat((s||'').replace(/AED|,|\s/g,'').replace(/[^\d.\-]/g,'')) || 0; }
 function parseHairRow(c) { return {name:c[0],salon:parseInt(c[3])||0,newC:parseInt(c[4])||0,rebooked:parseInt(c[5])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0,total:parseInt(c[7])||0,hairSales:parseAED(c[8]),hairSalesNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,col:parseInt(c[11])||0,colPct:parseFloat((c[12]||'').replace('%',''))||0,retail:parseAED(c[22]),treatments:parseAED(c[29]),totalNet:parseAED(c[31])}; }
 function parseBeautyRow(c) { return {name:c[0],total:parseInt(c[7])||0,beautySales:parseAED(c[8]),beautyNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0}; }
-
 function parseTSV(text) {
   const lines = text.split('\n').map(l => l.split('\t'));
-  const hairStaff = [], beautyStaff = [];
-  let summary = {}, inBeauty = false, hairHeaderFound = false, beautyHeaderFound = false;
-  for (let i = 0; i < lines.length; i++) {
-    const cols = lines[i].map(c => (c||'').trim());
-    const first = cols[0];
-    if (!first && cols.every(c => !c)) continue;
-    if (cols.includes('HAIR SALES TAKE') && !inBeauty) { hairHeaderFound = true; continue; }
-    if (cols.includes('BEAUTY SALES TAKE')) { inBeauty = true; beautyHeaderFound = true; continue; }
-    if (first === 'TOTAL CLIENTS')     { summary.totalClients = parseInt(cols[1])||0; continue; }
-    if (first === 'HAIR RETAIL SALES') { summary.hairRetail = parseAED(cols[1]); summary.hairRetailPct = parseFloat(cols[2])||0; continue; }
-    if (first === 'TREATMENT SALES')   { summary.treatmentSales = parseAED(cols[1]); summary.treatmentPct = parseFloat(cols[2])||0; continue; }
-    if (first === 'COL TAKE AED')      { summary.colTake = parseAED(cols[1]); summary.colPct = parseFloat(cols[2])||0; continue; }
-    if (first === 'BEAUTY SALES')      { summary.beautySales = parseAED(cols[1]); summary.beautyPct = parseFloat(cols[2])||0; continue; }
-    if (first === 'NET SALON TAKE')    { summary.netTake = parseAED(cols[1]); summary.avgBill = parseFloat(cols[2])||0; continue; }
-    if (!inBeauty && hairHeaderFound && first && first !== 'STAFF' && first !== 'TOTALS') { const s = parseHairRow(cols); if (s && s.total > 0) hairStaff.push(s); }
-    if (inBeauty && beautyHeaderFound && first && first !== 'STAFF' && first !== 'TOTALS') { const s = parseBeautyRow(cols); if (s && s.total > 0) beautyStaff.push(s); }
-    if (!inBeauty && first === 'TOTALS') { summary.totals = parseHairRow(cols); }
+  const hairStaff=[], beautyStaff=[];
+  let summary={}, inBeauty=false, hairHeaderFound=false, beautyHeaderFound=false;
+  for (let i=0; i<lines.length; i++) {
+    const cols = lines[i].map(c=>(c||'').trim()), first = cols[0];
+    if (!first && cols.every(c=>!c)) continue;
+    if (cols.includes('HAIR SALES TAKE') && !inBeauty) { hairHeaderFound=true; continue; }
+    if (cols.includes('BEAUTY SALES TAKE')) { inBeauty=true; beautyHeaderFound=true; continue; }
+    if (first==='TOTAL CLIENTS')     { summary.totalClients=parseInt(cols[1])||0; continue; }
+    if (first==='HAIR RETAIL SALES') { summary.hairRetail=parseAED(cols[1]); summary.hairRetailPct=parseFloat(cols[2])||0; continue; }
+    if (first==='TREATMENT SALES')   { summary.treatmentSales=parseAED(cols[1]); summary.treatmentPct=parseFloat(cols[2])||0; continue; }
+    if (first==='COL TAKE AED')      { summary.colTake=parseAED(cols[1]); summary.colPct=parseFloat(cols[2])||0; continue; }
+    if (first==='BEAUTY SALES')      { summary.beautySales=parseAED(cols[1]); summary.beautyPct=parseFloat(cols[2])||0; continue; }
+    if (first==='NET SALON TAKE')    { summary.netTake=parseAED(cols[1]); summary.avgBill=parseFloat(cols[2])||0; continue; }
+    if (!inBeauty && hairHeaderFound && first && first!=='STAFF' && first!=='TOTALS') { const s=parseHairRow(cols); if(s&&s.total>0) hairStaff.push(s); }
+    if (inBeauty && beautyHeaderFound && first && first!=='STAFF' && first!=='TOTALS') { const s=parseBeautyRow(cols); if(s&&s.total>0) beautyStaff.push(s); }
+    if (!inBeauty && first==='TOTALS') { summary.totals=parseHairRow(cols); }
   }
   return { hairStaff, beautyStaff, summary };
 }
 
-async function uploadData() {
-  const branch = document.getElementById('branchSelect').value;
-  const weekLabel = document.getElementById('weekLabel').value.trim();
-  const btn = document.getElementById('uploadBtn');
-  const statusEl = document.getElementById('statusMsg');
-  if (!weekLabel) { alert('Please enter a week label.'); return; }
-  if (!selectedFile) { alert('Please select a TSV file.'); return; }
-  btn.disabled = true; btn.textContent = 'Uploading...'; statusEl.className = 'status';
-  const text = await selectedFile.text();
-  const data = parseTSV(text);
-  const { error } = await sb.from('weekly_data').insert({ branch, week_label: weekLabel, data });
-  if (error) {
-    statusEl.className = 'status error';
-    statusEl.textContent = 'Upload failed: ' + error.message;
-  } else {
-    statusEl.className = 'status success';
-    statusEl.textContent = 'Uploaded successfully!';
-    document.getElementById('weekLabel').value = '';
-    selectedFile = null;
-    document.getElementById('fileName').textContent = '';
-    document.getElementById('uploadBtn').disabled = true;
-    await loadData();
-  }
-  btn.disabled = false; btn.textContent = 'Upload';
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._h);
+  t._h = setTimeout(() => t.style.opacity = '0', 2500);
 }
 </script>
 </body>
