@@ -335,7 +335,9 @@ function toggleOpt(key,val){
 function updateLabel(key,options){
   const lbl=document.getElementById('lbl-'+key);
   const isAll=sel[key].includes('all');
-  if(isAll){lbl.textContent='All '+key+'s';}
+  if(isAll){
+  lbl.textContent = key === 'branch' ? 'All Branches' : 'All ' + key + 's';
+}
   else if(sel[key].length===1){const found=options.find(o=>o.val===sel[key][0]);lbl.textContent=found?found.label:sel[key][0];}
   else{lbl.textContent=sel[key].length+' selected';}
 }
