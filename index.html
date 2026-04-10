@@ -309,7 +309,7 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 <script>
 
-function showView(view){
+function showView(view, el){
   document.getElementById('view-dashboard').style.display='none';
   document.getElementById('view-khalifa').style.display='none';
   document.getElementById('view-saadiyat').style.display='none';
@@ -321,6 +321,10 @@ function showView(view){
   } else {
     document.getElementById('controls').style.display = 'none';
   }
+
+  // 🔥 ACTIVE STATE FIX
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  el.classList.add('active');
 
   window.scrollTo(0,0);
 }
