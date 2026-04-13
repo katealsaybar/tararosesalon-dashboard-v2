@@ -476,6 +476,12 @@ function showView(view, el){
     document.getElementById('controls').style.display = 'none';
   }
 
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  el.classList.add('active');
+
+  window.scrollTo(0,0);
+}
+
   // 🔥 ACTIVE STATE FIX
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
   el.classList.add('active');
