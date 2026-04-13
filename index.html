@@ -11,28 +11,79 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+
 <style>
 
-/* 🔥 ADD MO DITO */
-
+/* 🔥 CONTROLS STICKY */
 .controls{
   position:sticky;
   top:0;
   z-index:999;
   background:var(--bg);
-
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--border);
-
   padding-bottom:10px;
 }
-  
+
+/* 🔥 MAIN GRID */
+.grid-main{
+  display:grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap:16px;
+  margin-bottom:12px;
+  margin-top:4px;
+}
+
+/* 🔥 KPI GRID */
+.grid-sub{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:12px;
+}
+
+/* 🔥 CHART */
+.chart{
+  height:280px;
+}
+
+/* 🔥 LARGE SCREENS */
+@media(min-width:1400px){
+  .grid-main{
+    grid-template-columns: 1.3fr 0.7fr;
+  }
+
+  .grid-sub{
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .chart{
+    height:320px;
+  }
+}
+
+/* 🔥 LAPTOP / MID SCREENS */
+@media(max-width:1200px){
+  .grid-main{
+    grid-template-columns: 1fr;
+  }
+
+  .grid-sub{
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart{
+    height:260px;
+  }
+}
+
+/* 🔥 CLEAN VERSION */
+
 .main-content{
   flex:1;
   padding:20px 24px;
   overflow-x:hidden;
 }
-
 /* mobile spacing */
 @media(max-width:900px){
   .main-content{
