@@ -535,6 +535,14 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
   <iframe src="./saadiyat.html" style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;"></iframe>
 </div>
 
+   <!-- REVIEWS -->
+<div id="view-reviews" style="display:none">
+  <iframe 
+    src="./salon-reviews.html"
+    style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+  </iframe>
+</div>
+
    <!-- CALENDAR -->
 <div id="view-calendar" style="display:none">
   <iframe 
@@ -578,12 +586,14 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 // 🔥 VIEW SWITCHER
 function showView(view, el){
-  document.getElementById('view-dashboard').style.display='none';
-  document.getElementById('view-reviews').style.display='none';
-  document.getElementById('view-calendar').style.display='none';
-  document.getElementById('view-giveaway').style.display='none';
+  ['dashboard','reviews','calendar','giveaway','khalifa','saadiyat'].forEach(v=>{
+    const el=document.getElementById('view-'+v);
+    if(el) el.style.display='none';
+  });
 
-  document.getElementById('view-'+view).style.display='block';
+  const target=document.getElementById('view-'+view);
+  if(!target){ showView('dashboard', document.querySelector('[onclick*="dashboard"]')); return; }
+  target.style.display='block';
 
   const controls = document.getElementById('controls');
   if (controls) {
