@@ -606,20 +606,20 @@ function showView(view, el){
 
   // scroll to top
   window.scrollTo(0, 0);
+}
 
 // 🔥 LOAD DEFAULT / URL VIEW
 const params = new URLSearchParams(window.location.search);
 const viewFromURL = params.get('view');
 
-// default = reviews kung walang ?view=
-const activeView = viewFromURL || 'reviews';
+// default = dashboard kung walang ?view=
+const activeView = viewFromURL || 'dashboard';
 
 // hanapin matching button
 const btn = document.querySelector(`[onclick*="${activeView}"]`);
 
 // show view
 showView(activeView, btn || null);
-} 
 
 
 // 🔥 SUPABASE
