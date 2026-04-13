@@ -446,22 +446,49 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
   <!-- SIDEBAR -->
  <aside class="sidebar">
-  <div style="font-size:11px;color:var(--muted);letter-spacing:.1em;">
-   
-    DASHBOARDS
-  </div>
+<div style="font-size:11px;color:var(--muted);letter-spacing:.1em;">
+  DASHBOARDS
+</div>
 
-<button onclick="showView('dashboard', this)" class="nav-btn active">Dashboard</button>
+<button onclick="showView('dashboard', this)" class="nav-btn active">
+  Dashboard
+</button>
 
 <div style="margin-top:12px;font-size:11px;color:var(--muted);letter-spacing:.1em;">
   REVIEWS
 </div>
 
-<button onclick="showView('khalifa', this)" class="nav-btn">Khalifa</button>
-<button onclick="showView('saadiyat', this)" class="nav-btn">Saadiyat</button>
-<button onclick="showView('calendar', this)" class="nav-btn">Content Calendar</button>
-<button onclick="showView('giveaway', this)" class="nav-btn">Giveaway Entries</button> 
+<button onclick="showView('reviews', this)" class="nav-btn">
+  Salon Reviews
+</button>
+
+<button onclick="showView('calendar', this)" class="nav-btn">
+  Content Calendar
+</button>
+
+<button onclick="showView('giveaway', this)" class="nav-btn">
+  Giveaway Entries
+</button>
+
   </aside>
+
+<main class="main-content">
+
+  <div id="view-dashboard">
+    <!-- dashboard content -->
+  </div>
+
+  <div id="view-reviews" style="display:none">
+    <iframe 
+      src="./TRS REVIEWS.html"
+      style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+    </iframe>
+  </div>
+
+  <div id="view-calendar" style="display:none"></div>
+  <div id="view-giveaway" style="display:none"></div>
+
+</main>
 
   <!-- MAIN VIEW -->
   <div class="main-content">
@@ -567,30 +594,42 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 <script>
 
+// 🔥 VIEW SWITCHER
 function showView(view, el){
   document.getElementById('view-dashboard').style.display='none';
-  document.getElementById('view-khalifa').style.display='none';
-  document.getElementById('view-saadiyat').style.display='none';
+  document.getElementById('view-reviews').style.display='none';
   document.getElementById('view-calendar').style.display='none';
   document.getElementById('view-giveaway').style.display='none';
+
   document.getElementById('view-'+view).style.display='block';
 
-  if(view === 'dashboard'){
-    document.getElementById('controls').style.display = 'flex';
-  } else {
-    document.getElementById('controls').style.display = 'none';
+  const controls = document.getElementById('controls');
+  if (controls) {
+    controls.style.display = (view === 'dashboard') ? 'flex' : 'none';
   }
 
-  // 🔥 ACTIVE STATE FIX
+  // active button state
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
 
-  window.scrollTo(0,0);
+  // scroll to top
+  window.scrollTo(0, 0);
+
+  // 🔥 SAVE CURRENT VIEW
+  localStorage.setItem('activeView', view);
 }
-  
-const SUPA_URL='https://gvijxenafoowajqktqvd.supabase.co';
-const SUPA_KEY='sb_publishable_e5o0vPayb-6552oARTeu7Q_KoqfT7xO';
-const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+
+// 🔥 LOAD LAST VIEW ON PAGE LOAD
+const savedView = localStorage.getItem('activeView') || 'dashboard';
+const btn = document.querySelector(`[onclick*="${savedView}"]`);
+showView(savedView, btn || null);
+
+
+// 🔥 SUPABASE
+const SUPA_URL = 'https://gvijxenafoowajqktqvd.supabase.co';
+const SUPA_KEY = 'sb_publishable_e5o0vPayb-6552oARTeu7Q_KoqfT7xO';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 const TARGETS={hairAvgBill:650,beautyAvgBill:200,treatmentPct:20,retailPct:12,rebookPct:45};
 const BRANCH_INFO={
