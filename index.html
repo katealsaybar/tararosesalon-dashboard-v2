@@ -354,8 +354,8 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 <button onclick="showView('khalifa', this)" class="nav-btn">Khalifa</button>
 <button onclick="showView('saadiyat', this)" class="nav-btn">Saadiyat</button>
-<button onclick="showView('giveaway', this)" class="nav-btn">Giveaway Entries</button> 
 <button onclick="showView('calendar', this)" class="nav-btn">Content Calendar</button>
+<button onclick="showView('giveaway', this)" class="nav-btn">Giveaway Entries</button> 
   </aside>
 
   <!-- MAIN VIEW -->
@@ -428,6 +428,14 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
     style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
   </iframe>
 
+    <!-- GIVEAWAY -->
+<div id="view-giveaway" style="display:none">
+  <iframe 
+    src="./Giveaway%20Entries%20042026.html?v=1"
+    style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+  </iframe>
+</div>
+
 
   <a href="https://trs-contentcalendar.netlify.app/" target="_blank">
    <button style="
@@ -459,7 +467,8 @@ function showView(view, el){
   document.getElementById('view-dashboard').style.display='none';
   document.getElementById('view-khalifa').style.display='none';
   document.getElementById('view-saadiyat').style.display='none';
-
+  document.getElementById('view-calendar').style.display='none';
+  document.getElementById('view-giveaway').style.display='none';
   document.getElementById('view-'+view).style.display='block';
 
   if(view === 'dashboard'){
