@@ -537,7 +537,7 @@ function resetForm(){
 }
 
 // ─── SUBMIT ───
-function submitContent(){
+async function submitContent(){
   if(!fPillar){showToast('Please select a content pillar.');return}
   if(!fCtype){showToast('Please select a content type.');return}
   const copy=document.getElementById('f-copy').value.trim();
@@ -545,49 +545,42 @@ function submitContent(){
   const tags=document.getElementById('f-tags').value.trim();
   const dateVal=document.getElementById('f-date').value;
 
-  // 🔥 SAVE TO SUPABASE
-(async () => {
-  const data = {
-    pillar: fPillar,
-    content_type: fCtype,
-    caption: copy,
-    hashtags: tags,
-    scheduled_date: dateVal || null,
-    scheduled_time: null,
-    media_url: '',
-    status: 'pending'
-  };
-
-  const { error } = await supabaseClient
-    .from('content_posts')
-    .insert([data]);
-
-  if (error) {
-    console.error(error);
-    showToast('❌ Failed to save to database');
-  } else {
-    console.log('Saved to Supabase');
-  }
-})();
-
   if(editingId!==null){
-    const item=items.find(i=>i.id===editingId);
-    item.pillar=fPillar; item.ctype=fCtype;
-    item.platforms=fPlatforms.length?[...fPlatforms]:['Instagram'];
-    item.copy=copy; item.tags=tags;
-    item.rawDate=dateVal?new Date(dateVal).toISOString():null;
-    item.schedLabel=dateVal?fmtLong(dateVal):'TBD';
-    item.files=[...fFiles];
+    // Edit existing — update Supabase row
+    const { error } = await supabaseClient
+      .from('content_posts')
+      .update({
+        pillar: fPillar,
+        content_type: fCtype,
+        caption: copy,
+        hashtags: tags,
+        scheduled_date: dateVal || null,
+      })
+      .eq('id', editingId);
+
+    if(error){ console.error(error); showToast('❌ Failed to save changes'); return; }
     closeOv('ov-upload');
-    renderCalendar(); updateBadges();
     showToast('✏️ Changes saved.');
+    loadContent();
   } else {
-    const id=nextId++;
-    items.push({id,pillar:fPillar,ctype:fCtype,platforms:fPlatforms.length?[...fPlatforms]:['Instagram'],copy,tags,rawDate:dateVal?new Date(dateVal).toISOString():null,schedLabel:dateVal?fmtLong(dateVal):'TBD',files:[...fFiles]});
-    CS[id]={status:'pending',comments:[],commentDraft:'',imgIdx:0};
+    // New post — insert into Supabase
+    const { error } = await supabaseClient
+      .from('content_posts')
+      .insert([{
+        pillar: fPillar,
+        content_type: fCtype,
+        caption: copy,
+        hashtags: tags,
+        scheduled_date: dateVal || null,
+        scheduled_time: null,
+        media_url: '',
+        status: 'pending'
+      }]);
+
+    if(error){ console.error(error); showToast('❌ Failed to save to database'); return; }
     closeOv('ov-upload');
-    renderCalendar(); updateBadges();
-    showToast('✓ Content added to the calendar.');
+    showToast('✅ Saved to database');
+    loadContent();
   }
 }
 
@@ -838,7 +831,40 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2600);
 }
 
+// ─── LOAD FROM SUPABASE ───
+async function loadContent(){
+  const { data, error } = await supabaseClient
+    .from('content_posts')
+    .select('*');
+
+  if(error){
+    console.error(error);
+    return;
+  }
+
+  items = data.map(d => ({
+    id: d.id,
+    pillar: d.pillar,
+    ctype: d.content_type,
+    copy: d.caption,
+    tags: d.hashtags,
+    rawDate: d.scheduled_date,
+    schedLabel: d.scheduled_date ? fmtLong(d.scheduled_date) : 'TBD',
+    status: d.status || 'pending',
+    platforms: [],
+    files: [],
+  }));
+
+  // Initialize CS state for each item
+  items.forEach(item => {
+    if(!CS[item.id]) CS[item.id] = {status: item.status, comments:[], commentDraft:'', imgIdx:0};
+  });
+
+  renderCalendar();
+  updateBadges();
+}
+
 // ─── INIT ───
-renderCalendar();
-updateBadges();
+loadContent();
+
 </script>
