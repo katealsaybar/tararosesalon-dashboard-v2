@@ -551,6 +551,8 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
   </iframe>
 </div>
 
+
+
 <!-- GIVEAWAY -->
 <div id="view-giveaway" style="display:none">
   <iframe 
@@ -650,7 +652,19 @@ function toggleTheme(){
 }
 const isDark=()=>document.documentElement.getAttribute('data-theme')==='dark';
 
-const sc=(v,t)=>{const p=v/t;return p>=0.95?'good':p>=0.75?'warn':'bad';};
+const sc = (v, t, type = 'default') => {
+  if (!t) return '';
+
+  let ratio = v / t;
+
+  if (type === 'percent') {
+    ratio = v / t;
+  }
+
+  if (ratio >= 1) return 'good';   // green
+  if (ratio >= 0.8) return '';     // neutral
+  return 'bad';                    // red
+};
 const fmtAED=n=>'AED '+Math.round(n||0).toLocaleString();
 const fmtPct=n=>(+(n||0)).toFixed(1)+'%';
 const initials=name=>name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
@@ -822,24 +836,113 @@ function aggByBranch(){
   return result;
 }
 
-function destroyCharts(){Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};}
+function destroyCharts(){
+  Object.values(charts).forEach(c=>{
+    try{c.destroy();}catch(e){}
+  });
+  charts={};
+}
+
+function getWeeklyTarget(branches) {
+  const map = {
+    SAA: [450, 550],
+    KCA: [400, 500],
+    AQ: [800, 900],
+    MC: [650, 750],
+    FRT: [500, 600]
+  };
+
+  // if ALL selected
+  if (branches.includes('all')) {
+    return "Weekly target varies by branch";
+  }
+
+  let min = 0;
+  let max = 0;
+
+  branches.forEach(b => {
+    if (map[b]) {
+      min += map[b][0];
+      max += map[b][1];
+    }
+  });
+
+  if (min === 0 && max === 0) {
+    return "Weekly target varies by branch";
+  }
+
+  return `≈ AED ${min}k–${max}k / week`;
+}
+
+// 👇 DITO KA MAGPASTE
+function getClientTarget(branches) {
+  const map = {
+    SAA: [700, 800],
+    KCA: [500, 650],
+    AQ: [700, 900],
+    MC: [500, 650],
+    FRT: [500, 600]
+  };
+
+  if (branches.includes('all')) {
+    return "2,800–3,200 / week (All Branches Combined)";
+  }
+
+  let min = 0;
+  let max = 0;
+
+  branches.forEach(b => {
+    if (map[b]) {
+      min += map[b][0];
+      max += map[b][1];
+    }
+  });
+
+  if (min === 0 && max === 0) {
+    return "Target varies by branch";
+  }
+
+  return `${min.toLocaleString()}–${max.toLocaleString()} / week`;
+}
 
 function renderDashboard(){
-  const filtered=getFilteredData();
-  const main=document.getElementById('mainContent');
-  if(!filtered.length){destroyCharts();main.innerHTML='<div class="empty">No data for this selection.</div>';return;}
-  const datasets=filtered.map(d=>d.data);
-  const d=aggData(datasets);
-  if(!d)return;
-  const s=d.summary;
+  const filtered = getFilteredData();
+
+  console.log(sel.branch);
+
+  const main = document.getElementById('mainContent');
+
+  if(!filtered.length){
+    destroyCharts();
+    main.innerHTML = '<div class="empty">No data for this selection.</div>';
+    return;
+  }
+
+  const datasets = filtered.map(d=>d.data);
+  const d = aggData(datasets);
+  if(!d) return;
+
+  const s = d.summary;
+
   destroyCharts();
-  const dark=isDark();
-  const donutBorder=dark?'#383944':'#fff';
-  const donutColors=dark?['#FFD4D9','#C4B5FD','#99F6E4']:['#5C5557','#c0b0ad','#e8d5cc'];
-  const ttStyle={backgroundColor:dark?'#2D2E37':'#fff',titleColor:dark?'#FAF8F3':'#5C5557',bodyColor:dark?'rgba(250,248,243,.7)':'#9a8a87',borderColor:dark?'rgba(250,248,243,.1)':'#e8d5cc',borderWidth:1};
-  const gc=dark?'rgba(250,248,243,0.06)':'rgba(92,85,87,0.07)';
-  const tc=dark?'rgba(250,248,243,0.45)':'#9a8a87';
-  const branchLabel=sel.branch.includes('all')?'All Branches':sel.branch.map(b=>BRANCH_INFO[b]?.name||b).join(', ');
+
+  const dark = isDark();
+  const donutBorder = dark ? '#383944' : '#fff';
+  const donutColors = dark ? ['#FFD4D9','#C4B5FD','#99F6E4'] : ['#5C5557','#c0b0ad','#e8d5cc'];
+  const ttStyle = {
+    backgroundColor: dark ? '#2D2E37' : '#fff',
+    titleColor: dark ? '#FAF8F3' : '#5C5557',
+    bodyColor: dark ? 'rgba(250,248,243,.7)' : '#9a8a87',
+    borderColor: dark ? 'rgba(250,248,243,.1)' : '#e8d5cc',
+    borderWidth: 1
+  };
+
+  const gc = dark ? 'rgba(250,248,243,0.06)' : 'rgba(92,85,87,0.07)';
+  const tc = dark ? 'rgba(250,248,243,0.45)' : '#9a8a87';
+
+  const branchLabel = sel.branch.includes('all')
+    ? 'All Branches'
+    : sel.branch.map(b=>BRANCH_INFO[b]?.name||b).join(', ');
 
   main.innerHTML=`
     <!-- ROW 1: MAIN METRICS (GREEN / MUST-WATCH) -->
@@ -851,33 +954,96 @@ function renderDashboard(){
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:8px">
     <div class="metric" style="border-color:rgba(153,246,228,0.35);background:var(--surface)">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
-      <div class="metric-label">Net Revenue</div>
-      <div class="metric-value" style="font-size:22px">${fmtAED(s.netTake)}</div>
-      <div class="metric-target">Target: AED 2,000,000 / mo</div>
-    </div>
+     <div class="metric-label">Net Revenue</div>
+
+<div style="font-size:11px;color:var(--muted);margin:4px 0 8px 0">
+  <em>(Total sales: services + retail)</em>
+</div>
+
+<div class="metric-value ${sc(s.netTake,TARGETS.netRevenue)}" style="font-size:22px; text-align:left;">
+  ${fmtAED(s.netTake)}
+</div>
+
+<div class="metric-target" style="text-align:left;">
+  Target: AED 2,000,000 / mo
+</div>
+
+<div style="font-size:11px;color:var(--muted);margin-top:4px">
+  ${getWeeklyTarget(sel.branch)}
+</div>
+
+</div> <!-- closes Net Revenue card -->
     <div class="metric" style="border-color:rgba(153,246,228,0.35);background:var(--surface)">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
       <div class="metric-label">Total Clients</div>
-      <div class="metric-value" style="font-size:22px">${s.totalClients}</div>
-      <div class="metric-target">Target: 943 / mo</div>
+
+<div style="font-size:11px;color:var(--muted);margin:4px 0 8px 0">
+  <em>(All clients served, varies per branch)</em>
+</div>
+
+<div class="metric-value" style="font-size:22px; text-align:left;">
+  ${s.totalClients}
+</div>
+
+<div class="metric-target" style="text-align:left;">
+  Target: ${getClientTarget(sel.branch)}
+</div>
     </div>
     <div class="metric" style="border-color:rgba(153,246,228,0.35);background:var(--surface)">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
-      <div class="metric-label">Avg Bill</div>
-      <div class="metric-value ${sc(s.avgBill,TARGETS.hairAvgBill)}" style="font-size:22px">${fmtAED(s.avgBill)}</div>
-      <div class="metric-target">Target: AED ${TARGETS.hairAvgBill}</div>
-    </div>
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
+  
+  <div class="metric-label">Total Avg Bill</div>
+
+  <div style="font-size:11px;color:var(--muted);margin:4px 0 8px 0">
+    <em>(Total revenue ÷ Total clients)</em>
+  </div>
+
+  <div class="metric-value" style="font-size:22px; text-align:left;">
+    ${fmtAED(s.avgBill)}
+  </div>
+
+  <div class="metric-target" style="text-align:left; opacity:0.7;">
+    • Benchmark: ~AED 650 (Hair-driven)
+  </div>
+</div>
+
     <div class="metric" style="border-color:rgba(153,246,228,0.35);background:var(--surface)">
       <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
       <div class="metric-label">Rebooking %</div>
-      <div class="metric-value ${sc(s.rebookPct,TARGETS.rebookPct)}" style="font-size:22px">${fmtPct(s.rebookPct)}</div>
-      <div class="metric-target">Target: ${TARGETS.rebookPct}%</div>
-    </div>
-    <div class="metric" style="border-color:rgba(153,246,228,0.35);background:var(--surface)">
-      <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
-      <div class="metric-label">NCR %</div>
-      <div class="metric-value ${sc(s.ncrPct||0,20)}" style="font-size:22px">${fmtPct(s.ncrPct||0)}</div>
-      <div class="metric-target">Target: ≥ 20%</div>
+
+<div style="font-size:11px;color:var(--muted);margin:4px 0 8px 0">
+  <em>(Rebooked clients ÷ Total clients)</em>
+</div>
+
+<div class="metric-value ${sc(s.rebookPct,TARGETS.rebookPct)}" style="font-size:22px; text-align:left;">
+  ${fmtPct(s.rebookPct)}
+</div>
+
+<div class="metric-target" style="text-align:left;">
+  Target: ${TARGETS.rebookPct}%
+</div>
+
+</div> <!-- ✅ closes Rebooking card -->
+
+<div class="metric" style="border-color:rgba(153,246,228,0.35);background:var(--surface)">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:13px 13px 0 0;background:#99F6E4"></div>
+  
+  <div class="metric-label">NCR %</div>
+
+  <div style="font-size:11px;color:var(--muted);margin:4px 0 8px 0">
+    <em>(New Client Requests ÷ Total Clients)</em>
+  </div>
+
+  <div class="metric-value ${sc(s.ncrPct||0,20)}" style="font-size:22px; text-align:left;">
+    ${fmtPct(s.ncrPct||0)}
+  </div>
+
+  <div class="metric-target" style="text-align:left;">
+    Target: ≥ 20%
+  </div>
+
+</div> <!-- ✅ closes NCR card -->
+
     </div>
   </div>
 </div>
