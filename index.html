@@ -507,6 +507,13 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
     <div class="nav-sub" onclick="showView('trk', this)">Personal Brand</div>
   </div>
 
+  <div class="nav-group">
+  <div class="nav-title">ADMIN</div>
+  <div class="nav-sub" onclick="window.open('upload.html','_blank')">
+    Upload Data
+  </div>
+</div>
+
 </aside>
 
   <!-- MAIN VIEW -->
@@ -594,7 +601,7 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
   <!-- TRK -->
   <div id="view-trk" style="display:none">
     <iframe 
-      src="./trk-approval-dashboard.html"
+      src="https://trk-approval-dashboard.netlify.app/"
       style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
     </iframe>
   </div>
