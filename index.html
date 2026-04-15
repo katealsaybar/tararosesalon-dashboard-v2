@@ -73,6 +73,45 @@
   }
 }
 
+.sidebar {
+  width: 220px;
+  background: #111;
+  color: #fff;
+  height: 100vh;
+  padding: 20px 14px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.nav-group {
+  margin-bottom: 20px;
+}
+
+.nav-title {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.nav-sub {
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #ccc;
+  transition: 0.2s;
+}
+
+.nav-sub:hover {
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.nav-sub.active {
+  background: #222;
+  color: #fff;
+}
+
 /* 🔥 CLEAN VERSION */
 
 .main-content{
@@ -446,119 +485,123 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
   <!-- SIDEBAR -->
  <aside class="sidebar">
-<div style="font-size:11px;color:var(--muted);letter-spacing:.1em;">
-  DASHBOARDS
-</div>
 
-<button onclick="showView('dashboard', this)" class="nav-btn active">
-  Dashboard
-</button>
+  <div class="nav-group">
+    <div class="nav-title">DASHBOARDS</div>
+    <div class="nav-sub" onclick="showView('dashboard', this)">KPIs</div>
+  </div>
 
-<div style="margin-top:12px;font-size:11px;color:var(--muted);letter-spacing:.1em;">
-  REVIEWS
-</div>
+  <div class="nav-group">
+    <div class="nav-title">REVIEWS</div>
+    <div class="nav-sub" onclick="showView('reviews', this)">Salon Reviews</div>
+  </div>
 
-<button onclick="showView('reviews', this)" class="nav-btn">
-  Salon Reviews
-</button>
+  <div class="nav-group">
+    <div class="nav-title">STRATEGIES</div>
+    <div class="nav-sub" onclick="showView('giveaway', this)">Giveaways April 2026</div>
+  </div>
 
-<button onclick="showView('calendar', this)" class="nav-btn">
-  Content Calendar
-</button>
+  <div class="nav-group">
+    <div class="nav-title">CONTENT</div>
+    <div class="nav-sub" onclick="showView('calendar', this)">Content Calendar</div>
+    <div class="nav-sub" onclick="showView('trk', this)">Personal Brand</div>
+  </div>
 
-<button onclick="showView('giveaway', this)" class="nav-btn">
-  Giveaway Entries
-</button>
-
-  </aside>
+</aside>
 
   <!-- MAIN VIEW -->
-  <div class="main-content">
+<div class="main-content">
 
-  <div class="controls" id="controls">
+  <!-- DASHBOARD -->
+  <div id="view-dashboard">
+    <div class="controls" id="controls">
+
+  <!-- BRANCH -->
   <div class="ctrl-group">
-    <span class="ctrl-label">Branch</span>
-    <div class="ms-wrap" id="wrap-branch">
-      <div class="ms-btn" id="btn-branch" onclick="toggleDrop('branch')">
-        <span id="lbl-branch">All branches</span>
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-      <div class="ms-drop" id="drop-branch"></div>
+    <div class="ctrl-label">Branch</div>
+    <div class="ms-wrap">
+      <button id="btn-branch" class="ms-btn" onclick="toggleDrop('branch')">
+        <span id="lbl-branch">All Branches</span>
+      </button>
+      <div id="drop-branch" class="ms-drop"></div>
     </div>
   </div>
+
+  <!-- YEAR -->
   <div class="ctrl-group">
-    <span class="ctrl-label">Year</span>
-    <div class="ms-wrap" id="wrap-year">
-      <div class="ms-btn" id="btn-year" onclick="toggleDrop('year')">
+    <div class="ctrl-label">Year</div>
+    <div class="ms-wrap">
+      <button id="btn-year" class="ms-btn" onclick="toggleDrop('year')">
         <span id="lbl-year">All years</span>
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-      <div class="ms-drop" id="drop-year"></div>
+      </button>
+      <div id="drop-year" class="ms-drop"></div>
     </div>
   </div>
+
+  <!-- MONTH -->
   <div class="ctrl-group">
-    <span class="ctrl-label">Month</span>
-    <div class="ms-wrap" id="wrap-month">
-      <div class="ms-btn" id="btn-month" onclick="toggleDrop('month')">
+    <div class="ctrl-label">Month</div>
+    <div class="ms-wrap">
+      <button id="btn-month" class="ms-btn" onclick="toggleDrop('month')">
         <span id="lbl-month">All months</span>
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-      <div class="ms-drop" id="drop-month"></div>
+      </button>
+      <div id="drop-month" class="ms-drop"></div>
     </div>
   </div>
+
+  <!-- WEEK -->
   <div class="ctrl-group">
-    <span class="ctrl-label">Week</span>
-    <div class="ms-wrap" id="wrap-week">
-      <div class="ms-btn" id="btn-week" onclick="toggleDrop('week')">
+    <div class="ctrl-label">Week</div>
+    <div class="ms-wrap">
+      <button id="btn-week" class="ms-btn" onclick="toggleDrop('week')">
         <span id="lbl-week">All weeks</span>
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </div>
-      <div class="ms-drop" id="drop-week"></div>
+      </button>
+      <div id="drop-week" class="ms-drop"></div>
     </div>
   </div>
+
 </div>
 
-    <!-- DASHBOARD -->
-    <div id="view-dashboard">
-  <main id="mainContent">
-    <div class="loading">Loading data...</div>
-  </main>
+    <main id="mainContent">
+      <div class="loading">Loading data...</div>
+    </main>
+  </div>
+
+  <!-- REVIEWS -->
+  <div id="view-reviews" style="display:none">
+    <iframe 
+      src="./TRS%20REVIEWS.html"
+      style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+    </iframe>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="view-calendar" style="display:none">
+    <iframe 
+      src="https://trs-contentcalendar.netlify.app/"
+      style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+    </iframe>
+  </div>
+
+  <!-- GIVEAWAY -->
+  <div id="view-giveaway" style="display:none">
+    <iframe 
+      src="./Giveaway%20Entries%20042026.html?v=1"
+      style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+    </iframe>
+  </div>
+
+  <!-- TRK -->
+  <div id="view-trk" style="display:none">
+    <iframe 
+      src="./trk-approval-dashboard.html"
+      style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
+    </iframe>
+  </div>
+
 </div>
 
-    <!-- KHALIFA -->
-    <div id="view-khalifa" style="display:none">
-  <iframe src="./khalifa.html" style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;"></iframe>
-</div>
 
-    <!-- SAADIYAT -->
-    <div id="view-saadiyat" style="display:none">
-  <iframe src="./saadiyat.html" style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;"></iframe>
-</div>
-
-   <!-- REVIEWS -->
-<div id="view-reviews" style="display:none">
-  <iframe 
-    src="./TRS%20REVIEWS.html"
-    style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
-  </iframe>
-</div>
-
-   <!-- CALENDAR -->
-<div id="view-calendar" style="display:none">
-  <iframe 
-    src="https://trs-contentcalendar.netlify.app/" 
-    style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
-  </iframe>
-</div>
-
-
-
-<!-- GIVEAWAY -->
-<div id="view-giveaway" style="display:none">
-  <iframe 
-    src="./Giveaway%20Entries%20042026.html?v=1"
-    style="width:100%;height:calc(100vh - 120px);border:none;border-radius:12px;">
-  </iframe>
 </div>
 
   
@@ -588,7 +631,7 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 // 🔥 VIEW SWITCHER
 function showView(view, el){
-  ['dashboard','reviews','calendar','giveaway','khalifa','saadiyat'].forEach(v=>{
+  ['dashboard','reviews','calendar','giveaway','trk','khalifa','saadiyat'].forEach(v=>{
     const el=document.getElementById('view-'+v);
     if(el) el.style.display='none';
   });
@@ -603,7 +646,7 @@ function showView(view, el){
   }
 
   // active button state
-  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.nav-sub').forEach(btn => btn.classList.remove('active'));
   if (el) el.classList.add('active');
 
   // scroll to top
