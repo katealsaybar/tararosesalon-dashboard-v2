@@ -1008,8 +1008,8 @@ function toggleOpt(key,val){
     else sel[key].push(val);
     if(!sel[key].length) sel[key]=['all'];
   }
-  if(key==='branch'||key==='year'){sel.month=['all'];}
-  if(key==='branch'||key==='year'||key==='month'){sel.week=['all'];}
+  if(key==='year'){sel.month=['all'];}
+  if(key==='year'||key==='month'){sel.week=['all'];}
   rebuildDependentDrops();
   const drop=document.getElementById('drop-'+key);
   const isAllNow=sel[key].includes('all');
@@ -1041,7 +1041,7 @@ function updateLabel(key,options){
 function rebuildDependentDrops(){
   const years=[...new Set(allData.map(d=>getYear(d.week_label,d.uploaded_at)))].sort((a,b)=>b-a);
   buildDrop('year',years.map(y=>({val:y,label:y})));
-  const f1=getFilteredData(false,true);
+  const f1=getFilteredData(true,true);
   const months=[...new Set(f1.map(d=>getMonth(d.week_label,d.uploaded_at)))].filter(m=>m!=='—').sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
   buildDrop('month',months.map(m=>({val:m,label:m})));
   const f2=allData.filter(d=>{
@@ -1678,6 +1678,8 @@ function renderDashboard(){
 
 // ── TEAM PERFORMANCE VIEW ──
 const selT={branch:['all'],year:['all'],month:['all'],week:['all']};
+// ── COMPARATOR-ONLY FUNNEL ──
+const selCmp={year:['all'],month:['all'],week:['all']};
 let teamCharts={};
 
 function toggleDropT(key){
@@ -1704,29 +1706,8 @@ function buildDropT(key,options){
 }
 
 function toggleOptT(key,val){
-  const rawKey=key.replace('-t','');
-  if(val==='all'){selT[rawKey]=['all'];}
-  else{
-    selT[rawKey]=selT[rawKey].filter(x=>x!=='all');
-    if(selT[rawKey].includes(val)) selT[rawKey]=selT[rawKey].filter(x=>x!==val);
-    else selT[rawKey].push(val);
-    if(!selT[rawKey].length) selT[rawKey]=['all'];
-  }
-  if(rawKey==='branch'||rawKey==='year'){selT.month=['all'];}
-  if(rawKey==='branch'||rawKey==='year'||rawKey==='month'){selT.week=['all'];}
-  rebuildDependentDropsT();
-  const drop=document.getElementById('drop-'+key);
-  const isAllNow=selT[rawKey].includes('all');
-  drop.querySelectorAll('.ms-opt').forEach(el=>{
-    const v=el.dataset.val;
-    if(el.classList.contains('all-opt')) el.classList.toggle('selected',isAllNow);
-    else el.classList.toggle('selected',!isAllNow&&selT[rawKey].includes(v));
-  });
-  drop.classList.add('open');
-  document.getElementById('btn-'+key).classList.add('open');
-  const allOptions=[...drop.querySelectorAll('.ms-opt:not(.all-opt)')].map(el=>({val:el.dataset.val,label:el.textContent.trim()}));
-  updateLabelT(key,allOptions);
-  renderTeam();
+  // Team view shares same sel state and dropdowns as KPI view
+  toggleOpt(key,val);
 }
 
 function updateLabelT(key,options){
@@ -1766,6 +1747,115 @@ function getFilteredDataT(ignoreBranch=false,ignoreMonth=false,ignoreWeek=false)
     if(!ignoreWeek&&!selT.week.includes('all')&&!selT.week.includes(d.week_label))return false;
     return true;
   });
+}
+
+// ── COMPARATOR FUNNEL HELPERS ──
+function getCmpFilteredData(ignoreMonth=false,ignoreWeek=false){
+  return allData.filter(d=>{
+    const yr=getYear(d.week_label,d.uploaded_at);
+    if(!selCmp.year.includes('all')&&!selCmp.year.includes(yr))return false;
+    const mo=getMonth(d.week_label,d.uploaded_at);
+    if(!ignoreMonth&&!selCmp.month.includes('all')&&!selCmp.month.includes(mo))return false;
+    if(!ignoreWeek&&!selCmp.week.includes('all')&&!selCmp.week.includes(d.week_label))return false;
+    return true;
+  });
+}
+
+function rebuildCmpDrops(){
+  const years=[...new Set(allData.map(d=>getYear(d.week_label,d.uploaded_at)))].sort((a,b)=>b-a);
+  buildCmpDrop('cmp-year',years,'year');
+  const f1=getCmpFilteredData(true,true);
+  const months=[...new Set(f1.map(d=>getMonth(d.week_label,d.uploaded_at)))].filter(m=>m!=='—').sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
+  buildCmpDrop('cmp-month',months,'month');
+  const f2=getCmpFilteredData(false,true);
+  const seenW=new Set();
+  const weeks=f2.filter(d=>{if(seenW.has(d.week_label))return false;seenW.add(d.week_label);return true;}).map(d=>d.week_label);
+  buildCmpDrop('cmp-week',weeks,'week');
+}
+
+function buildCmpDrop(id,options,key){
+  const sel=document.getElementById(id);
+  if(!sel)return;
+  const cur=selCmp[key];
+  sel.innerHTML=`<option value="all">${key==='week'?'All weeks':'All '+key+'s'}</option>`+options.map(o=>`<option value="${o}">${o}</option>`).join('');
+  sel.value=cur.includes('all')?'all':cur[0]||'all';
+}
+
+function onCmpFunnelChange(){
+  const yr=document.getElementById('cmp-year');
+  const mo=document.getElementById('cmp-month');
+  const wk=document.getElementById('cmp-week');
+  if(!yr)return;
+  selCmp.year=yr.value==='all'?['all']:[yr.value];
+  selCmp.month=['all'];selCmp.week=['all'];
+  rebuildCmpDrops();
+  // re-read month and week after rebuild
+  const mo2=document.getElementById('cmp-month');
+  const wk2=document.getElementById('cmp-week');
+  if(mo2&&mo.value!=='all'){mo2.value=mo.value;selCmp.month=[mo.value];}
+  if(wk2&&wk.value!=='all'){wk2.value=wk.value;selCmp.week=[wk.value];}
+  refreshCmpData();
+}
+
+function onCmpMonthChange(){
+  const mo=document.getElementById('cmp-month');
+  if(!mo)return;
+  selCmp.month=mo.value==='all'?['all']:[mo.value];
+  selCmp.week=['all'];
+  rebuildCmpDrops();
+  refreshCmpData();
+}
+
+function onCmpWeekChange(){
+  const wk=document.getElementById('cmp-week');
+  if(!wk)return;
+  selCmp.week=wk.value==='all'?['all']:[wk.value];
+  refreshCmpData();
+}
+
+function refreshCmpData(){
+  // Rebuild cmpBranchMap with the comparator's own filter
+  const newMap={};
+  const newHair=[];
+  const newBeauty=[];
+  Object.keys(BRANCH_INFO).forEach(code=>{
+    const rows=getCmpFilteredData().filter(d=>d.branch===code);
+    const bd=aggData(rows.map(d=>d.data));
+    if(!bd)return;
+    const hairList=bd.hairStaff.map(s=>({...s,isBeauty:false,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
+    const beautyList=bd.beautyStaff.map(s=>({...s,isBeauty:true,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
+    hairList.forEach(s=>newHair.push(s));
+    beautyList.forEach(s=>newBeauty.push(s));
+    const all=[...hairList,...beautyList];
+    if(all.length)newMap[code]=all;
+  });
+  // Replace window references entirely
+  window._cmpBranchMap=newMap;
+  window._cmpAllHair=newHair;
+  window._cmpAllBeauty=newBeauty;
+  // Re-populate branch→stylist selects and re-render radars for all 3 slots
+  for(let n=1;n<=3;n++){
+    const branchSel=document.getElementById('cmpBranch'+n);
+    if(!branchSel||!branchSel.value)continue;
+    const prevName=document.getElementById('cmpName'+n)?.value||'';
+    onCmpBranchChange(n);
+    // Restore previously selected stylist if still available in filtered data
+    const nameSel=document.getElementById('cmpName'+n);
+    if(nameSel&&prevName){
+      nameSel.value=prevName;
+      // If name not in new options (no data for period), inject a placeholder
+      if(nameSel.value!==prevName){
+        const noDataOpt=document.createElement('option');
+        noDataOpt.value=prevName;
+        noDataOpt.textContent=prevName;
+        noDataOpt.dataset.nodata='1';
+        nameSel.appendChild(noDataOpt);
+        nameSel.value=prevName;
+      }
+    }
+  }
+  // Re-render all radars with updated data
+  if(window.onCmpNameChange) onCmpNameChange();
 }
 
 function aggByBranchT(){
@@ -1820,15 +1910,27 @@ function renderTeam(){
     bd.beautyStaff.forEach(st=>allBeautyWithBranch.push({...st,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color,isBeauty:true}));
   });
 
-  // ── COMPARATOR: build branch→stylists map from ALL data (unaffected by global filter) ──
+  // ── COMPARATOR: build branch→stylists map using comparator's own funnel (selCmp) ──
   const cmpBranchMap={};
+  const cmpAllHair=[];
+  const cmpAllBeauty=[];
   Object.keys(BRANCH_INFO).forEach(code=>{
-    const allRows=allData.filter(d=>d.branch===code);
-    const bdAll=aggData(allRows.map(d=>d.data));
-    if(!bdAll)return;
-    const all=[...bdAll.hairStaff.map(s=>({...s,isBeauty:false,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color})),...bdAll.beautyStaff.map(s=>({...s,isBeauty:true,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}))];
+    const rows=getCmpFilteredData().filter(d=>d.branch===code);
+    const bd=aggData(rows.map(d=>d.data));
+    if(!bd)return;
+    const hairList=bd.hairStaff.map(s=>({...s,isBeauty:false,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
+    const beautyList=bd.beautyStaff.map(s=>({...s,isBeauty:true,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
+    hairList.forEach(s=>cmpAllHair.push(s));
+    beautyList.forEach(s=>cmpAllBeauty.push(s));
+    const all=[...hairList,...beautyList];
     if(all.length) cmpBranchMap[code]=all;
   });
+  // Expose on window so refreshCmpData() can update them in place
+  window._cmpBranchMap=cmpBranchMap;
+  window._cmpAllHair=cmpAllHair;
+  window._cmpAllBeauty=cmpAllBeauty;
+  // Populate comparator funnel dropdowns
+  setTimeout(()=>rebuildCmpDrops(),0);
 
   teamContent.innerHTML=`
 
@@ -1876,10 +1978,25 @@ function renderTeam(){
   <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#99F6E4;flex-shrink:0"></span>
   Custom Stylist  / Beautician Comparison: 
   <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px">Compare up to 3 stylists across branches</span>
+  <span style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#99F6E4;font-weight:600;margin-left:8px;background:rgba(153,246,228,0.1);padding:2px 7px;border-radius:20px;border:1px solid rgba(153,246,228,0.25)">All-data · unaffected by filters</span>
 </div>
 
 <div class="card" style="margin-bottom:12px">
-  <!-- Slot row -->
+  <!-- Comparator own funnel -->
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:10px 10px 0 0;flex-wrap:wrap">
+    <span style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#99F6E4;font-weight:700;flex-shrink:0">Filter this section:</span>
+    <select id="cmp-year" onchange="onCmpFunnelChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
+      <option value="all">All years</option>
+    </select>
+    <select id="cmp-month" onchange="onCmpMonthChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
+      <option value="all">All months</option>
+    </select>
+    <select id="cmp-week" onchange="onCmpWeekChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
+      <option value="all">All weeks</option>
+    </select>
+    <span style="font-size:9px;color:var(--muted2);margin-left:auto">Independent of global filters</span>
+  </div>
+  <div style="padding:14px">
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px" id="cmpSlots">
     ${[1,2,3].map(n=>`
     <div style="border:1px dashed var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--surface2)" id="cmpSlot${n}">
@@ -1903,6 +2020,7 @@ function renderTeam(){
         Select a stylist above<br>to view radar
       </div>
     </div>`).join('')}
+  </div>
   </div>
 </div>
 
@@ -2124,7 +2242,7 @@ function renderTeam(){
     nameSel.disabled=!code;
     tag.textContent='';
     if(!code)return;
-    const stList=cmpBranchMap[code]||[];
+    const stList=(window._cmpBranchMap||cmpBranchMap)[code]||[];
     stList.forEach(st=>{
       const opt=document.createElement('option');
       opt.value=st.name;
@@ -2142,7 +2260,10 @@ function renderTeam(){
       const tag=document.getElementById('cmpSlotTag'+n);
       const nameSel=document.getElementById('cmpName'+n);
       const selOpt=nameSel.options[nameSel.selectedIndex];
-      if(selOpt&&selOpt.dataset.st){
+      if(selOpt&&selOpt.dataset.nodata){
+        tag.innerHTML=`<span style="font-size:10px;color:var(--muted2);font-style:italic">No data for selected period</span>`;
+        noDataSlotRadar(n,selOpt.value);
+      } else if(selOpt&&selOpt.dataset.st){
         try{
           const st=JSON.parse(selOpt.dataset.st);
           const revenue=st.isBeauty?(st.beautySales||0):(st.hairSalesNet||0);
@@ -2159,9 +2280,22 @@ function renderTeam(){
     if(wrap) wrap.innerHTML=`<div style="text-align:center;color:var(--muted2);font-size:11px;line-height:1.8;padding:16px"><div style="font-size:24px;margin-bottom:6px;opacity:0.4">◎</div>Select a stylist above<br>to view radar</div>`;
   }
 
+  function noDataSlotRadar(n,name){
+    if(cmpRadarCharts[n]){try{cmpRadarCharts[n].destroy();}catch(e){}cmpRadarCharts[n]=null;}
+    const wrap=document.getElementById('cmpRadarWrap'+n);
+    if(wrap) wrap.innerHTML=`
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;gap:8px">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text);opacity:0.5">${name}</div>
+        <div style="font-size:22px;opacity:0.25">◎</div>
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted2);font-weight:600">No Data</div>
+        <div style="font-size:10px;color:var(--muted2);opacity:0.7;margin-top:2px">No records for<br>the selected period</div>
+      </div>`;
+  }
+
   function buildSlotRadar(n,st){
     const accent=st.color||'#C4B5FD';
-    const refPool=st.isBeauty?allBeautyWithBranch:allHairWithBranch;
+    // Use the comparator's own unfiltered pools — not affected by global branch/year/month/week filters
+    const refPool=st.isBeauty?(window._cmpAllBeauty||cmpAllBeauty):(window._cmpAllHair||cmpAllHair);
     const maxRev=Math.max(...refPool.map(s=>s.isBeauty?(s.beautySales||0):(s.hairSalesNet||0)),1);
     const maxClients=Math.max(...refPool.map(s=>s.total||0),1);
     const maxBill=Math.max(...refPool.map(s=>s.avgBill||0),1);
