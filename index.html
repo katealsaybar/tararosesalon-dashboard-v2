@@ -1975,16 +1975,16 @@ function renderTeam(){
      CUSTOM STYLIST / BEAUTICIAN COMPARISON: 
 ══════════════════════════════════════════════════ -->
 <div class="section-label" style="display:flex;align-items:center;gap:7px;margin-top:20px;margin-bottom:8px">
-  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#99F6E4;flex-shrink:0"></span>
+  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);flex-shrink:0"></span>
   Custom Stylist  / Beautician Comparison: 
   <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px">Compare up to 3 stylists across branches</span>
-  <span style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#99F6E4;font-weight:600;margin-left:8px;background:rgba(153,246,228,0.1);padding:2px 7px;border-radius:20px;border:1px solid rgba(153,246,228,0.25)">All-data · unaffected by filters</span>
+  <span style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--good);font-weight:600;margin-left:8px;background:var(--good-bg);padding:2px 7px;border-radius:20px;border:1px solid var(--good);opacity:0.85">All-data · unaffected by filters</span>
 </div>
 
 <div class="card" style="margin-bottom:12px">
   <!-- Comparator own funnel -->
   <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:10px 10px 0 0;flex-wrap:wrap">
-    <span style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:#99F6E4;font-weight:700;flex-shrink:0">Filter this section:</span>
+    <span style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--good);font-weight:700;flex-shrink:0">Filter this section:</span>
     <select id="cmp-year" onchange="onCmpFunnelChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
       <option value="all">All years</option>
     </select>
@@ -2211,7 +2211,7 @@ function renderTeam(){
     teamCharts.radar=new Chart(ctx,{
       type:'radar',
       data:{labels,datasets:[{label:st.name,data:vals,backgroundColor:accent+'33',borderColor:accent,borderWidth:2,pointBackgroundColor:accent,pointRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},angleLines:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},pointLabels:{color:tc,font:{family:'DM Sans',size:10}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},angleLines:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},pointLabels:{color:tc,font:{family:'DM Sans',size:10}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
     });
   }
 
@@ -2337,7 +2337,7 @@ function renderTeam(){
     cmpRadarCharts[n]=new Chart(ctx,{
       type:'radar',
       data:{labels,datasets:[{label:st.name,data:vals,backgroundColor:accent+'33',borderColor:accent,borderWidth:2,pointBackgroundColor:accent,pointRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},angleLines:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},pointLabels:{color:tc,font:{family:'DM Sans',size:9}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},angleLines:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},pointLabels:{color:tc,font:{family:'DM Sans',size:9}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
     });
   }
 
