@@ -38,7 +38,9 @@ const rankSymbols = ['🥇','🥈','🥉'];
 
 let allData = [];
 let charts  = {};
-const sel   = { branch: ['all'], year: ['all'], month: ['all'], week: ['all'] };
+const sel   = { branch: ['all'] };
+let dateFrom = null; // JS Date object
+let dateTo   = null; // JS Date object
 
 // collapsible section open/close state (persists across re-renders)
 const sectionState = { revenueRun: false, clientRun: false, retentionRun: false, opsRun: false };
@@ -136,6 +138,12 @@ document.addEventListener('click', e => {
     document.querySelectorAll('.ms-drop').forEach(d => d.classList.remove('open'));
     document.querySelectorAll('.ms-btn').forEach(b  => b.classList.remove('open'));
   }
+  if (!e.target.closest('#dateRangeWrap')) {
+    const pop = document.getElementById('datePickerPop');
+    const btn = document.getElementById('btn-daterange');
+    if (pop) pop.classList.remove('open');
+    if (btn) btn.classList.remove('active');
+  }
 });
 
 function buildDrop(key, options) {
@@ -160,8 +168,6 @@ function toggleOpt(key, val) {
     else sel[key].push(val);
     if (!sel[key].length) sel[key] = ['all'];
   }
-  if (key === 'year')  { sel.month = ['all']; }
-  if (key === 'year' || key === 'month') { sel.week = ['all']; }
   rebuildDependentDrops();
 
   const drop    = document.getElementById('drop-' + key);
@@ -180,8 +186,14 @@ function toggleOpt(key, val) {
   if (teamView && teamView.style.display !== 'none') renderTeam();
 }
 
+function rebuildDependentDrops() {
+  // Branch dropdown only now — date range handles time filtering
+  buildDrop('branch', Object.entries(BRANCH_INFO).map(([k,v]) => ({ val: k, label: v.name })));
+}
+
 function updateLabel(key, options) {
   const lbl   = document.getElementById('lbl-' + key);
+  if (!lbl) return;
   const isAll = sel[key].includes('all');
   if (isAll) lbl.textContent = key === 'branch' ? 'All Branches' : 'All ' + key + 's';
   else if (sel[key].length === 1) {
@@ -190,36 +202,191 @@ function updateLabel(key, options) {
   } else { lbl.textContent = sel[key].length + ' selected'; }
 }
 
-function rebuildDependentDrops() {
-  const years = [...new Set(allData.map(d => getYear(d.week_label, d.uploaded_at)))].sort((a,b) => b - a);
-  buildDrop('year', years.map(y => ({ val: y, label: y })));
+// ── DATE RANGE PICKER ────────────────────────────────────────
 
-  const f1 = getFilteredData(true, true);
-  const months = [...new Set(f1.map(d => getMonth(d.week_label, d.uploaded_at)))]
-    .filter(m => m !== '—').sort((a,b) => MONTH_ORDER.indexOf(a) - MONTH_ORDER.indexOf(b));
-  buildDrop('month', months.map(m => ({ val: m, label: m })));
+const calState = { year: new Date().getFullYear(), month: new Date().getMonth() };
+let pickerFromDate = null;
+let pickerToDate   = null;
+let pickingStep    = 'from'; // 'from' | 'to'
 
-  const f2 = allData.filter(d => {
-    const yr = getYear(d.week_label, d.uploaded_at);
-    const mo = getMonth(d.week_label, d.uploaded_at);
-    if (!sel.year.includes('all') && !sel.year.includes(yr)) return false;
-    if (!sel.month.includes('all') && !sel.month.includes(mo)) return false;
-    return true;
-  });
-  const seenLabels = new Set();
-  const weeks = f2.filter(d => { if (seenLabels.has(d.week_label)) return false; seenLabels.add(d.week_label); return true; })
-    .map(d => ({ val: d.week_label, label: d.week_label }));
-  buildDrop('week', weeks);
+function toggleDatePicker() {
+  const pop = document.getElementById('datePickerPop');
+  const btn = document.getElementById('btn-daterange');
+  const isOpen = pop.classList.contains('open');
+  document.querySelectorAll('.ms-drop').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.ms-btn').forEach(b => b.classList.remove('open'));
+  if (isOpen) { pop.style.display = 'none'; pop.classList.remove('open'); btn.classList.remove('active'); return; }
+
+  // Init to current selections or today
+  const now = new Date();
+  if (dateFrom) { calState.year = dateFrom.getFullYear(); calState.month = dateFrom.getMonth(); }
+  else { calState.year = now.getFullYear(); calState.month = now.getMonth(); }
+  pickerFromDate = dateFrom ? new Date(dateFrom) : null;
+  pickerToDate   = dateTo   ? new Date(dateTo)   : null;
+  pickingStep    = pickerFromDate ? (pickerToDate ? 'from' : 'to') : 'from';
+
+  pop.style.display = 'block';
+  pop.classList.add('open');
+  btn.classList.add('active');
+  buildYearOptions();
+  renderCalendar();
+  updateStepUI();
 }
 
-function getFilteredData(ignoreBranch = false, ignoreMonth = false, ignoreWeek = false) {
+function buildYearOptions() {
+  const sel = document.getElementById('calYearSel');
+  if (!sel) return;
+  const cur = calState.year;
+  sel.innerHTML = '';
+  for (let y = cur - 3; y <= cur + 2; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === cur) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+
+function calMonthChange() {
+  const sel = document.getElementById('calMonthSel');
+  if (sel) calState.month = parseInt(sel.value);
+  renderCalendar();
+}
+function calYearChange() {
+  const sel = document.getElementById('calYearSel');
+  if (sel) calState.year = parseInt(sel.value);
+  buildYearOptions();
+  renderCalendar();
+}
+
+function shiftCal(dir) {
+  calState.month += dir;
+  if (calState.month > 11) { calState.month = 0; calState.year++; }
+  if (calState.month < 0)  { calState.month = 11; calState.year--; }
+  // Sync selects
+  const ms = document.getElementById('calMonthSel');
+  const ys = document.getElementById('calYearSel');
+  if (ms) ms.value = calState.month;
+  buildYearOptions();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const { year, month } = calState;
+  const ms = document.getElementById('calMonthSel');
+  const ys = document.getElementById('calYearSel');
+  if (ms) ms.value = month;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+  let html = DAYS.map(d => `<div class="cal-day-hdr">${d}</div>`).join('');
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-day cal-day-empty"></div>`;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d); date.setHours(0,0,0,0);
+    const isToday = date.getTime() === today.getTime();
+    const isFrom  = pickerFromDate && date.getTime() === pickerFromDate.getTime();
+    const isTo    = pickerToDate   && date.getTime() === pickerToDate.getTime();
+    const inRange = pickerFromDate && pickerToDate && date > pickerFromDate && date < pickerToDate;
+
+    let cls = 'cal-day';
+    if (isFrom && isTo)  cls += ' cal-day-selected';
+    else if (isFrom)     cls += ' cal-day-range-start';
+    else if (isTo)       cls += ' cal-day-range-end';
+    else if (inRange)    cls += ' cal-day-in-range';
+    if (isToday)         cls += ' cal-day-today';
+
+    html += `<div class="${cls}" onclick="pickDay(${year},${month},${d})">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function pickDay(year, month, day) {
+  const date = new Date(year, month, day); date.setHours(0,0,0,0);
+
+  if (pickingStep === 'from') {
+    pickerFromDate = date;
+    pickerToDate   = null;
+    pickingStep    = 'to';
+  } else {
+    if (date < pickerFromDate) {
+      pickerToDate   = pickerFromDate;
+      pickerFromDate = date;
+    } else {
+      pickerToDate = date;
+    }
+    pickingStep = 'from';
+  }
+  renderCalendar();
+  updateStepUI();
+}
+
+function updateStepUI() {
+  const fmt = d => d ? d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : null;
+  const fromEl   = document.getElementById('calStepFrom');
+  const toEl     = document.getElementById('calStepTo');
+  const fromVal  = document.getElementById('calStepFromVal');
+  const toVal    = document.getElementById('calStepToVal');
+  const selEl    = document.getElementById('date-picker-selection');
+
+  if (fromEl) fromEl.classList.toggle('active-step', pickingStep === 'from');
+  if (toEl)   toEl.classList.toggle('active-step',   pickingStep === 'to');
+
+  if (fromVal) {
+    fromVal.textContent = pickerFromDate ? fmt(pickerFromDate) : 'Select start';
+    fromVal.className   = 'cal-step-val' + (pickerFromDate ? ' set' : '');
+  }
+  if (toVal) {
+    toVal.textContent = pickerToDate ? fmt(pickerToDate) : 'Select end';
+    toVal.className   = 'cal-step-val' + (pickerToDate ? ' set' : '');
+  }
+  if (selEl) {
+    if (!pickerFromDate) { selEl.textContent = 'Click a date to set FROM'; selEl.className = 'date-picker-selection'; }
+    else if (!pickerToDate) { selEl.textContent = 'Now click a date to set TO'; selEl.className = 'date-picker-selection'; }
+    else { selEl.textContent = `${fmt(pickerFromDate)} → ${fmt(pickerToDate)}`; selEl.className = 'date-picker-selection has-range'; }
+  }
+}
+
+function applyDateRange() {
+  dateFrom = pickerFromDate;
+  dateTo   = pickerToDate || pickerFromDate;
+  const lbl = document.getElementById('lbl-daterange');
+  if (!dateFrom) {
+    lbl.textContent = 'Select Date/s From and To';
+  } else {
+    const fmt = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' });
+    lbl.textContent = dateTo && dateTo.getTime() !== dateFrom.getTime()
+      ? `${fmt(dateFrom)} – ${fmt(dateTo)}`
+      : fmt(dateFrom);
+  }
+  const pop = document.getElementById('datePickerPop');
+  const btn = document.getElementById('btn-daterange');
+  if (pop) { pop.style.display = 'none'; pop.classList.remove('open'); }
+  if (btn) btn.classList.remove('active');
+  renderDashboard();
+  const teamView = document.getElementById('view-team');
+  if (teamView && teamView.style.display !== 'none') renderTeam();
+}
+
+function clearDateRange() {
+  dateFrom = null; dateTo = null;
+  pickerFromDate = null; pickerToDate = null;
+  pickingStep = 'from';
+  document.getElementById('lbl-daterange').textContent = 'Select Date/s From and To';
+  renderCalendar();
+  updateStepUI();
+}
+
+function getFilteredData(ignoreBranch = false) {
   return allData.filter(d => {
     if (!ignoreBranch && !sel.branch.includes('all') && !sel.branch.includes(d.branch)) return false;
-    const yr = getYear(d.week_label, d.uploaded_at);
-    if (!sel.year.includes('all') && !sel.year.includes(yr)) return false;
-    const mo = getMonth(d.week_label, d.uploaded_at);
-    if (!ignoreMonth && !sel.month.includes('all') && !sel.month.includes(mo)) return false;
-    if (!ignoreWeek  && !sel.week.includes('all')  && !sel.week.includes(d.week_label)) return false;
+    if (dateFrom || dateTo) {
+      const up = new Date(d.uploaded_at); up.setHours(0,0,0,0);
+      if (dateFrom && up < dateFrom) return false;
+      if (dateTo   && up > dateTo)   return false;
+    }
     return true;
   });
 }
@@ -281,11 +448,11 @@ function aggByBranch() {
   Object.keys(BRANCH_INFO).forEach(code => {
     const rows = allData.filter(d => {
       if (d.branch !== code) return false;
-      const yr = getYear(d.week_label, d.uploaded_at);
-      const mo = getMonth(d.week_label, d.uploaded_at);
-      if (!sel.year.includes('all')  && !sel.year.includes(yr))   return false;
-      if (!sel.month.includes('all') && !sel.month.includes(mo))  return false;
-      if (!sel.week.includes('all')  && !sel.week.includes(d.week_label)) return false;
+      if (dateFrom || dateTo) {
+        const up = new Date(d.uploaded_at); up.setHours(0,0,0,0);
+        if (dateFrom && up < dateFrom) return false;
+        if (dateTo   && up > dateTo)   return false;
+      }
       return true;
     });
     result[code] = aggData(rows.map(d => d.data));
@@ -679,12 +846,15 @@ function renderDashboard() {
   (function () {
     const WEEKLY_GOALS_MAP = { SAA:[450000,550000], KCA:[320000,420000], AQ:[500000,650000], MC:[350000,450000], FRT:[200000,260000] };
     const activeBranches = sel.branch.includes('all') ? Object.keys(WEEKLY_GOALS_MAP) : sel.branch;
-    const hasWeek = !sel.week.includes('all');
+    const hasDateRange = !!(dateFrom && dateTo);
     let weekCount = 1;
-    if (!hasWeek) {
+    if (!hasDateRange) {
       const weekSet = new Set(filtered.map(d => d.week_label));
       const branchCount = activeBranches.length || 1;
       weekCount = Math.max(1, Math.round(weekSet.size / branchCount));
+    } else {
+      const diffDays = Math.round((dateTo - dateFrom) / (1000*60*60*24)) + 1;
+      weekCount = Math.max(1, Math.round(diffDays / 7));
     }
     let wMin = 0, wMax = 0;
     activeBranches.forEach(b => { if (WEEKLY_GOALS_MAP[b]) { wMin += WEEKLY_GOALS_MAP[b][0]; wMax += WEEKLY_GOALS_MAP[b][1]; } });
@@ -692,7 +862,7 @@ function renderDashboard() {
     const gMin = wMin * weekCount, gMax = wMax * weekCount;
     const goalMid = (gMin + gMax) / 2;
     const pct = Math.min(s.netTake / goalMid, 1.05);
-    const periodLabel = hasWeek ? 'week' : weekCount === 4 ? 'month (~4 wks)' : weekCount + ' week' + (weekCount>1?'s':'');
+    const periodLabel = hasDateRange ? `${weekCount} week${weekCount>1?'s':''}` : weekCount === 4 ? 'month (~4 wks)' : weekCount + ' week' + (weekCount>1?'s':'');
 
     const canvas = document.getElementById('dialCanvas');
     if (canvas) {
@@ -776,11 +946,11 @@ function aggByBranchT() {
   Object.keys(BRANCH_INFO).forEach(code => {
     const rows = allData.filter(d => {
       if (d.branch !== code) return false;
-      const yr = getYear(d.week_label, d.uploaded_at);
-      const mo = getMonth(d.week_label, d.uploaded_at);
-      if (!sel.year.includes('all')  && !sel.year.includes(yr))          return false;
-      if (!sel.month.includes('all') && !sel.month.includes(mo))         return false;
-      if (!sel.week.includes('all')  && !sel.week.includes(d.week_label))return false;
+      if (dateFrom || dateTo) {
+        const up = new Date(d.uploaded_at); up.setHours(0,0,0,0);
+        if (dateFrom && up < dateFrom) return false;
+        if (dateTo   && up > dateTo)   return false;
+      }
       return true;
     });
     result[code] = aggData(rows.map(d => d.data));
