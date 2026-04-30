@@ -518,10 +518,6 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 /* ===== DESKTOP LAYOUT FIX (DO NOT TOUCH ABOVE CODE) ===== */
 
-.main{
-  /* margin-left removed — layout uses flex, not absolute positioning */
-}
-
 .page{
   max-width:1200px !important;
   margin:0 auto !important;
@@ -1325,15 +1321,29 @@ function aggData(datasets){
   const hairMap={},beautyMap={};
   const s={totalClients:0,hairRetail:0,treatmentSales:0,colTake:0,beautySales:0,netTake:0,colPct:0,rebookPct:0};
   let totalRebooked=0,totalHairClients=0;
+  // Track retail provenance across all weeks aggregated so we can surface mismatches in UI
+  const retailWarnings=[];
   datasets.forEach(d=>{
     if(!d)return;
     const sm=d.summary||{};
-    s.totalClients+=sm.totalClients||0;s.hairRetail+=sm.hairRetail||0;s.treatmentSales+=sm.treatmentSales||0;
+    s.totalClients+=sm.totalClients||0;
+    // Retail: use summary.hairRetail (already daily-sum-prioritised by parser).
+    // Fallback: staff retail sum if summary is 0.
+    let weekRetail = Number(sm.hairRetail) || 0;
+    if (!weekRetail && Array.isArray(d.hairStaff)) {
+      weekRetail = d.hairStaff.reduce((a,st)=>a+(Number(st.retail)||0), 0);
+    }
+    s.hairRetail += weekRetail;
+    // Collect debug + mismatch info for badge surfacing
+    if (sm._retailDebug && sm._retailDebug.mismatch) {
+      retailWarnings.push(sm._retailDebug.mismatch);
+    }
+    s.treatmentSales+=sm.treatmentSales||0;
     s.colTake+=sm.colTake||0;s.beautySales+=sm.beautySales||0;s.netTake+=sm.netTake||0;
     if(sm.totals){totalRebooked+=sm.totals.rebooked||0;totalHairClients+=sm.totals.total||0;}
     (d.hairStaff||[]).forEach(st=>{
-      if(!hairMap[st.name])hairMap[st.name]={...st};
-      else{const a=hairMap[st.name];a.total+=st.total;a.newC+=st.newC;a.rebooked+=st.rebooked;a.hairSalesNet+=st.hairSalesNet;a.retail+=st.retail;a.treatments+=st.treatments;}
+      if(!hairMap[st.name])hairMap[st.name]={...st, retail: Number(st.retail)||0};
+      else{const a=hairMap[st.name];a.total+=st.total;a.newC+=st.newC;a.rebooked+=st.rebooked;a.hairSalesNet+=st.hairSalesNet;a.retail+=Number(st.retail)||0;a.treatments+=st.treatments;}
     });
     (d.beautyStaff||[]).forEach(st=>{
       if(!beautyMap[st.name])beautyMap[st.name]={...st};
@@ -1342,7 +1352,9 @@ function aggData(datasets){
   });
   s.avgBill=s.totalClients?(s.netTake/s.totalClients):0;
   s.treatmentPct=s.netTake?(s.treatmentSales/s.netTake*100):0;
+  // Retail % per locked decision: Retail ÷ Total Revenue (Net Salon Take)
   s.hairRetailPct=s.netTake?(s.hairRetail/s.netTake*100):0;
+  s._retailWarnings=retailWarnings;
   s.rebookPct=totalHairClients?(totalRebooked/totalHairClients*100):0;
   s.beautyPct=s.netTake?(s.beautySales/s.netTake*100):0;
   const totalNewC=Object.values(hairMap).reduce((acc,st)=>acc+(st.newC||0),0);
@@ -1616,12 +1628,19 @@ function renderDashboard(){
     <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
       <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#EEF3C7;flex-shrink:0"></span>
       <span class="section-label" style="margin:0;letter-spacing:0.16em;flex-shrink:0;white-space:nowrap">Revenue Run</span>
-      <span style="font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Service Sales · Treatment % · Retail % · Hair Avg Bill · Beauty Avg Bill</span>
+      <span style="font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Service Sales · Treatment % · Retail Sales · Retail % · Hair Avg Bill · Beauty Avg Bill</span>
     </div>
     <span class="support-toggle-arrow" id="arrow-revenueRun">▼</span>
   </div>
   <div class="support-section-body" id="body-revenueRun" style="display:none">
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:12px 0 4px">
+    ${(s._retailWarnings && s._retailWarnings.length) ? `
+      <div style="margin:8px 0;padding:10px 12px;background:rgba(251,191,36,.08);border-left:3px solid #fbbf24;border-radius:6px;font-size:11px;color:var(--text)">
+        <strong style="color:#fbbf24">⚠️ Retail data mismatch detected</strong> across ${s._retailWarnings.length} week(s).
+        Daily-sheet sum (used) differs from weekly summary row.
+        ${s._retailWarnings.slice(0,3).map(m => `Daily AED ${Math.round(m.daily).toLocaleString()} vs Summary AED ${Math.round(m.summary).toLocaleString()} (${m.pctDiff}% drift)`).join(' · ')}
+      </div>
+    ` : ''}
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:12px 0 4px">
 
       <!-- Service Sales -->
       <div class="metric m-lime">
@@ -1639,6 +1658,15 @@ function renderDashboard(){
         <div class="metric-value ${sc(s.treatmentPct, TARGETS.treatmentPct)}" style="font-size:20px">${fmtPct(s.treatmentPct)}</div>
         <div class="metric-target">Target: ≥ ${TARGETS.treatmentPct}%</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Upsell indicator</div>
+      </div>
+
+      <!-- Retail Sales (AED) — paired with Retail % -->
+      <div class="metric m-lime">
+        <div class="metric-label">Retail Sales</div>
+        <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Total retail / product sales)</em></div>
+        <div class="metric-value" style="font-size:20px">${fmtAED(s.hairRetail||0)}</div>
+        <div class="metric-target">Branch-based target</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">${(s._retailWarnings && s._retailWarnings.length) ? '⚠️ Source mismatch — see upload audit' : 'Product revenue'}</div>
       </div>
 
       <!-- Retail % -->
