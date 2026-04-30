@@ -5,25 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tara Rose Ladies Salon — Upload Portal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-[data-theme="light"]{
-  --bg:#F9E8DF;--surface:#fff;--surface2:#fdf8f6;--border:#e8d5cc;--border2:#f0e8e4;
-  --text:#5C5557;--muted:#9a8a87;--muted2:#a09898;--accent:#5C5557;--accent-fg:#F9E8DF;
-  --shadow:0 2px 12px rgba(92,85,87,0.08);--btn:#5C5557;--btn-hover:#4a4344;--btn-fg:#F9E8DF;
-  --good:#0F6E56;--good-bg:#E1F5EE;--bad:#A32D2D;--bad-bg:#FCEBEB;--warn:#BA7517;--warn-bg:#FAEEDA;
-  --toggle-knob:#5C5557;--col-header:#f0e8e4;
-}
-[data-theme="dark"]{
-  --bg:#2D2E37;--surface:#383944;--surface2:#3f4052;--border:rgba(250,248,243,0.09);--border2:rgba(250,248,243,0.05);
-  --text:#FAF8F3;--muted:rgba(250,248,243,0.55);--muted2:rgba(250,248,243,0.38);--accent:#FFD4D9;--accent-fg:#2D2E37;
-  --shadow:0 2px 16px rgba(0,0,0,0.28);--btn:#FFD4D9;--btn-hover:#ffc0c8;--btn-fg:#2D2E37;
-  --good:#99F6E4;--good-bg:rgba(153,246,228,0.12);--bad:#FF9B9B;--bad-bg:rgba(255,155,155,0.12);--warn:#EEF3C7;--warn-bg:rgba(238,243,199,0.12);
-  --toggle-knob:#FFD4D9;--col-header:#3f4052;
-}
+[data-theme="light"]{--bg:#F9E8DF;--surface:#fff;--surface2:#fdf8f6;--border:#e8d5cc;--border2:#f0e8e4;--text:#5C5557;--muted:#9a8a87;--muted2:#a09898;--accent:#5C5557;--accent-fg:#F9E8DF;--shadow:0 2px 12px rgba(92,85,87,0.08);--btn:#5C5557;--btn-hover:#4a4344;--btn-fg:#F9E8DF;--good:#0F6E56;--good-bg:#E1F5EE;--bad:#A32D2D;--bad-bg:#FCEBEB;--warn:#BA7517;--warn-bg:#FAEEDA;--toggle-knob:#5C5557;--col-header:#f0e8e4;}
+[data-theme="dark"]{--bg:#2D2E37;--surface:#383944;--surface2:#3f4052;--border:rgba(250,248,243,0.09);--border2:rgba(250,248,243,0.05);--text:#FAF8F3;--muted:rgba(250,248,243,0.55);--muted2:rgba(250,248,243,0.38);--accent:#FFD4D9;--accent-fg:#2D2E37;--shadow:0 2px 16px rgba(0,0,0,0.28);--btn:#FFD4D9;--btn-hover:#ffc0c8;--btn-fg:#2D2E37;--good:#99F6E4;--good-bg:rgba(153,246,228,0.12);--bad:#FF9B9B;--bad-bg:rgba(255,155,155,0.12);--warn:#EEF3C7;--warn-bg:rgba(238,243,199,0.12);--toggle-knob:#FFD4D9;--col-header:#3f4052;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
-
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);position:sticky;top:0;z-index:20}
 .logo-text .logo-name{font-family:'DM Sans',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text);line-height:1}
 .logo-text .logo-sub{font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted);margin-top:2px}
@@ -37,10 +25,16 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 [data-theme="dark"] .toggle-thumb{transform:translateX(18px)}
 .logout-btn{padding:6px 14px;border:1px solid var(--border);border-radius:18px;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:border-color .2s,color .2s}
 .logout-btn:hover{border-color:var(--bad);color:var(--bad)}
-
 .page{max-width:1400px;margin:0 auto;padding:28px 20px 60px}
 
-/* UPLOAD CARD */
+/* TABS */
+.tab-bar{display:flex;gap:4px;margin-bottom:20px;background:var(--surface);border-radius:12px;padding:5px;border:1px solid var(--border);width:fit-content}
+.tab-btn{padding:8px 20px;border-radius:8px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--btn);color:var(--btn-fg)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* CARDS */
 .upload-card{background:var(--surface);border-radius:16px;padding:24px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:24px}
 .card-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:500;color:var(--text);margin-bottom:3px}
 .card-sub{font-size:11px;color:var(--muted);letter-spacing:0.05em;margin-bottom:18px}
@@ -51,22 +45,25 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .btn{width:100%;padding:11px;background:var(--btn);color:var(--btn-fg);border:none;border-radius:10px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;transition:background .2s,opacity .2s;white-space:nowrap}
 .btn:hover{background:var(--btn-hover)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.status{padding:10px 14px;border-radius:10px;font-size:12px;margin-top:10px;text-align:center;display:none}
-.status.success{background:var(--good-bg);color:var(--good);display:block}
-.status.error{background:var(--bad-bg);color:var(--bad);display:block}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:7px 14px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-outline:hover{border-color:var(--accent);color:var(--text)}
+.btn-danger{background:transparent;border:1px solid var(--bad);color:var(--bad);border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-danger:hover{background:var(--bad-bg)}
+.btn-dl{background:transparent;border:1px solid var(--good);color:var(--good);border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-dl:hover{background:var(--good-bg)}
+.xlsx-badge{display:inline-flex;align-items:center;gap:5px;background:var(--good-bg);color:var(--good);border:1px solid var(--good);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px}
 
 /* WEEK LABEL ROW */
 .week-label-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:16px}
 
-/* FILE SLOTS GRID */
+/* FILE SLOTS */
 .file-slots{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
 @media(max-width:900px){.file-slots{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.file-slots{grid-template-columns:1fr 1fr}}
-
 .file-slot{border:1.5px dashed var(--border);border-radius:12px;padding:12px 10px;background:var(--surface2);transition:border-color .2s,background .2s;position:relative;cursor:pointer}
 .file-slot:hover,.file-slot.dragover{border-color:var(--accent);background:var(--bg)}
 .file-slot.has-file{border-style:solid;border-color:var(--good);background:var(--good-bg)}
-.file-slot.has-file .slot-icon{opacity:1}
+.file-slot.has-existing{border-style:solid;border-color:var(--warn);background:var(--warn-bg)}
 .slot-branch-name{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);margin-bottom:2px}
 .slot-branch-sub{font-size:10px;color:var(--muted);margin-bottom:8px}
 .slot-accent{height:2px;border-radius:2px;margin-bottom:10px}
@@ -74,38 +71,34 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .slot-icon{font-size:18px;opacity:.3;transition:opacity .2s;display:block;margin-bottom:4px}
 .slot-hint{font-size:10px;color:var(--muted);line-height:1.4}
 .slot-filename{font-size:10px;color:var(--good);font-weight:600;margin-top:4px;word-break:break-all;line-height:1.3}
+.slot-existing{font-size:9px;color:var(--warn);margin-top:4px;line-height:1.4}
 .slot-clear{position:absolute;top:6px;right:7px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;line-height:1;padding:2px;transition:color .2s}
 .slot-clear:hover{color:var(--bad)}
-.slot-override{margin-top:8px}
-.slot-override select{font-size:10px;padding:5px 8px;border-radius:7px}
 .slot-auto-tag{font-size:9px;color:var(--muted2);margin-top:4px;letter-spacing:0.06em;text-transform:uppercase}
 .slot-auto-tag.detected{color:var(--good)}
 
-/* UPLOAD PROGRESS */
+/* PROGRESS */
 .upload-progress{margin-top:12px}
 .prog-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px}
 .prog-branch{min-width:100px;color:var(--muted)}
 .prog-bar-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
 .prog-bar-fill{height:100%;border-radius:3px;transition:width .4s ease;width:0}
-.prog-status{min-width:60px;text-align:right;font-size:11px}
+.prog-status{min-width:70px;text-align:right;font-size:11px}
 .prog-status.ok{color:var(--good)}
 .prog-status.err{color:var(--bad)}
 .prog-status.pending{color:var(--muted2)}
 .prog-status.loading{color:var(--warn)}
 
-/* 5-COLUMN GRID */
+/* BRANCH COLS */
 .branches-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
 @media(max-width:1100px){.branches-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:700px){.branches-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.branches-grid{grid-template-columns:1fr}}
 .branch-col{background:var(--surface);border-radius:14px;border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
 .branch-col-header{padding:14px 16px;background:var(--col-header);border-bottom:1px solid var(--border)}
 .branch-col-name{font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text)}
 .branch-col-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .branch-col-accent{height:2px;border-radius:2px;margin-top:8px}
 .branch-col-body{padding:10px 12px}
-
-/* YEAR/MONTH */
 .year-section{margin-bottom:8px}
 .year-toggle{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:8px;cursor:pointer;background:var(--surface2);border:1px solid var(--border2);font-size:11px;font-weight:700;color:var(--text);letter-spacing:0.06em;user-select:none;transition:background .2s;margin-bottom:4px}
 .year-toggle:hover{background:var(--border2)}
@@ -118,8 +111,6 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .month-arrow.open{transform:rotate(180deg)}
 .month-count{font-size:10px;color:var(--muted2);margin-left:4px}
 .weeks-list{margin-left:8px;padding-bottom:4px}
-
-/* WEEK ITEM */
 .week-item{padding:7px 8px;border-radius:7px;margin-bottom:3px;border:1px solid var(--border2);background:var(--surface2);transition:background .2s}
 .week-item:hover{background:var(--border2)}
 .week-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
@@ -129,17 +120,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .icon-btn{background:none;border:none;cursor:pointer;padding:3px 5px;color:var(--muted);font-size:13px;line-height:1;transition:color .2s;border-radius:5px}
 .icon-btn:hover{color:var(--text)}
 .icon-btn.del:hover{color:var(--bad)}
-.edit-area{display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
-.edit-input{padding:7px 10px;border:1px solid var(--accent);border-radius:8px;font-size:12px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;width:100%}
-.edit-input:focus{outline:none}
-.edit-btns{display:flex;gap:6px;margin-top:7px}
-.save-btn{flex:1;padding:7px 0;background:var(--good-bg);color:var(--good);border:1px solid var(--good);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;transition:opacity .2s}
-.save-btn:hover{opacity:.8}
-.save-btn:disabled{opacity:.4;cursor:not-allowed}
-.cancel-btn{padding:7px 12px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:color .2s}
-.cancel-btn:hover{color:var(--text)}
+.icon-btn.dl:hover{color:var(--good)}
+.empty-col{font-size:11px;color:var(--muted2);text-align:center;padding:16px 8px}
 
-/* BULK RENAME SECTION */
+/* BULK RENAME */
 .bulk-rename-card{background:var(--surface);border-radius:16px;padding:20px 24px;border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:24px}
 .bulk-week-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
 .bulk-week-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2)}
@@ -154,7 +138,17 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .bulk-save-btn:hover{opacity:.8}
 .bulk-cancel-btn{padding:7px 10px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
 
-.empty-col{font-size:11px;color:var(--muted2);text-align:center;padding:16px 8px}
+/* DAILY OVERVIEW */
+.daily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.daily-branch-card{background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border2)}
+.daily-branch-name{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);margin-bottom:4px}
+.daily-accent{height:2px;border-radius:2px;margin-bottom:10px}
+.daily-record{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px}
+.daily-record:last-child{border-bottom:none}
+.daily-record-date{color:var(--text);font-weight:500}
+.daily-record-day{color:var(--muted);font-size:10px}
+.daily-record-total{color:var(--good);font-weight:600}
+.daily-record-actions{display:flex;gap:4px}
 
 /* LOGIN */
 .login-wrap{max-width:380px;margin:80px auto;background:var(--surface);border-radius:16px;padding:32px;border:1px solid var(--border);box-shadow:var(--shadow)}
@@ -178,6 +172,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .modal-btns{display:flex;gap:8px}
 .modal-confirm{flex:1;padding:10px;background:var(--good-bg);color:var(--good);border:1px solid var(--good);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.08em;text-transform:uppercase;transition:opacity .2s}
 .modal-confirm:hover{opacity:.8}
+.modal-confirm.danger{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
 .modal-cancel{padding:10px 16px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
 .modal-cancel:hover{color:var(--text);border-color:var(--text)}
 
@@ -187,24 +182,22 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 </head>
 <body>
 
-<!-- CONFIRM MODAL -->
 <div class="modal-overlay" id="confirmModal">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">Save Changes?</div>
-    <div class="modal-sub" id="modalSub">You're about to rename this week entry.</div>
-    <div class="modal-change">
+    <div class="modal-title" id="modalTitle">Confirm</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="modal-change" id="modalChange" style="display:none">
       <div class="modal-from" id="modalFrom"></div>
       <div style="font-size:11px;color:var(--muted2);margin:3px 0">↓ new name</div>
       <div class="modal-to" id="modalTo"></div>
       <div class="modal-branches" id="modalBranches"></div>
     </div>
     <div class="modal-btns">
-      <button class="modal-confirm" id="modalConfirmBtn">Yes, Save It</button>
+      <button class="modal-confirm" id="modalConfirmBtn">Confirm</button>
       <button class="modal-cancel" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 </div>
-
 <div id="toast"></div>
 
 <header>
@@ -243,44 +236,66 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 
   <!-- PORTAL -->
   <div id="portalSection" style="display:none">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('weekly')">📅 Weekly Upload</button>
+      <button class="tab-btn" onclick="switchTab('daily')">📆 Daily Upload (MTD)</button>
+    </div>
 
-    <!-- BULK UPLOAD CARD -->
-    <div class="upload-card">
-      <div class="card-title">Upload Weekly Data</div>
-      <div class="card-sub">Enter the week label once — it applies to all branches you upload</div>
-
-      <!-- WEEK LABEL -->
-      <div class="week-label-row">
-        <div class="field">
-          <label class="field-label">Week Label (applies to all files below)</label>
-          <input type="text" id="weekLabel" placeholder="e.g. March 2026 Week 4 (23–29)">
+    <!-- ══ WEEKLY TAB ══ -->
+    <div class="tab-content active" id="tab-weekly">
+      <div class="upload-card">
+        <div class="card-title">Upload Weekly Data</div>
+        <div class="card-sub">Upload one XLSX file per branch — reads the WEEKEND/weekly summary sheet automatically</div>
+        <div class="xlsx-badge">✦ XLSX Files Only</div>
+        <div class="week-label-row">
+          <div class="field">
+            <label class="field-label">Week Label (applies to all files below)</label>
+            <input type="text" id="weekLabel" placeholder="e.g. Apr 2026 Week 4 (20–26)" oninput="checkWeeklyBtn()">
+          </div>
+          <button class="btn" id="uploadWeeklyBtn" onclick="uploadAllWeekly()" disabled style="width:auto;padding:11px 28px">Upload All</button>
         </div>
-        <button class="btn" id="uploadBtn" onclick="uploadAll()" disabled style="width:auto;padding:11px 28px">Upload All</button>
+        <div class="file-slots" id="fileSlots"></div>
+        <div class="upload-progress" id="uploadProgress" style="display:none"></div>
       </div>
 
-      <!-- 5 FILE SLOTS -->
-      <div class="file-slots" id="fileSlots"></div>
+      <div class="bulk-rename-card">
+        <div class="card-title">Rename Week Labels</div>
+        <div class="card-sub">Editing one label renames it across ALL branches at once</div>
+        <div class="bulk-week-list" id="bulkWeekList"></div>
+      </div>
 
-      <!-- PROGRESS -->
-      <div class="upload-progress" id="uploadProgress" style="display:none"></div>
-
-      <div class="status" id="statusMsg"></div>
+      <div class="branches-grid" id="branchesGrid"></div>
     </div>
 
-    <!-- BULK RENAME CARD -->
-    <div class="bulk-rename-card">
-      <div class="card-title">Rename Week Labels</div>
-      <div class="card-sub">Each unique week label — editing one renames it across ALL branches at once</div>
-      <div class="bulk-week-list" id="bulkWeekList"></div>
-    </div>
+    <!-- ══ DAILY TAB ══ -->
+    <div class="tab-content" id="tab-daily">
+      <div class="upload-card">
+        <div class="card-title">Upload Daily Data (MTD)</div>
+        <div class="card-sub">Upload one XLSX per branch — reads Monday–Sunday sheets, stores each day separately for MTD tracking</div>
+        <div class="xlsx-badge">✦ XLSX Files Only — All 7 Daily Sheets</div>
+        <div class="file-slots" id="fileSlotsDaily"></div>
+        <div style="margin-top:12px">
+          <button class="btn" id="uploadDailyBtn" onclick="uploadAllDaily()" disabled>Upload All Daily Data</button>
+        </div>
+        <div class="upload-progress" id="uploadProgressDaily" style="display:none"></div>
+      </div>
 
-    <!-- 5 BRANCH COLUMNS (read-only overview) -->
-    <div class="branches-grid" id="branchesGrid"></div>
+      <div class="upload-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div class="card-title">Uploaded Daily Records</div>
+            <div class="card-sub" style="margin-bottom:0">Days stored per branch — delete or download individual records</div>
+          </div>
+          <button class="btn-outline" onclick="loadDailyOverview()" style="padding:8px 16px">↻ Refresh</button>
+        </div>
+        <div id="dailyOverview"><div style="font-size:12px;color:var(--muted2);padding:8px 0">Loading...</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-const PASS = 'AbuDhabi2026@';
+const PASS     = 'AbuDhabi2026@';
 const SUPA_URL = 'https://gvijxenafoowajqktqvd.supabase.co';
 const SUPA_KEY = 'sb_publishable_e5o0vPayb-6552oARTeu7Q_KoqfT7xO';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
@@ -293,20 +308,21 @@ const BRANCHES = {
   FRT:{ name:'Fratelli',     sub:'Barber Shop', color:'#EEF3C7' },
 };
 const BRANCH_KEYS = Object.keys(BRANCHES);
-// Keywords to auto-detect branch from filename
 const BRANCH_DETECT = {
-  KCA: ['kca','khalifa'],
-  SAA: ['saa','saadiyat'],
-  MC:  ['mc','motor'],
-  AQ:  ['aq','ladies','quoz'],
-  FRT: ['frt','fratelli','barber'],
+  KCA:['kca','khalifa'], SAA:['saa','saadiyat'], MC:['mc','motor'], AQ:['aq','ladies','quoz'], FRT:['frt','fratelli','barber'],
 };
+const DAY_SHEETS = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
+const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 let allData = [];
 const openState = {};
-// fileSlots: { [branchCode]: File|null }
 const fileSlots = {};
-BRANCH_KEYS.forEach(k => fileSlots[k] = null);
+const fileSlotsDaily = {};
+BRANCH_KEYS.forEach(k => { fileSlots[k] = null; fileSlotsDaily[k] = null; });
+
+// existing records cache per branch
+let existingWeekly = {}; // branch -> Set of week_labels
+let existingDaily  = {}; // branch -> Set of dates
 
 // ── THEME ──
 function toggleTheme() {
@@ -321,15 +337,24 @@ function togglePwVis() {
   eye.textContent = h ? '🙈' : '👁️';
 }
 
+// ── TAB ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (tab==='weekly'&&i===0)||(tab==='daily'&&i===1)));
+  document.getElementById('tab-weekly').classList.toggle('active', tab==='weekly');
+  document.getElementById('tab-daily').classList.toggle('active', tab==='daily');
+  if (tab==='daily') loadDailyOverview();
+}
+
 // ── AUTH ──
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem('tr_auth') === '1') showPortal();
   buildFileSlots();
+  buildFileSlotsDaily();
 });
 
 function login() {
   if (document.getElementById('pwInput').value === PASS) {
-    sessionStorage.setItem('tr_auth', '1'); showPortal();
+    sessionStorage.setItem('tr_auth','1'); showPortal();
   } else { document.getElementById('loginErr').textContent = 'Incorrect password.'; }
 }
 function showPortal() {
@@ -347,232 +372,453 @@ function logout() {
 }
 
 // ── FILE SLOTS ──
-function buildFileSlots() {
-  const container = document.getElementById('fileSlots');
-  container.innerHTML = BRANCH_KEYS.map(code => {
-    const info = BRANCHES[code];
-    return `
-      <div class="file-slot" id="slot_${code}" onclick="slotClick('${code}')">
-        <div class="slot-accent" style="background:${info.color}"></div>
-        <div class="slot-branch-name">${info.name}</div>
-        <div class="slot-branch-sub">${info.sub}</div>
-        <div class="slot-drop-area" id="slotDrop_${code}">
-          <span class="slot-icon">📂</span>
-          <div class="slot-hint">Click or drag & drop<br>TSV file here</div>
-        </div>
-        <div class="slot-override" id="slotOverride_${code}" style="display:none">
-          <label class="field-label" style="margin-bottom:4px">Branch override</label>
-          <select id="slotSel_${code}" onchange="event.stopPropagation();slotOverride('${code}')">
-            ${BRANCH_KEYS.map(k => `<option value="${k}" ${k===code?'selected':''}>${BRANCHES[k].name}</option>`).join('')}
-          </select>
-        </div>
-        <button class="slot-clear" id="slotClear_${code}" style="display:none" onclick="event.stopPropagation();clearSlot('${code}')">✕</button>
-        <input type="file" id="slotInput_${code}" accept=".tsv,.txt" style="display:none"
-          onchange="slotFileChosen('${code}', this.files[0])">
-      </div>`;
-  }).join('');
-
-  // drag & drop per slot
-  BRANCH_KEYS.forEach(code => {
-    const el = document.getElementById('slot_' + code);
-    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
-    el.addEventListener('dragleave', () => el.classList.remove('dragover'));
-    el.addEventListener('drop', e => {
-      e.preventDefault(); el.classList.remove('dragover');
-      const f = e.dataTransfer.files[0];
-      if (f) slotFileChosen(code, f, true);
-    });
+function slotHTML(code, mode) {
+  const info = BRANCHES[code];
+  const pre = mode === 'daily' ? 'd' : '';
+  return `
+    <div class="file-slot" id="${pre}slot_${code}" onclick="${mode==='daily'?'dSlotClick':'slotClick'}('${code}')">
+      <div class="slot-accent" style="background:${info.color}"></div>
+      <div class="slot-branch-name">${info.name}</div>
+      <div class="slot-branch-sub">${info.sub}</div>
+      <div class="slot-drop-area" id="${pre}slotDrop_${code}">
+        <span class="slot-icon">📊</span>
+        <div class="slot-hint">Click or drag & drop<br>.xlsx file here</div>
+      </div>
+      <button class="slot-clear" id="${pre}slotClear_${code}" style="display:none" onclick="event.stopPropagation();${mode==='daily'?'dClearSlot':'clearSlot'}('${code}')">✕</button>
+      <input type="file" id="${pre}slotInput_${code}" accept=".xlsx" style="display:none"
+        onchange="${mode==='daily'?'dSlotFileChosen':'slotFileChosen'}('${code}',this.files[0])">
+    </div>`;
+}
+function setupDnD(code, mode) {
+  const pre = mode === 'daily' ? 'd' : '';
+  const el = document.getElementById(`${pre}slot_${code}`);
+  if (!el) return;
+  el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('dragover'); });
+  el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+  el.addEventListener('drop', e => {
+    e.preventDefault(); el.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) mode==='daily' ? dSlotFileChosen(code,f) : slotFileChosen(code,f);
   });
 }
-
-function slotClick(code) {
-  document.getElementById('slotInput_' + code).click();
+function buildFileSlots() {
+  document.getElementById('fileSlots').innerHTML = BRANCH_KEYS.map(c => slotHTML(c,'weekly')).join('');
+  BRANCH_KEYS.forEach(c => setupDnD(c,'weekly'));
 }
+function buildFileSlotsDaily() {
+  document.getElementById('fileSlotsDaily').innerHTML = BRANCH_KEYS.map(c => slotHTML(c,'daily')).join('');
+  BRANCH_KEYS.forEach(c => setupDnD(c,'daily'));
+}
+
+function slotClick(code)  { document.getElementById('slotInput_'+code).click(); }
+function dSlotClick(code) { document.getElementById('dslotInput_'+code).click(); }
 
 function detectBranch(filename) {
   const lower = filename.toLowerCase();
-  for (const [code, keywords] of Object.entries(BRANCH_DETECT)) {
-    if (keywords.some(kw => lower.includes(kw))) return code;
+  for (const [code, kws] of Object.entries(BRANCH_DETECT)) {
+    if (kws.some(kw => lower.includes(kw))) return code;
   }
   return null;
 }
 
-function slotFileChosen(slotCode, file, fromDrop = false) {
+function slotFileChosen(slotCode, file) {
   if (!file) return;
-  // Auto-detect branch from filename
   const detected = detectBranch(file.name);
-  const targetCode = detected || slotCode;
-
-  // If detected branch differs from slot, move to correct slot
-  if (detected && detected !== slotCode) {
-    // put file in the detected slot
-    setSlotFile(detected, file, true);
-    // show a brief note
-    showToast(`Auto-assigned ${file.name} → ${BRANCHES[detected].name}`);
-  } else {
-    setSlotFile(slotCode, file, !!detected);
-  }
-  checkUploadBtn();
+  const target = detected || slotCode;
+  if (detected && detected !== slotCode) { setSlotFile(detected, file, true, 'weekly'); showToast(`Auto-assigned → ${BRANCHES[detected].name}`); }
+  else setSlotFile(slotCode, file, !!detected, 'weekly');
+  checkWeeklyBtn();
+}
+function dSlotFileChosen(slotCode, file) {
+  if (!file) return;
+  const detected = detectBranch(file.name);
+  const target = detected || slotCode;
+  if (detected && detected !== slotCode) { setSlotFile(detected, file, true, 'daily'); showToast(`Auto-assigned → ${BRANCHES[detected].name}`); }
+  else setSlotFile(slotCode, file, !!detected, 'daily');
+  checkDailyBtn();
 }
 
-function setSlotFile(code, file, autoDetected) {
-  fileSlots[code] = file;
-  const slot = document.getElementById('slot_' + code);
-  const drop = document.getElementById('slotDrop_' + code);
-  const clear = document.getElementById('slotClear_' + code);
-  const override = document.getElementById('slotOverride_' + code);
-
+function setSlotFile(code, file, auto, mode) {
+  const pre = mode==='daily' ? 'd' : '';
+  if (mode==='daily') fileSlotsDaily[code] = file;
+  else fileSlots[code] = file;
+  const slot = document.getElementById(`${pre}slot_${code}`);
+  const drop = document.getElementById(`${pre}slotDrop_${code}`);
+  const clr  = document.getElementById(`${pre}slotClear_${code}`);
   slot.classList.add('has-file');
-  clear.style.display = 'block';
-  override.style.display = 'block';
+  clr.style.display = 'block';
+
+  // Check existing data warning
+  let existWarn = '';
+  if (mode==='weekly' && existingWeekly[code] && existingWeekly[code].size > 0) {
+    existWarn = `<div class="slot-existing">⚠️ ${existingWeekly[code].size} week(s) already uploaded</div>`;
+  }
+  if (mode==='daily' && existingDaily[code] && existingDaily[code].size > 0) {
+    existWarn = `<div class="slot-existing">⚠️ ${existingDaily[code].size} day(s) already in system</div>`;
+    slot.classList.add('has-existing');
+  }
 
   drop.innerHTML = `
     <span class="slot-icon" style="opacity:1">✅</span>
     <div class="slot-filename">${file.name}</div>
-    <div class="slot-auto-tag ${autoDetected ? 'detected' : ''}">${autoDetected ? '⚡ auto-detected' : 'manually assigned'}</div>`;
+    <div class="slot-auto-tag ${auto?'detected':''}">${auto?'⚡ auto-detected':'manually assigned'}</div>
+    ${existWarn}`;
 }
 
 function clearSlot(code) {
   fileSlots[code] = null;
-  const slot = document.getElementById('slot_' + code);
-  slot.classList.remove('has-file');
-  document.getElementById('slotClear_' + code).style.display = 'none';
-  document.getElementById('slotOverride_' + code).style.display = 'none';
-  document.getElementById('slotDrop_' + code).innerHTML = `
-    <span class="slot-icon">📂</span>
-    <div class="slot-hint">Click or drag & drop<br>TSV file here</div>`;
-  document.getElementById('slotInput_' + code).value = '';
-  checkUploadBtn();
+  resetSlot(code, 'weekly');
+  checkWeeklyBtn();
+}
+function dClearSlot(code) {
+  fileSlotsDaily[code] = null;
+  resetSlot(code, 'daily');
+  checkDailyBtn();
+}
+function resetSlot(code, mode) {
+  const pre = mode==='daily' ? 'd' : '';
+  const slot = document.getElementById(`${pre}slot_${code}`);
+  const drop = document.getElementById(`${pre}slotDrop_${code}`);
+  const clr  = document.getElementById(`${pre}slotClear_${code}`);
+  slot.classList.remove('has-file','has-existing','dragover');
+  clr.style.display = 'none';
+  drop.innerHTML = `<span class="slot-icon">📊</span><div class="slot-hint">Click or drag & drop<br>.xlsx file here</div>`;
+  const inp = document.getElementById(`${pre}slotInput_${code}`);
+  if (inp) inp.value = '';
 }
 
-function slotOverride(code) {
-  const newCode = document.getElementById('slotSel_' + code).value;
-  if (newCode === code) return;
-  const file = fileSlots[code];
-  clearSlot(code);
-  setSlotFile(newCode, file, false);
-  checkUploadBtn();
-}
-
-function checkUploadBtn() {
+function checkWeeklyBtn() {
   const hasFile = BRANCH_KEYS.some(k => fileSlots[k]);
   const hasLabel = document.getElementById('weekLabel').value.trim().length > 0;
-  document.getElementById('uploadBtn').disabled = !(hasFile && hasLabel);
+  document.getElementById('uploadWeeklyBtn').disabled = !(hasFile && hasLabel);
 }
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('weekLabel').addEventListener('input', checkUploadBtn);
-});
+function checkDailyBtn() {
+  document.getElementById('uploadDailyBtn').disabled = !BRANCH_KEYS.some(k => fileSlotsDaily[k]);
+}
 
-// ── UPLOAD ALL ──
-async function uploadAll() {
+// ── XLSX PARSER: WEEKLY ──
+async function parseXLSXWeekly(file) {
+  const ab = await file.arrayBuffer();
+  const wb = XLSX.read(ab, { type:'array' });
+  const sheetName = wb.SheetNames.find(s => s.toUpperCase()==='WEEKEND') || wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
+  const parseAED = v => parseFloat(String(v||'').replace(/AED|,|\s/g,'').replace(/[^\d.\-]/g,''))||0;
+  const hairStaff=[], beautyStaff=[];
+  let summary={}, inBeauty=false, hairHdr=false, beautyHdr=false;
+  for (let i=0;i<rows.length;i++) {
+    const cols=rows[i].map(c=>c!==null&&c!==undefined?String(c).trim():'');
+    const first=cols[0];
+    if (!first&&cols.every(c=>!c)) continue;
+    if (cols.includes('HAIR SALES TAKE')&&!inBeauty){hairHdr=true;continue;}
+    if (cols.includes('BEAUTY SALES TAKE')){inBeauty=true;beautyHdr=true;continue;}
+    if (first==='TOTAL CLIENTS'){summary.totalClients=parseInt(cols[1])||0;continue;}
+    if (first==='HAIR RETAIL SALES'){summary.hairRetail=parseAED(cols[1]);continue;}
+    if (first==='TREATMENT SALES'){summary.treatmentSales=parseAED(cols[1]);continue;}
+    if (first==='COL TAKE AED'){summary.colTake=parseAED(cols[1]);continue;}
+    if (first==='BEAUTY SALES'){summary.beautySales=parseAED(cols[1]);continue;}
+    if (first==='NET SALON TAKE'){summary.netTake=parseAED(cols[1]);summary.avgBill=parseFloat(cols[2])||0;continue;}
+    if (!inBeauty&&hairHdr&&first&&first!=='STAFF'&&first!=='TOTALS'){
+      const s={name:first,total:parseInt(cols[7])||0,hairSales:parseAED(cols[8]),hairSalesNet:parseAED(cols[9]),retail:parseAED(cols[22]),treatments:parseAED(cols[29]),totalNet:parseAED(cols[31])};
+      if(s.total>0) hairStaff.push(s);
+    }
+    if (inBeauty&&beautyHdr&&first&&first!=='STAFF'&&first!=='TOTALS'){
+      const s={name:first,total:parseInt(cols[7])||0,beautySales:parseAED(cols[8]),beautyNet:parseAED(cols[9])};
+      if(s.total>0) beautyStaff.push(s);
+    }
+    if (!inBeauty&&first==='TOTALS'){summary.totals={hairSales:parseAED(cols[8]),hairSalesNet:parseAED(cols[9]),retail:parseAED(cols[22]),treatments:parseAED(cols[29])};}
+  }
+  return { hairStaff, beautyStaff, summary };
+}
+
+// ── XLSX PARSER: DAILY ──
+async function parseXLSXDaily(file, branchCode) {
+  const ab = await file.arrayBuffer();
+  const wb = XLSX.read(ab, { type:'array', cellDates:true });
+  const results = [];
+  for (const sheetName of wb.SheetNames) {
+    const upper = sheetName.toUpperCase();
+    if (!DAY_SHEETS.includes(upper)) continue;
+    const ws = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
+
+    // Get date from A1
+    let date = null;
+    const cell0 = rows[0] && rows[0][0];
+    if (cell0 instanceof Date) {
+      date = cell0.toISOString().split('T')[0];
+    } else if (typeof cell0==='number') {
+      const d = new Date(Math.round((cell0-25569)*86400*1000));
+      date = d.toISOString().split('T')[0];
+    } else if (typeof cell0==='string'&&cell0.includes('/')) {
+      const p=cell0.split('/');
+      if(p.length===3) date=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    }
+    if (!date) continue;
+
+    // Find summary w/o Tax
+    let summaryRow=-1;
+    for (let i=0;i<rows.length;i++){
+      if(rows[i]&&rows[i][0]&&String(rows[i][0]).includes('w/o Tax')){summaryRow=i;break;}
+    }
+    if (summaryRow===-1) continue;
+
+    const g=(r,c)=>{const row=rows[summaryRow+r];return row?(parseFloat(row[c])||0):0;};
+    results.push({
+      branch:branchCode, date, day_of_week:upper,
+      hair_sales:g(2,3), retail_total:g(3,3), treatments_total:g(4,3),
+      beauty_sales:g(5,3), beauty_retail:g(6,3), total:g(8,3),
+      hair_clients_request:g(11,1), hair_clients_salon:g(12,1),
+      hair_new:g(13,1), hair_ncr:g(14,1), hair_rebooked:g(15,1),
+      beauty_request:g(11,3), beauty_salon:g(12,3),
+      beauty_new:g(13,3), beauty_rebooked:g(15,3),
+      new_clients:g(12,6), col_units:g(2,7), ker_units:g(3,7), ext_units:0,
+    });
+  }
+  return results;
+}
+
+// ── UPLOAD WEEKLY ──
+async function uploadAllWeekly() {
   const weekLabel = document.getElementById('weekLabel').value.trim();
   if (!weekLabel) { alert('Please enter a week label.'); return; }
-
   const toUpload = BRANCH_KEYS.filter(k => fileSlots[k]);
-  if (!toUpload.length) { alert('Please add at least one TSV file.'); return; }
-
-  document.getElementById('uploadBtn').disabled = true;
-  document.getElementById('uploadBtn').textContent = 'Uploading...';
-
-  // Build progress UI
+  if (!toUpload.length) { alert('Please add at least one XLSX file.'); return; }
+  document.getElementById('uploadWeeklyBtn').disabled = true;
+  document.getElementById('uploadWeeklyBtn').textContent = 'Uploading...';
   const prog = document.getElementById('uploadProgress');
   prog.style.display = 'block';
-  prog.innerHTML = toUpload.map(code => `
+  prog.innerHTML = toUpload.map(code=>`
     <div class="prog-row">
       <span class="prog-branch">${BRANCHES[code].name}</span>
       <div class="prog-bar-track"><div class="prog-bar-fill" id="pb_${code}" style="background:${BRANCHES[code].color}"></div></div>
       <span class="prog-status pending" id="ps_${code}">Waiting…</span>
     </div>`).join('');
-
-  let allOk = true;
+  let allOk=true;
   for (const code of toUpload) {
-    document.getElementById('ps_' + code).textContent = 'Uploading…';
-    document.getElementById('ps_' + code).className = 'prog-status loading';
-    document.getElementById('pb_' + code).style.width = '40%';
-
+    document.getElementById('ps_'+code).textContent='Parsing…';
+    document.getElementById('ps_'+code).className='prog-status loading';
+    document.getElementById('pb_'+code).style.width='30%';
     try {
-      const text = await fileSlots[code].text();
-      const data = parseTSV(text);
-      const { error } = await sb.from('weekly_data').insert({ branch: code, week_label: weekLabel, data });
+      const data = await parseXLSXWeekly(fileSlots[code]);
+      document.getElementById('pb_'+code).style.width='60%';
+      const {error} = await sb.from('weekly_data').insert({branch:code,week_label:weekLabel,data});
       if (error) throw error;
-      document.getElementById('pb_' + code).style.width = '100%';
-      document.getElementById('ps_' + code).textContent = '✅ Done';
-      document.getElementById('ps_' + code).className = 'prog-status ok';
+      document.getElementById('pb_'+code).style.width='100%';
+      document.getElementById('ps_'+code).textContent='✅ Done';
+      document.getElementById('ps_'+code).className='prog-status ok';
     } catch(e) {
-      document.getElementById('pb_' + code).style.width = '100%';
-      document.getElementById('pb_' + code).style.background = 'var(--bad)';
-      document.getElementById('ps_' + code).textContent = '❌ Failed';
-      document.getElementById('ps_' + code).className = 'prog-status err';
-      allOk = false;
+      document.getElementById('pb_'+code).style.width='100%';
+      document.getElementById('pb_'+code).style.background='var(--bad)';
+      document.getElementById('ps_'+code).textContent='❌ Failed';
+      document.getElementById('ps_'+code).className='prog-status err';
+      console.error(code,e); allOk=false;
     }
   }
-
   if (allOk) {
-    showToast('✅ All files uploaded!');
-    document.getElementById('weekLabel').value = '';
-    BRANCH_KEYS.forEach(k => { if (fileSlots[k]) clearSlot(k); });
-    setTimeout(() => { prog.style.display = 'none'; prog.innerHTML = ''; }, 2000);
+    showToast('✅ All weekly files uploaded!');
+    document.getElementById('weekLabel').value='';
+    BRANCH_KEYS.forEach(k=>{if(fileSlots[k])clearSlot(k);});
+    setTimeout(()=>{prog.style.display='none';prog.innerHTML='';},2000);
   }
-
-  document.getElementById('uploadBtn').disabled = false;
-  document.getElementById('uploadBtn').textContent = 'Upload All';
+  document.getElementById('uploadWeeklyBtn').disabled=false;
+  document.getElementById('uploadWeeklyBtn').textContent='Upload All';
   await loadData();
 }
 
-// ── HELPERS ──
-function extractYear(label, uploaded_at) {
-  const m = label && label.match(/20\d\d/);
-  if (m) return m[0];
-  return uploaded_at ? new Date(uploaded_at).getFullYear().toString() : '2026';
+// ── UPLOAD DAILY ──
+async function uploadAllDaily() {
+  const toUpload = BRANCH_KEYS.filter(k => fileSlotsDaily[k]);
+  if (!toUpload.length) { alert('Please add at least one XLSX file.'); return; }
+  const btn = document.getElementById('uploadDailyBtn');
+  btn.disabled=true; btn.textContent='Uploading...';
+  const prog = document.getElementById('uploadProgressDaily');
+  prog.style.display='block';
+  prog.innerHTML = toUpload.map(code=>`
+    <div class="prog-row">
+      <span class="prog-branch">${BRANCHES[code].name}</span>
+      <div class="prog-bar-track"><div class="prog-bar-fill" id="dpb_${code}" style="background:${BRANCHES[code].color}"></div></div>
+      <span class="prog-status pending" id="dps_${code}">Waiting…</span>
+    </div>`).join('');
+  let allOk=true;
+  for (const code of toUpload) {
+    document.getElementById('dps_'+code).textContent='Parsing…';
+    document.getElementById('dps_'+code).className='prog-status loading';
+    document.getElementById('dpb_'+code).style.width='20%';
+    try {
+      const dailyRows = await parseXLSXDaily(fileSlotsDaily[code], code);
+      if (!dailyRows.length) throw new Error('No daily sheets found');
+      document.getElementById('dpb_'+code).style.width='50%';
+      document.getElementById('dps_'+code).textContent=`Uploading ${dailyRows.length} days…`;
+      // Delete existing for same branch + dates (overwrite)
+      const dates = dailyRows.map(r=>r.date);
+      await sb.from('daily_data').delete().eq('branch',code).in('date',dates);
+      const {error} = await sb.from('daily_data').insert(dailyRows);
+      if (error) throw error;
+      document.getElementById('dpb_'+code).style.width='100%';
+      document.getElementById('dps_'+code).textContent=`✅ ${dailyRows.length} days`;
+      document.getElementById('dps_'+code).className='prog-status ok';
+    } catch(e) {
+      document.getElementById('dpb_'+code).style.width='100%';
+      document.getElementById('dpb_'+code).style.background='var(--bad)';
+      document.getElementById('dps_'+code).textContent='❌ Failed';
+      document.getElementById('dps_'+code).className='prog-status err';
+      console.error(code,e); allOk=false;
+    }
+  }
+  if (allOk) {
+    showToast('✅ All daily data uploaded!');
+    BRANCH_KEYS.forEach(k=>{if(fileSlotsDaily[k])dClearSlot(k);});
+    setTimeout(()=>{prog.style.display='none';prog.innerHTML='';},2000);
+  }
+  btn.disabled=false; btn.textContent='Upload All Daily Data';
+  await loadDailyOverview();
 }
-function extractMonth(label, uploaded_at) {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  for (const mo of months) { if (label && label.includes(mo)) return mo; }
-  if (uploaded_at) return new Date(uploaded_at).toLocaleDateString('en-GB', { month: 'short' });
-  return '—';
-}
-const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── LOAD ──
+// ── LOAD DATA ──
 async function loadData() {
-  const { data, error } = await sb.from('weekly_data').select('id,branch,week_label,uploaded_at').order('uploaded_at', { ascending: false });
-  allData = (error || !data) ? [] : data;
+  const {data,error} = await sb.from('weekly_data').select('id,branch,week_label,uploaded_at').order('uploaded_at',{ascending:false});
+  allData = (error||!data) ? [] : data;
+  // Build existing weekly cache
+  existingWeekly = {};
+  BRANCH_KEYS.forEach(k => existingWeekly[k] = new Set());
+  allData.forEach(d => existingWeekly[d.branch]?.add(d.week_label));
   renderBulkRename();
   renderColumns();
 }
 
+async function loadDailyOverview() {
+  const {data,error} = await sb.from('daily_data')
+    .select('id,branch,date,day_of_week,total,hair_sales,beauty_sales')
+    .order('date',{ascending:false});
+
+  // Build existing daily cache
+  existingDaily = {};
+  BRANCH_KEYS.forEach(k => existingDaily[k] = new Set());
+  if (data) data.forEach(d => existingDaily[d.branch]?.add(d.date));
+
+  const container = document.getElementById('dailyOverview');
+  if (error||!data||!data.length) {
+    container.innerHTML='<div style="font-size:12px;color:var(--muted2);padding:8px 0">No daily data uploaded yet.</div>';
+    return;
+  }
+  // Group by branch
+  const byBranch={};
+  data.forEach(d=>{if(!byBranch[d.branch])byBranch[d.branch]=[];byBranch[d.branch].push(d);});
+
+  container.innerHTML=`<div class="daily-grid">${
+    BRANCH_KEYS.filter(k=>byBranch[k]).map(k=>{
+      const rows=byBranch[k];
+      const total=rows.reduce((s,r)=>s+(r.total||0),0);
+      return `
+        <div class="daily-branch-card">
+          <div class="daily-branch-name">${BRANCHES[k].name}</div>
+          <div class="daily-accent" style="background:${BRANCHES[k].color}"></div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:8px">
+            <span style="color:var(--muted)">${rows.length} days</span>
+            <span style="color:var(--good);font-weight:700">AED ${Math.round(total).toLocaleString()}</span>
+          </div>
+          <div style="max-height:280px;overflow-y:auto">
+            ${rows.map(r=>`
+              <div class="daily-record">
+                <div>
+                  <div class="daily-record-date">${r.date}</div>
+                  <div class="daily-record-day">${r.day_of_week}</div>
+                </div>
+                <div class="daily-record-total">AED ${Math.round(r.total||0).toLocaleString()}</div>
+                <div class="daily-record-actions">
+                  <button class="btn-dl" onclick="downloadDailyRecord('${r.id}','${r.branch}','${r.date}')" title="Download">↓</button>
+                  <button class="btn-danger" onclick="deleteDailyRecord('${r.id}','${r.date}')" title="Delete">✕</button>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('')
+  }</div>`;
+}
+
+// ── DELETE / DOWNLOAD ──
+async function deleteDailyRecord(id, date) {
+  openModal({
+    title: 'Delete Daily Record?',
+    sub: `This will permanently delete the record for ${date}. This cannot be undone.`,
+    confirmText: '🗑 Delete',
+    danger: true,
+    onConfirm: async () => {
+      closeModal();
+      await sb.from('daily_data').delete().eq('id',id);
+      showToast('🗑 Record deleted');
+      await loadDailyOverview();
+    }
+  });
+}
+
+async function downloadDailyRecord(id, branch, date) {
+  const {data,error} = await sb.from('daily_data').select('*').eq('id',id).single();
+  if (error||!data) { showToast('❌ Download failed'); return; }
+  const rows=[
+    ['Branch','Date','Day','Hair Sales','Retail','Treatments','Beauty Sales','Beauty Retail','Total','Hair Req','Hair Salon','Hair New','Hair NCR','Hair Rebooked','Beauty Req','Beauty Salon','Beauty New','Beauty Rebooked','New Clients','COL Units','KER Units'],
+    [data.branch,data.date,data.day_of_week,data.hair_sales,data.retail_total,data.treatments_total,data.beauty_sales,data.beauty_retail,data.total,data.hair_clients_request,data.hair_clients_salon,data.hair_new,data.hair_ncr,data.hair_rebooked,data.beauty_request,data.beauty_salon,data.beauty_new,data.beauty_rebooked,data.new_clients,data.col_units,data.ker_units]
+  ];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`${branch}_${date}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Downloaded!');
+}
+
+async function deleteWeek(id) {
+  openModal({
+    title: 'Delete Weekly Entry?',
+    sub: 'This will permanently delete this weekly upload. Cannot be undone.',
+    confirmText: '🗑 Delete',
+    danger: true,
+    onConfirm: async () => {
+      closeModal();
+      await sb.from('weekly_data').delete().eq('id',id);
+      showToast('🗑 Entry deleted');
+      await loadData();
+    }
+  });
+}
+
+async function downloadWeekly(id, branch, label) {
+  const {data,error} = await sb.from('weekly_data').select('*').eq('id',id).single();
+  if (error||!data) { showToast('❌ Download failed'); return; }
+  const json = JSON.stringify(data.data, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`${branch}_${label.replace(/[^a-z0-9]/gi,'_')}.json`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ Downloaded!');
+}
+
 // ── BULK RENAME ──
 function renderBulkRename() {
-  // Group by unique week_label
-  const labelMap = {}; // label → [{ id, branch }]
-  allData.forEach(d => {
-    if (!labelMap[d.week_label]) labelMap[d.week_label] = [];
-    labelMap[d.week_label].push({ id: d.id, branch: d.branch });
+  const labelMap={};
+  allData.forEach(d=>{if(!labelMap[d.week_label])labelMap[d.week_label]=[];labelMap[d.week_label].push({id:d.id,branch:d.branch});});
+  const sorted=Object.keys(labelMap).sort((a,b)=>{
+    const aL=Math.max(...labelMap[a].map(r=>new Date(allData.find(d=>d.id===r.id)?.uploaded_at||0)));
+    const bL=Math.max(...labelMap[b].map(r=>new Date(allData.find(d=>d.id===r.id)?.uploaded_at||0)));
+    return bL-aL;
   });
-
-  const sorted = Object.keys(labelMap).sort((a, b) => {
-    // Sort by most recent uploaded_at for that label
-    const aLatest = Math.max(...labelMap[a].map(r => new Date(allData.find(d=>d.id===r.id)?.uploaded_at||0)));
-    const bLatest = Math.max(...labelMap[b].map(r => new Date(allData.find(d=>d.id===r.id)?.uploaded_at||0)));
-    return bLatest - aLatest;
-  });
-
-  const container = document.getElementById('bulkWeekList');
-  if (!sorted.length) { container.innerHTML = '<div style="font-size:12px;color:var(--muted2);padding:12px 0">No data uploaded yet.</div>'; return; }
-
-  container.innerHTML = sorted.map(lbl => {
-    const rows = labelMap[lbl];
-    const branchNames = rows.map(r => BRANCHES[r.branch]?.name || r.branch).join(', ');
-    const safeId = 'bwr_' + btoa(encodeURIComponent(lbl)).replace(/[^a-zA-Z0-9]/g,'').slice(0,16);
-    const safeVal = lbl.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const container=document.getElementById('bulkWeekList');
+  if(!sorted.length){container.innerHTML='<div style="font-size:12px;color:var(--muted2);padding:12px 0">No data uploaded yet.</div>';return;}
+  container.innerHTML=sorted.map(lbl=>{
+    const rows=labelMap[lbl];
+    const names=rows.map(r=>BRANCHES[r.branch]?.name||r.branch).join(', ');
+    const safeId='bwr_'+btoa(encodeURIComponent(lbl)).replace(/[^a-zA-Z0-9]/g,'').slice(0,16);
+    const safeVal=lbl.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     return `
       <div class="bulk-week-row" id="${safeId}">
         <div style="flex:1;min-width:0">
           <div class="bulk-week-label" id="blbl_${safeId}">${lbl}</div>
-          <div class="bulk-week-count">${rows.length} branch${rows.length>1?'es':''}: ${branchNames}</div>
+          <div class="bulk-week-count">${rows.length} branch${rows.length>1?'es':''}: ${names}</div>
           <div class="bulk-inline-edit" id="bedit_${safeId}">
-            <input type="text" value="${safeVal}" id="binp_${safeId}"
-              onkeydown="if(event.key==='Escape')cancelBulkEdit('${safeId}')">
+            <input type="text" value="${safeVal}" id="binp_${safeId}" onkeydown="if(event.key==='Escape')cancelBulkEdit('${safeId}')">
             <button class="bulk-save-btn" onclick="requestBulkSave('${safeId}')">💾 Save All</button>
             <button class="bulk-cancel-btn" onclick="cancelBulkEdit('${safeId}')">Cancel</button>
           </div>
@@ -580,84 +826,45 @@ function renderBulkRename() {
         <button class="bulk-edit-btn" id="bebtn_${safeId}" onclick="startBulkEdit('${safeId}')">✏️ Rename</button>
       </div>`;
   }).join('');
-
-  // Store mapping for save
-  window._bulkLabelMap = labelMap;
+  window._bulkLabelMap=labelMap;
 }
-
-function startBulkEdit(safeId) {
-  document.getElementById('bedit_' + safeId).style.display = 'flex';
-  document.getElementById('bebtn_' + safeId).style.display = 'none';
-  document.getElementById('binp_' + safeId).focus();
-  document.getElementById('binp_' + safeId).select();
-}
-function cancelBulkEdit(safeId) {
-  document.getElementById('bedit_' + safeId).style.display = 'none';
-  document.getElementById('bebtn_' + safeId).style.display = 'inline-block';
-}
-
-// ── MODAL ──
-let _pendingModal = null;
-function requestBulkSave(safeId) {
-  const newVal = document.getElementById('binp_' + safeId).value.trim();
-  const oldVal = document.getElementById('blbl_' + safeId).textContent.trim();
-  if (!newVal) return;
-  if (newVal === oldVal) { cancelBulkEdit(safeId); return; }
-
-  const rows = window._bulkLabelMap[oldVal] || [];
-  const branchNames = rows.map(r => BRANCHES[r.branch]?.name || r.branch).join(', ');
-
-  document.getElementById('modalTitle').textContent = 'Rename Across All Branches?';
-  document.getElementById('modalSub').textContent = 'This will update the week label for all branches listed below.';
-  document.getElementById('modalFrom').textContent = oldVal;
-  document.getElementById('modalTo').textContent = newVal;
-  document.getElementById('modalBranches').textContent = '📍 Affects: ' + branchNames;
-  document.getElementById('modalConfirmBtn').onclick = () => confirmBulkSave(safeId, oldVal, newVal, rows);
-  document.getElementById('confirmModal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('confirmModal').classList.remove('open');
-}
-document.getElementById('confirmModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
-async function confirmBulkSave(safeId, oldVal, newVal, rows) {
-  closeModal();
-  const btn = document.getElementById('bebtn_' + safeId);
-  const saveBtn = document.querySelector(`#bedit_${safeId} .bulk-save-btn`);
-  if (saveBtn) { saveBtn.textContent = '⏳ Saving...'; saveBtn.disabled = true; }
-
-  // Update all rows with this label
-  const { error } = await sb.from('weekly_data')
-    .update({ week_label: newVal })
-    .in('id', rows.map(r => r.id));
-
-  if (error) {
-    if (saveBtn) { saveBtn.textContent = '💾 Save All'; saveBtn.disabled = false; }
-    alert('Save failed: ' + error.message);
-    return;
-  }
-
-  showToast(`✅ Renamed across ${rows.length} branch${rows.length>1?'es':''}!`);
-  await loadData();
+function startBulkEdit(id){document.getElementById('bedit_'+id).style.display='flex';document.getElementById('bebtn_'+id).style.display='none';document.getElementById('binp_'+id).focus();document.getElementById('binp_'+id).select();}
+function cancelBulkEdit(id){document.getElementById('bedit_'+id).style.display='none';document.getElementById('bebtn_'+id).style.display='inline-block';}
+function requestBulkSave(safeId){
+  const newVal=document.getElementById('binp_'+safeId).value.trim();
+  const oldVal=document.getElementById('blbl_'+safeId).textContent.trim();
+  if(!newVal||newVal===oldVal){cancelBulkEdit(safeId);return;}
+  const rows=window._bulkLabelMap[oldVal]||[];
+  const names=rows.map(r=>BRANCHES[r.branch]?.name||r.branch).join(', ');
+  openModal({
+    title:'Rename Across All Branches?',
+    sub:'This will update the week label for all branches listed below.',
+    showChange:true, from:oldVal, to:newVal, branches:'📍 Affects: '+names,
+    confirmText:'💾 Save All',
+    onConfirm:async()=>{
+      closeModal();
+      const {error}=await sb.from('weekly_data').update({week_label:newVal}).in('id',rows.map(r=>r.id));
+      if(error){alert('Save failed: '+error.message);return;}
+      showToast(`✅ Renamed across ${rows.length} branch${rows.length>1?'es':''}!`);
+      await loadData();
+    }
+  });
 }
 
 // ── COLUMNS ──
 function renderColumns() {
-  const grid = document.getElementById('branchesGrid');
-  grid.innerHTML = Object.entries(BRANCHES).map(([code, info]) => {
-    const rows = allData.filter(d => d.branch === code);
-    const byYear = {};
-    rows.forEach(d => {
-      const yr = extractYear(d.week_label, d.uploaded_at);
-      const mo = extractMonth(d.week_label, d.uploaded_at);
-      if (!byYear[yr]) byYear[yr] = {};
-      if (!byYear[yr][mo]) byYear[yr][mo] = [];
+  const grid=document.getElementById('branchesGrid');
+  grid.innerHTML=Object.entries(BRANCHES).map(([code,info])=>{
+    const rows=allData.filter(d=>d.branch===code);
+    const byYear={};
+    rows.forEach(d=>{
+      const yr=extractYear(d.week_label,d.uploaded_at);
+      const mo=extractMonth(d.week_label,d.uploaded_at);
+      if(!byYear[yr])byYear[yr]={};
+      if(!byYear[yr][mo])byYear[yr][mo]=[];
       byYear[yr][mo].push(d);
     });
-    const years = Object.keys(byYear).sort((a, b) => b - a);
+    const years=Object.keys(byYear).sort((a,b)=>b-a);
     return `
       <div class="branch-col">
         <div class="branch-col-header">
@@ -666,106 +873,88 @@ function renderColumns() {
           <div class="branch-col-accent" style="background:${info.color}"></div>
         </div>
         <div class="branch-col-body">
-          ${rows.length === 0 ? `<div class="empty-col">No uploads yet</div>` :
-            years.map(yr => {
-              const yrKey = code + '_' + yr;
-              if (openState[yrKey] === undefined) openState[yrKey] = true;
-              const yrOpen = openState[yrKey];
-              const moKeys = Object.keys(byYear[yr]).sort((a, b) => MONTH_ORDER.indexOf(b) - MONTH_ORDER.indexOf(a));
-              return `
-                <div class="year-section">
-                  <div class="year-toggle" onclick="toggleSection('${yrKey}')">
-                    <span>${yr}</span><span class="year-arrow ${yrOpen?'open':''}">▼</span>
-                  </div>
-                  <div id="ys_${yrKey}" style="display:${yrOpen?'block':'none'}">
-                    ${moKeys.map(mo => {
-                      const moKey = yrKey + '_' + mo;
-                      if (openState[moKey] === undefined) openState[moKey] = true;
-                      const moOpen = openState[moKey];
-                      const moRows = byYear[yr][mo];
-                      return `
-                        <div class="month-section">
-                          <div class="month-toggle" onclick="toggleSection('${moKey}')">
-                            <span>${mo}<span class="month-count">(${moRows.length})</span></span>
-                            <span class="month-arrow ${moOpen?'open':''}">▼</span>
-                          </div>
-                          <div id="ms_${moKey}" style="display:${moOpen?'block':'none'}">
-                            <div class="weeks-list">
-                              ${moRows.map(w => weekItemHTML(w)).join('')}
-                            </div>
-                          </div>
-                        </div>`;
-                    }).join('')}
-                  </div>
-                </div>`;
-            }).join('')
-          }
+          ${rows.length===0?'<div class="empty-col">No uploads yet</div>':
+            years.map(yr=>{
+              const yrKey=code+'_'+yr;
+              if(openState[yrKey]===undefined)openState[yrKey]=true;
+              const yrOpen=openState[yrKey];
+              const moKeys=Object.keys(byYear[yr]).sort((a,b)=>MONTH_ORDER.indexOf(b)-MONTH_ORDER.indexOf(a));
+              return `<div class="year-section">
+                <div class="year-toggle" onclick="toggleSection('${yrKey}')"><span>${yr}</span><span class="year-arrow ${yrOpen?'open':''}">▼</span></div>
+                <div id="ys_${yrKey}" style="display:${yrOpen?'block':'none'}">
+                  ${moKeys.map(mo=>{
+                    const moKey=yrKey+'_'+mo;
+                    if(openState[moKey]===undefined)openState[moKey]=true;
+                    const moOpen=openState[moKey];
+                    const moRows=byYear[yr][mo];
+                    return `<div class="month-section">
+                      <div class="month-toggle" onclick="toggleSection('${moKey}')">
+                        <span>${mo}<span class="month-count">(${moRows.length})</span></span>
+                        <span class="month-arrow ${moOpen?'open':''}">▼</span>
+                      </div>
+                      <div id="ms_${moKey}" style="display:${moOpen?'block':'none'}">
+                        <div class="weeks-list">${moRows.map(w=>weekItemHTML(w)).join('')}</div>
+                      </div>
+                    </div>`;
+                  }).join('')}
+                </div>
+              </div>`;
+            }).join('')}
         </div>
       </div>`;
   }).join('');
 }
 
 function weekItemHTML(w) {
-  const date = new Date(w.uploaded_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  const safeVal = (w.week_label||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const date=new Date(w.uploaded_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
   return `
-    <div class="week-item" id="item_${w.id}" data-label="${safeVal}">
+    <div class="week-item" id="item_${w.id}">
       <div class="week-row">
-        <div><div class="week-label-text" id="lbl_${w.id}">${w.week_label}</div><div class="week-date">${date}</div></div>
+        <div><div class="week-label-text">${w.week_label}</div><div class="week-date">${date}</div></div>
         <div class="week-actions">
+          <button class="icon-btn dl" title="Download" onclick="downloadWeekly('${w.id}','${w.branch}','${w.week_label}')">↓</button>
           <button class="icon-btn del" title="Delete" onclick="deleteWeek('${w.id}')">✕</button>
         </div>
       </div>
     </div>`;
 }
-
-function toggleSection(key) {
-  openState[key] = !openState[key];
-  const el = document.getElementById('ys_' + key) || document.getElementById('ms_' + key);
-  if (!el) return;
-  el.style.display = openState[key] ? 'block' : 'none';
-  const arrow = el.previousElementSibling && el.previousElementSibling.querySelector('.year-arrow,.month-arrow');
-  if (arrow) arrow.classList.toggle('open', openState[key]);
+function toggleSection(key){
+  openState[key]=!openState[key];
+  const el=document.getElementById('ys_'+key)||document.getElementById('ms_'+key);
+  if(!el)return;
+  el.style.display=openState[key]?'block':'none';
+  const arrow=el.previousElementSibling&&el.previousElementSibling.querySelector('.year-arrow,.month-arrow');
+  if(arrow)arrow.classList.toggle('open',openState[key]);
 }
 
-async function deleteWeek(id) {
-  if (!confirm('Delete this entry? This cannot be undone.')) return;
-  await sb.from('weekly_data').delete().eq('id', id);
-  await loadData();
-}
+// ── HELPERS ──
+function extractYear(label,uploaded_at){const m=label&&label.match(/20\d\d/);if(m)return m[0];return uploaded_at?new Date(uploaded_at).getFullYear().toString():'2026';}
+function extractMonth(label,uploaded_at){for(const mo of MONTH_ORDER){if(label&&label.includes(mo))return mo;}if(uploaded_at)return new Date(uploaded_at).toLocaleDateString('en-GB',{month:'short'});return '—';}
 
-// ── PARSE ──
-function parseAED(s) { return parseFloat((s||'').replace(/AED|,|\s/g,'').replace(/[^\d.\-]/g,'')) || 0; }
-function parseHairRow(c) { return {name:c[0],salon:parseInt(c[3])||0,newC:parseInt(c[4])||0,rebooked:parseInt(c[5])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0,total:parseInt(c[7])||0,hairSales:parseAED(c[8]),hairSalesNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,col:parseInt(c[11])||0,colPct:parseFloat((c[12]||'').replace('%',''))||0,retail:parseAED(c[22]),treatments:parseAED(c[29]),totalNet:parseAED(c[31])}; }
-function parseBeautyRow(c) { return {name:c[0],total:parseInt(c[7])||0,beautySales:parseAED(c[8]),beautyNet:parseAED(c[9]),avgBill:parseFloat(c[10])||0,rebookPct:parseFloat((c[6]||'').replace('%',''))||0}; }
-function parseTSV(text) {
-  const lines = text.split('\n').map(l => l.split('\t'));
-  const hairStaff=[], beautyStaff=[];
-  let summary={}, inBeauty=false, hairHeaderFound=false, beautyHeaderFound=false;
-  for (let i=0; i<lines.length; i++) {
-    const cols = lines[i].map(c=>(c||'').trim()), first = cols[0];
-    if (!first && cols.every(c=>!c)) continue;
-    if (cols.includes('HAIR SALES TAKE') && !inBeauty) { hairHeaderFound=true; continue; }
-    if (cols.includes('BEAUTY SALES TAKE')) { inBeauty=true; beautyHeaderFound=true; continue; }
-    if (first==='TOTAL CLIENTS')     { summary.totalClients=parseInt(cols[1])||0; continue; }
-    if (first==='HAIR RETAIL SALES') { summary.hairRetail=parseAED(cols[1]); summary.hairRetailPct=parseFloat(cols[2])||0; continue; }
-    if (first==='TREATMENT SALES')   { summary.treatmentSales=parseAED(cols[1]); summary.treatmentPct=parseFloat(cols[2])||0; continue; }
-    if (first==='COL TAKE AED')      { summary.colTake=parseAED(cols[1]); summary.colPct=parseFloat(cols[2])||0; continue; }
-    if (first==='BEAUTY SALES')      { summary.beautySales=parseAED(cols[1]); summary.beautyPct=parseFloat(cols[2])||0; continue; }
-    if (first==='NET SALON TAKE')    { summary.netTake=parseAED(cols[1]); summary.avgBill=parseFloat(cols[2])||0; continue; }
-    if (!inBeauty && hairHeaderFound && first && first!=='STAFF' && first!=='TOTALS') { const s=parseHairRow(cols); if(s&&s.total>0) hairStaff.push(s); }
-    if (inBeauty && beautyHeaderFound && first && first!=='STAFF' && first!=='TOTALS') { const s=parseBeautyRow(cols); if(s&&s.total>0) beautyStaff.push(s); }
-    if (!inBeauty && first==='TOTALS') { summary.totals=parseHairRow(cols); }
-  }
-  return { hairStaff, beautyStaff, summary };
+// ── MODAL ──
+let _modalCb=null;
+function openModal({title,sub,showChange,from,to,branches,confirmText,danger,onConfirm}){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalSub').textContent=sub;
+  const chg=document.getElementById('modalChange');
+  if(showChange){chg.style.display='block';document.getElementById('modalFrom').textContent=from;document.getElementById('modalTo').textContent=to;document.getElementById('modalBranches').textContent=branches||'';}
+  else chg.style.display='none';
+  const btn=document.getElementById('modalConfirmBtn');
+  btn.textContent=confirmText||'Confirm';
+  btn.className='modal-confirm'+(danger?' danger':'');
+  _modalCb=onConfirm;
+  btn.onclick=()=>{if(_modalCb)_modalCb();};
+  document.getElementById('confirmModal').classList.add('open');
 }
+function closeModal(){document.getElementById('confirmModal').classList.remove('open');_modalCb=null;}
+document.getElementById('confirmModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 // ── TOAST ──
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.style.opacity = '1';
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
   clearTimeout(t._h);
-  t._h = setTimeout(() => t.style.opacity = '0', 2500);
+  t._h=setTimeout(()=>t.style.opacity='0',2500);
 }
 </script>
 </body>
