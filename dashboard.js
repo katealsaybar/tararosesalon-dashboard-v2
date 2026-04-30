@@ -379,13 +379,31 @@ function clearDateRange() {
   updateStepUI();
 }
 
+function getWeekDatesFromLabel(label) {
+  if (!label) return null;
+  const monthMap = { JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11 };
+  const m = label.match(/\(([A-Z]{3})\s+(\d+)\s*[–\-]\s*([A-Z]{3})\s+(\d+)\)/i);
+  if (!m) return null;
+  const startMon = m[1].toUpperCase(), startDay = parseInt(m[2]);
+  const endMon   = m[3].toUpperCase(), endDay   = parseInt(m[4]);
+  const yearMatch = label.match(/20\d\d/);
+  const endYear   = yearMatch ? parseInt(yearMatch[0]) : new Date().getFullYear();
+  const endMonth   = monthMap[endMon];
+  const startMonth = monthMap[startMon];
+  const startYear = (startMonth === 11 && endMonth === 0) ? endYear - 1 : endYear;
+  const start = new Date(startYear, startMonth, startDay); start.setHours(0,0,0,0);
+  const end   = new Date(endYear,   endMonth,   endDay);   end.setHours(0,0,0,0);
+  return { start, end };
+}
+
 function getFilteredData(ignoreBranch = false) {
   return allData.filter(d => {
     if (!ignoreBranch && !sel.branch.includes('all') && !sel.branch.includes(d.branch)) return false;
     if (dateFrom || dateTo) {
-      const up = new Date(d.uploaded_at); up.setHours(0,0,0,0);
-      if (dateFrom && up < dateFrom) return false;
-      if (dateTo   && up > dateTo)   return false;
+      const weekDates = getWeekDatesFromLabel(d.week_label);
+      const checkDate = weekDates ? weekDates.start : (new Date(d.uploaded_at), (() => { const u = new Date(d.uploaded_at); u.setHours(0,0,0,0); return u; })());
+      if (dateFrom && checkDate < dateFrom) return false;
+      if (dateTo   && checkDate > dateTo)   return false;
     }
     return true;
   });
