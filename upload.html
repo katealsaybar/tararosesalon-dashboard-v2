@@ -143,12 +143,17 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .daily-branch-card{background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border2)}
 .daily-branch-name{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text);margin-bottom:4px}
 .daily-accent{height:2px;border-radius:2px;margin-bottom:10px}
-.daily-record{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px}
+.daily-record{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px}
 .daily-record:last-child{border-bottom:none}
+.daily-record input[type=checkbox]{width:13px;height:13px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
 .daily-record-date{color:var(--text);font-weight:500}
 .daily-record-day{color:var(--muted);font-size:10px}
-.daily-record-total{color:var(--good);font-weight:600}
-.daily-record-actions{display:flex;gap:4px}
+.daily-record-total{color:var(--good);font-weight:600;margin-left:auto}
+.daily-record-actions{display:flex;gap:4px;flex-shrink:0}
+.bulk-bar{display:none;align-items:center;gap:8px;padding:8px 10px;background:var(--bad-bg);border:1px solid var(--bad);border-radius:8px;margin-bottom:8px;font-size:11px}
+.bulk-bar.show{display:flex}
+.bulk-bar-text{color:var(--bad);font-weight:600;flex:1}
+.bulk-delete-btn{background:var(--bad);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
 
 /* LOGIN */
 .login-wrap{max-width:380px;margin:80px auto;background:var(--surface);border-radius:16px;padding:32px;border:1px solid var(--border);box-shadow:var(--shadow)}
@@ -534,8 +539,22 @@ async function parseXLSXWeekly(file) {
 // ── XLSX PARSER: DAILY ──
 async function parseXLSXDaily(file, branchCode) {
   const ab = await file.arrayBuffer();
-  const wb = XLSX.read(ab, { type:'array', cellDates:true });
+  // Read WITHOUT cellDates — get raw serial numbers, handle dates ourselves
+  const wb = XLSX.read(ab, { type:'array', cellDates:false });
   const results = [];
+
+  // Convert Excel serial to YYYY-MM-DD (accounts for Excel 1900 leap year bug)
+  function serialToDate(serial) {
+    if (!serial || typeof serial !== 'number') return null;
+    // Excel serial: days since Jan 1, 1900 (with +1 correction for leap year bug)
+    const ms = (serial - 25569) * 86400 * 1000; // correct Excel serial to Unix
+    const d = new Date(ms);
+    const yr = d.getUTCFullYear();
+    const mo = String(d.getUTCMonth()+1).padStart(2,'0');
+    const dy = String(d.getUTCDate()).padStart(2,'0');
+    return `${yr}-${mo}-${dy}`;
+  }
+
   for (const sheetName of wb.SheetNames) {
     const upper = sheetName.toUpperCase();
     if (!DAY_SHEETS.includes(upper)) continue;
@@ -545,14 +564,13 @@ async function parseXLSXDaily(file, branchCode) {
     // Get date from A1
     let date = null;
     const cell0 = rows[0] && rows[0][0];
-    if (cell0 instanceof Date) {
-      date = cell0.toISOString().split('T')[0];
-    } else if (typeof cell0==='number') {
-      const d = new Date(Math.round((cell0-25569)*86400*1000));
-      date = d.toISOString().split('T')[0];
-    } else if (typeof cell0==='string'&&cell0.includes('/')) {
-      const p=cell0.split('/');
-      if(p.length===3) date=`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    if (typeof cell0 === 'number') {
+      date = serialToDate(cell0);
+    } else if (typeof cell0 === 'string' && cell0.includes('/')) {
+      const p = cell0.split('/');
+      if (p.length === 3) date = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+    } else if (typeof cell0 === 'string' && cell0.match(/\d{4}-\d{2}-\d{2}/)) {
+      date = cell0.slice(0,10);
     }
     if (!date) continue;
 
@@ -692,7 +710,6 @@ async function loadDailyOverview() {
     .select('id,branch,date,day_of_week,total,hair_sales,beauty_sales')
     .order('date',{ascending:false});
 
-  // Build existing daily cache
   existingDaily = {};
   BRANCH_KEYS.forEach(k => existingDaily[k] = new Set());
   if (data) data.forEach(d => existingDaily[d.branch]?.add(d.date));
@@ -702,39 +719,177 @@ async function loadDailyOverview() {
     container.innerHTML='<div style="font-size:12px;color:var(--muted2);padding:8px 0">No daily data uploaded yet.</div>';
     return;
   }
-  // Group by branch
+
+  // Group by branch → year → month → week
   const byBranch={};
-  data.forEach(d=>{if(!byBranch[d.branch])byBranch[d.branch]=[];byBranch[d.branch].push(d);});
+  data.forEach(d=>{
+    if(!byBranch[d.branch])byBranch[d.branch]=[];
+    byBranch[d.branch].push(d);
+  });
+
+  // Get Monday of week for a date string
+  function getMondayOf(dateStr) {
+    const d = new Date(dateStr+'T00:00:00Z');
+    const day = d.getUTCDay(); // 0=Sun,1=Mon...6=Sat
+    const diff = day === 0 ? -6 : 1 - day; // adjust to Monday
+    const mon = new Date(d);
+    mon.setUTCDate(d.getUTCDate() + diff);
+    return mon.toISOString().split('T')[0];
+  }
+  function getSundayOf(mondayStr) {
+    const d = new Date(mondayStr+'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + 6);
+    return d.toISOString().split('T')[0];
+  }
+  function fmtShort(dateStr) {
+    const d = new Date(dateStr+'T00:00:00Z');
+    return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
+  }
+
+  const MONTHS_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   container.innerHTML=`<div class="daily-grid">${
     BRANCH_KEYS.filter(k=>byBranch[k]).map(k=>{
       const rows=byBranch[k];
-      const total=rows.reduce((s,r)=>s+(r.total||0),0);
+      const grandTotal=rows.reduce((s,r)=>s+(r.total||0),0);
+
+      // Build year→month→week structure
+      const byYear={};
+      rows.forEach(r=>{
+        const d=new Date(r.date+'T00:00:00Z');
+        const yr=d.getUTCFullYear();
+        const mo=d.getUTCMonth(); // 0-11
+        const wk=getMondayOf(r.date);
+        if(!byYear[yr])byYear[yr]={};
+        if(!byYear[yr][mo])byYear[yr][mo]={};
+        if(!byYear[yr][mo][wk])byYear[yr][mo][wk]=[];
+        byYear[yr][mo][wk].push(r);
+      });
+
+      const years=Object.keys(byYear).sort((a,b)=>b-a);
+      const DAY_ORDER=['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
+
       return `
-        <div class="daily-branch-card">
+        <div class="daily-branch-card" id="card_${k}">
           <div class="daily-branch-name">${BRANCHES[k].name}</div>
           <div class="daily-accent" style="background:${BRANCHES[k].color}"></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:8px">
-            <span style="color:var(--muted)">${rows.length} days</span>
-            <span style="color:var(--good);font-weight:700">AED ${Math.round(total).toLocaleString()}</span>
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:8px;align-items:center">
+            <span style="color:var(--muted)">${rows.length} days total</span>
+            <span style="color:var(--good);font-weight:700">AED ${Math.round(grandTotal).toLocaleString()}</span>
           </div>
-          <div style="max-height:280px;overflow-y:auto">
-            ${rows.map(r=>`
-              <div class="daily-record">
-                <div>
-                  <div class="daily-record-date">${r.date}</div>
-                  <div class="daily-record-day">${r.day_of_week}</div>
-                </div>
-                <div class="daily-record-total">AED ${Math.round(r.total||0).toLocaleString()}</div>
-                <div class="daily-record-actions">
-                  <button class="btn-dl" onclick="downloadDailyRecord('${r.id}','${r.branch}','${r.date}')" title="Download">↓</button>
-                  <button class="btn-danger" onclick="deleteDailyRecord('${r.id}','${r.date}')" title="Delete">✕</button>
-                </div>
-              </div>`).join('')}
+          <!-- BULK DELETE BAR -->
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+            <input type="checkbox" id="selAll_${k}" onchange="toggleSelectAll('${k}',this.checked)" title="Select all">
+            <span style="font-size:10px;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase">Select All</span>
+            <button class="bulk-delete-btn" id="bulkDel_${k}" style="display:none;margin-left:auto" onclick="bulkDeleteBranch('${k}')">🗑 Delete Selected</button>
+          </div>
+          <!-- YEAR → MONTH → WEEK TREE -->
+          <div style="max-height:380px;overflow-y:auto">
+            ${years.map(yr=>{
+              const yrTotal=Object.values(byYear[yr]).flatMap(m=>Object.values(m).flat()).reduce((s,r)=>s+(r.total||0),0);
+              const yrKey=`dy_${k}_${yr}`;
+              return `
+                <div style="margin-bottom:6px">
+                  <div onclick="toggleDailySection('${yrKey}')" style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:var(--surface);border-radius:7px;cursor:pointer;font-size:11px;font-weight:700;color:var(--text);border:1px solid var(--border2)">
+                    <span>${yr}</span>
+                    <span style="color:var(--good);font-size:10px">AED ${Math.round(yrTotal).toLocaleString()}</span>
+                  </div>
+                  <div id="${yrKey}" style="display:block;margin-left:8px;margin-top:4px">
+                    ${Object.keys(byYear[yr]).sort((a,b)=>b-a).map(mo=>{
+                      const moRows=Object.values(byYear[yr][mo]).flat();
+                      const moTotal=moRows.reduce((s,r)=>s+(r.total||0),0);
+                      const moKey=`dy_${k}_${yr}_${mo}`;
+                      return `
+                        <div style="margin-bottom:4px">
+                          <div onclick="toggleDailySection('${moKey}')" style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:var(--surface2);border-radius:6px;cursor:pointer;font-size:11px;color:var(--muted);border:1px solid var(--border2)">
+                            <span style="font-weight:600">${MONTHS_FULL[parseInt(mo)]}</span>
+                            <span style="color:var(--good);font-size:10px">AED ${Math.round(moTotal).toLocaleString()} · ${moRows.length}d</span>
+                          </div>
+                          <div id="${moKey}" style="display:block;margin-left:8px;margin-top:2px">
+                            ${Object.keys(byYear[yr][mo]).sort((a,b)=>b.localeCompare(a)).map(wk=>{
+                              const wkRows=byYear[yr][mo][wk];
+                              const wkTotal=wkRows.reduce((s,r)=>s+(r.total||0),0);
+                              const sun=getSundayOf(wk);
+                              const wkKey=`dy_${k}_${yr}_${mo}_${wk}`;
+                              // Sort days Mon→Sun
+                              const sorted=[...wkRows].sort((a,b)=>DAY_ORDER.indexOf(a.day_of_week)-DAY_ORDER.indexOf(b.day_of_week));
+                              return `
+                                <div style="margin-bottom:3px">
+                                  <div onclick="toggleDailySection('${wkKey}')" style="display:flex;justify-content:space-between;align-items:center;padding:3px 8px;border-radius:5px;cursor:pointer;font-size:10px;color:var(--muted2);border-bottom:1px solid var(--border2)">
+                                    <span>Week: ${fmtShort(wk)} – ${fmtShort(sun)}</span>
+                                    <span style="color:var(--good)">AED ${Math.round(wkTotal).toLocaleString()} · ${wkRows.length}d</span>
+                                  </div>
+                                  <div id="${wkKey}" style="display:block">
+                                    ${sorted.map(r=>`
+                                      <div class="daily-record" id="rec_${r.id}">
+                                        <input type="checkbox" class="rec-cb cb_${k}" data-id="${r.id}" onchange="onRecordCheck('${k}')">
+                                        <div style="flex:1;min-width:0">
+                                          <div class="daily-record-date">${r.date}</div>
+                                          <div class="daily-record-day">${r.day_of_week}</div>
+                                        </div>
+                                        <div class="daily-record-total" style="font-size:10px">AED ${Math.round(r.total||0).toLocaleString()}</div>
+                                        <div class="daily-record-actions">
+                                          <button class="btn-dl" onclick="downloadDailyRecord('${r.id}','${r.branch}','${r.date}')" title="Download">↓</button>
+                                          <button class="btn-danger" onclick="deleteDailyRecord('${r.id}','${r.date}')" title="Delete">✕</button>
+                                        </div>
+                                      </div>`).join('')}
+                                  </div>
+                                </div>`;
+                            }).join('')}
+                          </div>
+                        </div>`;
+                    }).join('')}
+                  </div>
+                </div>`;
+            }).join('')}
           </div>
         </div>`;
     }).join('')
   }</div>`;
+}
+
+function toggleDailySection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleSelectAll(branchCode, checked) {
+  document.querySelectorAll(`.cb_${branchCode}`).forEach(cb => cb.checked = checked);
+  onRecordCheck(branchCode);
+}
+
+function onRecordCheck(branchCode) {
+  const checked = [...document.querySelectorAll(`.cb_${branchCode}`)].filter(cb => cb.checked);
+  const btn = document.getElementById(`bulkDel_${branchCode}`);
+  const selAll = document.getElementById(`selAll_${branchCode}`);
+  const all = document.querySelectorAll(`.cb_${branchCode}`).length;
+  if (btn) {
+    btn.style.display = checked.length > 0 ? 'inline-block' : 'none';
+    btn.textContent = `🗑 Delete ${checked.length}`;
+  }
+  if (selAll) selAll.indeterminate = checked.length > 0 && checked.length < all;
+}
+
+async function bulkDeleteBranch(branchCode) {
+  const checked = [...document.querySelectorAll(`.cb_${branchCode}:checked`)];
+  if (!checked.length) return;
+  const ids = checked.map(cb => cb.dataset.id);
+  openModal({
+    title: `Delete ${ids.length} Records?`,
+    sub: `This will permanently delete ${ids.length} daily record(s) for ${BRANCHES[branchCode].name}. Cannot be undone.`,
+    confirmText: `🗑 Delete ${ids.length} Records`,
+    danger: true,
+    onConfirm: async () => {
+      closeModal();
+      // Delete in batches of 50
+      for (let i=0; i<ids.length; i+=50) {
+        await sb.from('daily_data').delete().in('id', ids.slice(i,i+50));
+      }
+      showToast(`🗑 ${ids.length} records deleted`);
+      await loadDailyOverview();
+    }
+  });
 }
 
 // ── DELETE / DOWNLOAD ──
