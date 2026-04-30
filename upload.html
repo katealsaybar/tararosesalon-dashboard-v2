@@ -794,7 +794,7 @@ async function loadDailyOverview() {
                     <span>${yr}</span>
                     <span style="color:var(--good);font-size:10px">AED ${Math.round(yrTotal).toLocaleString()}</span>
                   </div>
-                  <div id="${yrKey}" style="display:block;margin-left:8px;margin-top:4px">
+                  <div id="${yrKey}" style="display:none;margin-left:8px;margin-top:4px">
                     ${Object.keys(byYear[yr]).sort((a,b)=>b-a).map(mo=>{
                       const moRows=Object.values(byYear[yr][mo]).flat();
                       const moTotal=moRows.reduce((s,r)=>s+(r.total||0),0);
@@ -805,7 +805,7 @@ async function loadDailyOverview() {
                             <span style="font-weight:600">${MONTHS_FULL[parseInt(mo)]}</span>
                             <span style="color:var(--good);font-size:10px">AED ${Math.round(moTotal).toLocaleString()} · ${moRows.length}d</span>
                           </div>
-                          <div id="${moKey}" style="display:block;margin-left:8px;margin-top:2px">
+                          <div id="${moKey}" style="display:none;margin-left:8px;margin-top:2px">
                             ${Object.keys(byYear[yr][mo]).sort((a,b)=>b.localeCompare(a)).map(wk=>{
                               const wkRows=byYear[yr][mo][wk];
                               const wkTotal=wkRows.reduce((s,r)=>s+(r.total||0),0);
@@ -819,7 +819,7 @@ async function loadDailyOverview() {
                                     <span>Week: ${fmtShort(wk)} – ${fmtShort(sun)}</span>
                                     <span style="color:var(--good)">AED ${Math.round(wkTotal).toLocaleString()} · ${wkRows.length}d</span>
                                   </div>
-                                  <div id="${wkKey}" style="display:block">
+                                  <div id="${wkKey}" style="display:none">
                                     ${sorted.map(r=>`
                                       <div class="daily-record" id="rec_${r.id}">
                                         <input type="checkbox" class="rec-cb cb_${k}" data-id="${r.id}" onchange="onRecordCheck('${k}')">
@@ -1031,7 +1031,7 @@ function renderColumns() {
           ${rows.length===0?'<div class="empty-col">No uploads yet</div>':
             years.map(yr=>{
               const yrKey=code+'_'+yr;
-              if(openState[yrKey]===undefined)openState[yrKey]=true;
+              if(openState[yrKey]===undefined)openState[yrKey]=false;
               const yrOpen=openState[yrKey];
               const moKeys=Object.keys(byYear[yr]).sort((a,b)=>MONTH_ORDER.indexOf(b)-MONTH_ORDER.indexOf(a));
               return `<div class="year-section">
@@ -1039,7 +1039,7 @@ function renderColumns() {
                 <div id="ys_${yrKey}" style="display:${yrOpen?'block':'none'}">
                   ${moKeys.map(mo=>{
                     const moKey=yrKey+'_'+mo;
-                    if(openState[moKey]===undefined)openState[moKey]=true;
+                    if(openState[moKey]===undefined)openState[moKey]=false;
                     const moOpen=openState[moKey];
                     const moRows=byYear[yr][mo];
                     return `<div class="month-section">
