@@ -998,6 +998,111 @@ const sel={branch:['all']};
 let dateFrom=null;
 let dateTo=null;
 
+// ── DATE RANGE PICKER ──────────────────────────────────────────
+const calState={year:new Date().getFullYear(),month:new Date().getMonth()};
+let pickerFromDate=null,pickerToDate=null,pickingStep='from';
+
+function toggleDatePicker(){
+  const pop=document.getElementById('datePickerPop');
+  const btn=document.getElementById('btn-daterange');
+  const isOpen=pop.classList.contains('open');
+  document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
+  document.querySelectorAll('.ms-btn').forEach(b=>b.classList.remove('open'));
+  if(isOpen){pop.style.display='none';pop.classList.remove('open');btn.classList.remove('active');return;}
+  const now=new Date();
+  if(dateFrom){calState.year=dateFrom.getFullYear();calState.month=dateFrom.getMonth();}
+  else{calState.year=now.getFullYear();calState.month=now.getMonth();}
+  pickerFromDate=dateFrom?new Date(dateFrom):null;
+  pickerToDate=dateTo?new Date(dateTo):null;
+  pickingStep=pickerFromDate?(pickerToDate?'from':'to'):'from';
+  pop.style.display='block';pop.classList.add('open');btn.classList.add('active');
+  buildYearOptions();renderCalendar();updateStepUI();
+}
+function buildYearOptions(){
+  const s=document.getElementById('calYearSel');if(!s)return;
+  const cur=calState.year;s.innerHTML='';
+  for(let y=cur-3;y<=cur+2;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===cur)o.selected=true;s.appendChild(o);}
+}
+function calMonthChange(){const s=document.getElementById('calMonthSel');if(s)calState.month=parseInt(s.value);renderCalendar();}
+function calYearChange(){const s=document.getElementById('calYearSel');if(s)calState.year=parseInt(s.value);buildYearOptions();renderCalendar();}
+function shiftCal(dir){
+  calState.month+=dir;
+  if(calState.month>11){calState.month=0;calState.year++;}
+  if(calState.month<0){calState.month=11;calState.year--;}
+  const ms=document.getElementById('calMonthSel');if(ms)ms.value=calState.month;
+  buildYearOptions();renderCalendar();
+}
+function renderCalendar(){
+  const{year,month}=calState;
+  const ms=document.getElementById('calMonthSel');if(ms)ms.value=month;
+  const firstDay=new Date(year,month,1).getDay();
+  const dim=new Date(year,month+1,0).getDate();
+  const today=new Date();today.setHours(0,0,0,0);
+  const DAYS=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html=DAYS.map(d=>`<div class="cal-day-hdr">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++)html+=`<div class="cal-day cal-day-empty"></div>`;
+  for(let d=1;d<=dim;d++){
+    const date=new Date(year,month,d);date.setHours(0,0,0,0);
+    const isToday=date.getTime()===today.getTime();
+    const isFrom=pickerFromDate&&date.getTime()===pickerFromDate.getTime();
+    const isTo=pickerToDate&&date.getTime()===pickerToDate.getTime();
+    const inRange=pickerFromDate&&pickerToDate&&date>pickerFromDate&&date<pickerToDate;
+    let cls='cal-day';
+    if(isFrom&&isTo)cls+=' cal-day-selected';
+    else if(isFrom)cls+=' cal-day-range-start';
+    else if(isTo)cls+=' cal-day-range-end';
+    else if(inRange)cls+=' cal-day-in-range';
+    if(isToday)cls+=' cal-day-today';
+    html+=`<div class="${cls}" onclick="pickDay(${year},${month},${d})">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+function pickDay(year,month,day){
+  const date=new Date(year,month,day);date.setHours(0,0,0,0);
+  if(pickingStep==='from'){pickerFromDate=date;pickerToDate=null;pickingStep='to';}
+  else{if(date<pickerFromDate){pickerToDate=pickerFromDate;pickerFromDate=date;}else{pickerToDate=date;}pickingStep='from';}
+  renderCalendar();updateStepUI();
+}
+function updateStepUI(){
+  const fmt=d=>d?d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):null;
+  const fromEl=document.getElementById('calStepFrom');
+  const toEl=document.getElementById('calStepTo');
+  const fromVal=document.getElementById('calStepFromVal');
+  const toVal=document.getElementById('calStepToVal');
+  const selEl=document.getElementById('date-picker-selection');
+  if(fromEl)fromEl.classList.toggle('active-step',pickingStep==='from');
+  if(toEl)toEl.classList.toggle('active-step',pickingStep==='to');
+  if(fromVal){fromVal.textContent=pickerFromDate?fmt(pickerFromDate):'Select start';fromVal.className='cal-step-val'+(pickerFromDate?' set':'');}
+  if(toVal){toVal.textContent=pickerToDate?fmt(pickerToDate):'Select end';toVal.className='cal-step-val'+(pickerToDate?' set':'');}
+  if(selEl){
+    if(!pickerFromDate){selEl.textContent='Click a date to set FROM';selEl.className='date-picker-selection';}
+    else if(!pickerToDate){selEl.textContent='Now click a date to set TO';selEl.className='date-picker-selection';}
+    else{selEl.textContent=`${fmt(pickerFromDate)} → ${fmt(pickerToDate)}`;selEl.className='date-picker-selection has-range';}
+  }
+}
+function applyDateRange(){
+  dateFrom=pickerFromDate;dateTo=pickerToDate||pickerFromDate;
+  const lbl=document.getElementById('lbl-daterange');
+  if(!dateFrom){lbl.textContent='Select Date/s From and To';}
+  else{
+    const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
+    lbl.textContent=(dateTo&&dateTo.getTime()!==dateFrom.getTime())?`${fmt(dateFrom)} – ${fmt(dateTo)}`:fmt(dateFrom);
+  }
+  const pop=document.getElementById('datePickerPop');
+  const btn=document.getElementById('btn-daterange');
+  if(pop){pop.style.display='none';pop.classList.remove('open');}
+  if(btn)btn.classList.remove('active');
+  renderDashboard();
+  const tv=document.getElementById('view-team');
+  if(tv&&tv.style.display!=='none')renderTeam();
+}
+function clearDateRange(){
+  dateFrom=null;dateTo=null;pickerFromDate=null;pickerToDate=null;pickingStep='from';
+  document.getElementById('lbl-daterange').textContent='Select Date/s From and To';
+  renderCalendar();updateStepUI();
+  renderDashboard();
+}
+
 function toggleTheme(){
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
   document.documentElement.setAttribute('data-theme',dark?'light':'dark');
@@ -1043,9 +1148,19 @@ function toggleDrop(key){
   if(!isOpen){drop.classList.add('open');btn.classList.add('open');}
 }
 document.addEventListener('click',e=>{
+  // Close branch dropdown if clicked outside
   if(!e.target.closest('.ms-wrap')){
     document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
-    document.querySelectorAll('.ms-btn').forEach(b=>b.classList.remove('open'));
+    // Only remove open class from branch button, not date picker button
+    const branchBtn=document.getElementById('btn-branch');
+    if(branchBtn)branchBtn.classList.remove('open');
+  }
+  // Close date picker if clicked outside both the pill and the popover
+  if(!e.target.closest('#dateRangeWrap')&&!e.target.closest('#datePickerPop')){
+    const pop=document.getElementById('datePickerPop');
+    const btn=document.getElementById('btn-daterange');
+    if(pop&&pop.classList.contains('open')){pop.style.display='none';pop.classList.remove('open');}
+    if(btn)btn.classList.remove('active');
   }
 });
 
