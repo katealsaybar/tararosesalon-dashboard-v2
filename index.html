@@ -1095,12 +1095,21 @@ function updateStepUI(){
   }
 }
 function applyDateRange(){
-  dateFrom=pickerFromDate;dateTo=pickerToDate||pickerFromDate;
+  dateFrom=pickerFromDate;
+  // Set dateTo to end of selected day (23:59:59) for inclusive comparison
+  if(pickerToDate||pickerFromDate){
+    const to=new Date(pickerToDate||pickerFromDate);
+    to.setHours(23,59,59,999);
+    dateTo=to;
+  } else {
+    dateTo=null;
+  }
   const lbl=document.getElementById('lbl-daterange');
   if(!dateFrom){lbl.textContent='Select Date/s From and To';}
   else{
     const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
-    lbl.textContent=(dateTo&&dateTo.getTime()!==dateFrom.getTime())?`${fmt(dateFrom)} – ${fmt(dateTo)}`:fmt(dateFrom);
+    const displayTo=pickerToDate||pickerFromDate;
+    lbl.textContent=(displayTo&&displayTo.getTime()!==dateFrom.getTime())?`${fmt(dateFrom)} – ${fmt(displayTo)}`:fmt(dateFrom);
   }
   const pop=document.getElementById('datePickerPop');
   const btn=document.getElementById('btn-daterange');
@@ -1228,13 +1237,70 @@ function rebuildDependentDrops(){
   buildDrop('branch',Object.entries(BRANCH_INFO).map(([k,v])=>({val:k,label:v.name})));
 }
 
+function getWeekDatesFromLabel(label) {
+  if (!label) return null;
+  const MMAP = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
+    january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+  const yearMatch = label.match(/20\d\d/);
+  const year = yearMatch ? parseInt(yearMatch[0]) : 2026;
+  const lbl = label.toLowerCase();
+  function getMo(str){if(!str)return undefined;const k=str.toLowerCase().replace(/[^a-z]/g,'').slice(0,3);return MMAP[k];}
+
+  // Look inside parens first, else whole label
+  const inParens = label.match(/\(([^)]+)\)/);
+  const rangeSrc = inParens ? inParens[1] : label;
+
+  // Pattern 1: "Mar 30 - Apr 5" cross-month (month first)
+  const cross1 = rangeSrc.match(/([a-z]+)\s*(\d+)\s*[-–]\s*([a-z]+)\s*(\d+)/i);
+  if (cross1) {
+    const mo1=getMo(cross1[1]), mo2=getMo(cross1[3]);
+    if (mo1!==undefined && mo2!==undefined)
+      return {start:new Date(year,mo1,parseInt(cross1[2])), end:new Date(year,mo2,parseInt(cross1[4]))};
+  }
+
+  // Pattern 2: "30th-5th Apr" or "30 - 5 Apr" (day range, month at end)
+  const cross2 = rangeSrc.match(/(\d+)(?:st|nd|rd|th)?\s*[-–]\s*(\d+)(?:st|nd|rd|th)?\s+([a-z]+)/i);
+  if (cross2) {
+    const mo=getMo(cross2[3]);
+    if (mo!==undefined) {
+      const d1=parseInt(cross2[1]), d2=parseInt(cross2[2]);
+      const mo1 = d1>d2 ? (mo===0?11:mo-1) : mo;
+      return {start:new Date(year,mo1,d1), end:new Date(year,mo,d2)};
+    }
+  }
+
+  // Pattern 3: simple "20-26" or "6-12" inside parens, get month from label
+  // Also handles "APR 6-12" inside parens
+  const simple = inParens && inParens[1].match(/(\d+)\s*[-–]\s*(\d+)/);
+  if (simple) {
+    const moMatch = lbl.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
+    const mo = moMatch ? MMAP[moMatch[1]] : undefined;
+    if (mo!==undefined) {
+      const d1=parseInt(simple[1]), d2=parseInt(simple[2]);
+      const mo1 = d1>d2 ? (mo===0?11:mo-1) : mo;
+      return {start:new Date(year,mo1,d1), end:new Date(year,mo,d2)};
+    }
+  }
+
+  // Fallback: full month
+  const moMatch = lbl.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
+  if (moMatch) {
+    const mo=MMAP[moMatch[1]];
+    return {start:new Date(year,mo,1), end:new Date(year,mo+1,0)};
+  }
+  return null;
+}
+
 function getFilteredData(ignoreBranch=false){
   return allData.filter(d=>{
     if(!ignoreBranch&&!sel.branch.includes('all')&&!sel.branch.includes(d.branch))return false;
     if(dateFrom||dateTo){
-      const up=new Date(d.uploaded_at);up.setHours(0,0,0,0);
-      if(dateFrom&&up<dateFrom)return false;
-      if(dateTo&&up>dateTo)return false;
+      const wd = getWeekDatesFromLabel(d.week_label);
+      if(!wd) return true;
+      const wStart = wd.start;
+      const wEnd   = wd.end;
+      if(dateFrom && wEnd < dateFrom) return false;
+      if(dateTo   && wStart > dateTo) return false;
     }
     return true;
   });
@@ -1292,9 +1358,10 @@ function aggByBranch(){
     const rows=allData.filter(d=>{
       if(d.branch!==code)return false;
       if(dateFrom||dateTo){
-        const up=new Date(d.uploaded_at);up.setHours(0,0,0,0);
-        if(dateFrom&&up<dateFrom)return false;
-        if(dateTo&&up>dateTo)return false;
+        const wd=getWeekDatesFromLabel(d.week_label);
+        if(!wd)return true;
+        if(dateFrom&&wd.end<dateFrom)return false;
+        if(dateTo&&wd.start>dateTo)return false;
       }
       return true;
     });
@@ -1928,9 +1995,10 @@ function aggByBranchT(){
     const rows=allData.filter(d=>{
       if(d.branch!==code)return false;
       if(dateFrom||dateTo){
-        const up=new Date(d.uploaded_at);up.setHours(0,0,0,0);
-        if(dateFrom&&up<dateFrom)return false;
-        if(dateTo&&up>dateTo)return false;
+        const wd=getWeekDatesFromLabel(d.week_label);
+        if(!wd)return true;
+        if(dateFrom&&wd.end<dateFrom)return false;
+        if(dateTo&&wd.start>dateTo)return false;
       }
       return true;
     });
