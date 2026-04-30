@@ -399,39 +399,80 @@ function aggData(datasets) {
   const hairMap = {}, beautyMap = {};
   const s = { totalClients:0, hairRetail:0, treatmentSales:0, colTake:0, beautySales:0, netTake:0, colPct:0, rebookPct:0 };
   let totalRebooked = 0, totalHairClients = 0;
+  // Track retail mismatch warnings across all weeks aggregated
+  const retailWarnings = [];
 
   datasets.forEach(d => {
     if (!d) return;
     const sm = d.summary || {};
+
     s.totalClients  += sm.totalClients  || 0;
-    s.hairRetail    += sm.hairRetail    || 0;
+
+    // Retail: parser already prioritises daily-sheet sum. Fall back to staff sum if 0.
+    let weekRetail = Number(
+      sm.hairRetail ??
+      sm.retail ??
+      sm.retailSales ??
+      sm.productSales ??
+      sm.product ??
+      0
+    ) || 0;
+    if (!weekRetail && Array.isArray(d.hairStaff)) {
+      weekRetail = d.hairStaff.reduce((a, st) => a + (Number(st.retail) || 0), 0);
+    }
+    s.hairRetail += weekRetail;
+    if (sm._retailDebug && sm._retailDebug.mismatch) retailWarnings.push(sm._retailDebug.mismatch);
+
     s.treatmentSales+= sm.treatmentSales|| 0;
     s.colTake       += sm.colTake       || 0;
     s.beautySales   += sm.beautySales   || 0;
     s.netTake       += sm.netTake       || 0;
     if (sm.totals) { totalRebooked += sm.totals.rebooked||0; totalHairClients += sm.totals.total||0; }
-    (d.hairStaff   || []).forEach(st => {
-      if (!hairMap[st.name]) hairMap[st.name] = { ...st };
-      else { const a = hairMap[st.name]; a.total+=st.total; a.newC+=st.newC; a.rebooked+=st.rebooked; a.hairSalesNet+=st.hairSalesNet; a.retail+=st.retail; a.treatments+=st.treatments; }
+
+    (d.hairStaff || []).forEach(st => {
+      const retailVal = Number(
+        st.retail ?? st.retailSales ?? st.productSales ?? st.product ?? 0
+      ) || 0;
+      if (!hairMap[st.name]) {
+        hairMap[st.name] = { ...st, retail: retailVal };
+      } else {
+        const a = hairMap[st.name];
+        a.total += st.total;
+        a.newC += st.newC;
+        a.rebooked += st.rebooked;
+        a.hairSalesNet += st.hairSalesNet;
+        a.retail += retailVal;
+        a.treatments += st.treatments;
+      }
     });
     (d.beautyStaff || []).forEach(st => {
       if (!beautyMap[st.name]) beautyMap[st.name] = { ...st };
-      else { beautyMap[st.name].total+=st.total; beautyMap[st.name].beautySales+=st.beautySales; }
+      else {
+        beautyMap[st.name].total += st.total;
+        beautyMap[st.name].beautySales += st.beautySales;
+      }
     });
   });
 
-  s.avgBill       = s.totalClients ? (s.netTake / s.totalClients) : 0;
-  s.treatmentPct  = s.netTake ? (s.treatmentSales / s.netTake * 100) : 0;
+  s.avgBill = s.totalClients ? (s.netTake / s.totalClients) : 0;
+  s.treatmentPct = s.netTake ? (s.treatmentSales / s.netTake * 100) : 0;
+
+  // Retail % per locked decision: Retail ÷ Total Revenue (Net Salon Take)
   s.hairRetailPct = s.netTake ? (s.hairRetail / s.netTake * 100) : 0;
-  s.rebookPct     = totalHairClients ? (totalRebooked / totalHairClients * 100) : 0;
-  s.beautyPct     = s.netTake ? (s.beautySales / s.netTake * 100) : 0;
-  const totalNewC = Object.values(hairMap).reduce((acc,st) => acc + (st.newC||0), 0);
+  s._retailWarnings = retailWarnings;
+
+  s.rebookPct = totalHairClients ? (totalRebooked / totalHairClients * 100) : 0;
+  s.beautyPct = s.netTake ? (s.beautySales / s.netTake * 100) : 0;
+
+  const totalNewC = Object.values(hairMap).reduce((acc, st) => acc + (st.newC || 0), 0);
   s.ncrPct = s.totalClients ? (totalNewC / s.totalClients * 100) : 0;
 
-  const hairStaff   = Object.values(hairMap).map((st,i) => ({
-    ...st, avgBill: st.total ? st.hairSalesNet/st.total : 0,
-    rebookPct: st.total ? (st.rebooked/st.total*100) : 0,
-    ncrPct: st.total ? (st.newC/st.total*100) : 0,
+  const hairStaff = Object.values(hairMap).map((st, i) => ({
+    ...st,
+    retail: Number(st.retail) || 0,
+    avgBill: st.total ? st.hairSalesNet / st.total : 0,
+    rebookPct: st.total ? (st.rebooked / st.total * 100) : 0,
+    ncrPct: st.total ? (st.newC / st.total * 100) : 0,
     color: SCOLS[i % SCOLS.length]
   }));
   const beautyStaff = Object.values(beautyMap).map((st,i) => ({
@@ -670,12 +711,19 @@ function renderDashboard() {
     <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
       <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#EEF3C7;flex-shrink:0"></span>
       <span class="section-label" style="margin:0;letter-spacing:0.16em;flex-shrink:0;white-space:nowrap">Revenue Run</span>
-      <span style="font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Service Sales · Treatment % · Retail % · Hair Avg Bill · Beauty Avg Bill</span>
+      <span style="font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Service Sales · Treatment % · Retail Sales · Retail % · Hair Avg Bill · Beauty Avg Bill</span>
     </div>
     <span class="support-toggle-arrow" id="arrow-revenueRun">▼</span>
   </div>
   <div class="support-section-body" id="body-revenueRun" style="display:none">
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:12px 0 4px">
+    ${(s._retailWarnings && s._retailWarnings.length) ? `
+      <div style="margin:8px 0;padding:10px 12px;background:rgba(251,191,36,.08);border-left:3px solid #fbbf24;border-radius:6px;font-size:11px;color:var(--text)">
+        <strong style="color:#fbbf24">⚠️ Retail data mismatch detected</strong> across ${s._retailWarnings.length} week(s).
+        Daily-sheet sum (used) differs from weekly summary row.
+        ${s._retailWarnings.slice(0,3).map(m => `Daily AED ${Math.round(m.daily).toLocaleString()} vs Summary AED ${Math.round(m.summary).toLocaleString()} (${m.pctDiff}% drift)`).join(' · ')}
+      </div>
+    ` : ''}
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:12px 0 4px">
       <div class="metric m-lime">
         <div class="metric-label">Service Sales</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Total service revenue: hair + beauty)</em></div>
@@ -687,6 +735,12 @@ function renderDashboard() {
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Treatment sales ÷ Total revenue)</em></div>
         <div class="metric-value ${sc(s.treatmentPct, TARGETS.treatmentPct)}" style="font-size:20px">${fmtPct(s.treatmentPct)}</div>
         <div class="metric-target">Target: ≥ ${TARGETS.treatmentPct}%</div>
+      </div>
+      <div class="metric m-lime">
+        <div class="metric-label">Retail Sales</div>
+        <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Total retail / product sales)</em></div>
+        <div class="metric-value" style="font-size:20px">${fmtAED(s.hairRetail||0)}</div>
+        <div class="metric-target">Branch-based target</div>
       </div>
       <div class="metric m-lime">
         <div class="metric-label">Retail %</div>
@@ -969,7 +1023,7 @@ function renderTeam() {
   }
   const datasets = filtered.map(d => d.data);
   const d = aggData(datasets);
-  if (!d) return;
+  if (!d) return; 
 
   Object.values(teamCharts).forEach(c => { try { c.destroy(); } catch(e) {} });
   teamCharts = {};
@@ -1173,7 +1227,7 @@ function renderTeam() {
     row.style.borderLeft = `3px solid ${st.color}`;
     showRadarInPanel(st);
   };
-  window.openStyleistRadar = function(el) { try { const st=JSON.parse(el.dataset.st); showRadarInPanel(st); } catch(e) {} };
+  window.openStylistRadar = function(el) { try { const st=JSON.parse(el.dataset.st); showRadarInPanel(st); } catch(e) {} };
   window.closeRadarModal   = function() {};
 
   function showRadarInPanel(st) {
@@ -1467,10 +1521,29 @@ function renderTeam() {
     hairSortT.dir = hairSortT.col === col ? (hairSortT.dir==='asc'?'desc':'asc') : 'desc';
     hairSortT.col = col;
     d.hairStaff.forEach(st => {
-      const totalRev = st.hairSalesNet||0;
-      st.serviceSales  = totalRev-(st.retail||0);
-      st.treatmentPct  = totalRev?((st.treatments||0)/totalRev*100):0;
-      st.retailPct     = totalRev?((st.retail||0)/totalRev*100):0;
+
+      console.log('RETAIL DEBUG:', {
+        name: st.name,
+        retail: st.retail,
+        hair: st.hairSalesNet,
+        beauty: st.beautySales
+      });
+
+      const totalRev = (st.hairSalesNet || 0) + (st.beautySales || 0);
+
+      const retailVal = Number(st.retail) || 0;
+      
+      st.retailPct = totalRev && retailVal
+        ? (retailVal / totalRev * 100)
+        : 0;
+      
+      // optional debug
+      if (!st.retail || st.retail === 0) {
+        console.warn('⚠️ Retail missing for:', st.name);
+      }
+      
+      st.serviceSales  = totalRev - (st.retail || 0);
+      st.treatmentPct  = totalRev ? ((st.treatments || 0) / totalRev * 100) : 0;
       st.ncrCount      = Math.round((st.ncrPct||0)/100*(st.total||0));
       st.salonPct      = 100-(st.ncrPct||0);
       st.newClientPct  = st.total?((st.newC||0)/st.total*100):0;
