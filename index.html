@@ -897,12 +897,13 @@ function doLogin(){
   applyRole(role);
   document.getElementById('loginGate').style.display = 'none';
   document.getElementById('dashboardWrap').style.display = 'block';
-  loadData();
-  setInterval(loadData, 60000);
-  const params = new URLSearchParams(window.location.search);
-  const activeView = params.get('view') || 'dashboard';
-  const btn = document.querySelector(`[onclick*="${activeView}"]`);
-  showView(activeView, btn || null);
+  loadData().then(() => {
+    setInterval(loadData, 60000);
+    const params = new URLSearchParams(window.location.search);
+    const activeView = params.get('view') || 'dashboard';
+    const btn = document.querySelector(`[onclick*="${activeView}"]`);
+    showView(activeView, btn || null);
+  });
 }
 
 function applyRole(role){
@@ -932,13 +933,13 @@ function toggleLoginEye(){
 }
 
 // Check if already logged in (persists across hard refresh)
-(function checkSession(){
+(async function checkSession(){
   const role = localStorage.getItem('trsRole');
   if(role && Object.values(PASSWORDS).includes(role)){
     applyRole(role);
     document.getElementById('loginGate').style.display = 'none';
     document.getElementById('dashboardWrap').style.display = 'block';
-    loadData();
+    await loadData();
     setInterval(loadData, 60000);
     const params = new URLSearchParams(window.location.search);
     const activeView = params.get('view') || 'dashboard';
@@ -1360,8 +1361,25 @@ function aggData(datasets){
   s.beautyPct=s.netTake?(s.beautySales/s.netTake*100):0;
   const totalNewC=Object.values(hairMap).reduce((acc,st)=>acc+(st.newC||0),0);
   s.ncrPct=s.totalClients?(totalNewC/s.totalClients*100):0;
-  const hairStaff=Object.values(hairMap).map((st,i)=>({...st,avgBill:st.total?st.hairSalesNet/st.total:0,rebookPct:st.total?(st.rebooked/st.total*100):0,ncrPct:st.total?(st.newC/st.total*100):0,color:SCOLS[i%SCOLS.length]}));
-  const beautyStaff=Object.values(beautyMap).map((st,i)=>({...st,avgBill:st.total?st.beautySales/st.total:0,rebookPct:st.rebookPct||0,ncrPct:st.total?(st.newC/st.total*100):0,color:SCOLS[(i+3)%SCOLS.length]}));
+  
+  const hairStaff=Object.values(hairMap).map((st,i)=>{
+    const hReturning=(st.req||0)+(st.salon||0);
+    const hRebookPct=st.total?(st.rebooked/st.total*100):0;
+    const hRetentionPct=st.total?(hReturning/st.total*100):0;
+    const hConvPct=hReturning?(st.rebooked/hReturning*100):0;
+    return{...st,avgBill:st.total?st.hairSalesNet/st.total:0,rebookPct:hRebookPct,retentionPct:hRetentionPct,conversionPct:hConvPct,ncrPct:st.total?(st.newC/st.total*100):0,color:SCOLS[i%SCOLS.length]};
+  });
+  const beautyStaff=Object.values(beautyMap).map((st,i)=>{
+    const bReturning=(st.req||0)+(st.salon||0);
+    const bRebookPct=st.total?((st.rebooked||0)/st.total*100):0;
+    return{...st,avgBill:st.total?st.beautySales/st.total:0,rebookPct:bRebookPct,ncrPct:st.total?((st.newC||0)/st.total*100):0,color:SCOLS[(i+3)%SCOLS.length]};
+  });
+  const totalReturningH=Object.values(hairMap).reduce((a,st)=>a+(st.req||0)+(st.salon||0),0);
+  s.retentionPct=totalHairClients?(totalReturningH/totalHairClients*100):0;
+  s.conversionPct=Math.min(totalReturningH?(totalRebooked/totalReturningH*100):0, 100);
+  const totalBeautyClients=Object.values(beautyMap).reduce((a,st)=>a+(st.total||0),0);
+  const totalBeautyRebooked=Object.values(beautyMap).reduce((a,st)=>a+(st.rebooked||0),0);
+  s.beautyRebookPct=totalBeautyClients?(totalBeautyRebooked/totalBeautyClients*100):0;
   return{summary:s,hairStaff,beautyStaff};
 }
 
@@ -1727,7 +1745,7 @@ function renderDashboard(){
       <div class="metric m-lav">
         <div class="metric-label">NCR (New Client Requests)</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(New clients requesting specific staff)</em></div>
-        <div class="metric-value" style="font-size:20px">${Math.round(s.ncrPct * s.totalClients / 100)}</div>
+        <div class="metric-value" style="font-size:20px">${d.hairStaff.reduce((a,st)=>a+(st.req||0),0)}</div>
         <div class="metric-target">Increase weekly</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Demand indicator</div>
       </div>
@@ -1736,7 +1754,7 @@ function renderDashboard(){
       <div class="metric m-lav">
         <div class="metric-label">Request Clients %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Request clients ÷ Total clients)</em></div>
-        <div class="metric-value ${sc(s.ncrPct, 40)}" style="font-size:20px">${fmtPct(s.ncrPct)}</div>
+        <div class="metric-value ${sc(d.hairStaff.reduce((a,st)=>a+(st.req||0),0)/Math.max(1,s.totalClients)*100, 40)}" style="font-size:20px">${fmtPct(d.hairStaff.reduce((a,st)=>a+(st.req||0),0)/Math.max(1,s.totalClients)*100)}</div>
         <div class="metric-target">Target: ≥ 40%</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Loyalty indicator</div>
       </div>
@@ -1798,7 +1816,7 @@ function renderDashboard(){
       <div class="metric m-rose">
         <div class="metric-label">Retention %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Returning clients over time)</em></div>
-        <div class="metric-value ${sc(s.rebookPct, 60)}" style="font-size:20px">${fmtPct(s.rebookPct)}</div>
+        <div class="metric-value ${sc(s.retentionPct||0, 60)}" style="font-size:20px">${fmtPct(s.retentionPct||0)}</div>
         <div class="metric-target">Target: ≥ 60–70%</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Long-term loyalty</div>
       </div>
@@ -1807,9 +1825,9 @@ function renderDashboard(){
       <div class="metric m-rose">
         <div class="metric-label">Conversion %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(New → returning clients)</em></div>
-        <div class="metric-value ${sc(s.rebookPct, 50)}" style="font-size:20px">${fmtPct(s.rebookPct)}</div>
+        <div class="metric-value" style="font-size:20px;color:var(--muted)">—</div>
         <div class="metric-target">Target: ≥ 50%</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px">Client stickiness</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Requires Phorest client history</div>
       </div>
 
     </div>
