@@ -875,7 +875,7 @@ function renderDashboard() {
       <div class="metric m-rose">
         <div class="metric-label">Hair Rebooking %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Hair rebooks ÷ Hair clients)</em></div>
-        <div class="metric-value ${sc(s.conversionPct||0, 50)}" style="font-size:20px">${fmtPct(s.conversionPct||0)}</div>
+        <div class="metric-value ${sc(s.rebookPct||0, 50)}" style="font-size:20px">${fmtPct(s.rebookPct||0)}</div>
         <div class="metric-target">Target: ≥ 50%</div>
       </div>
       <div class="metric m-rose">
