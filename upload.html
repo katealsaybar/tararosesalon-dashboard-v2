@@ -6,6 +6,7 @@
 <title>Tara Rose Ladies Salon — Upload Portal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="parser.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -504,57 +505,6 @@ function checkDailyBtn() {
   document.getElementById('uploadDailyBtn').disabled = !BRANCH_KEYS.some(k => fileSlotsDaily[k]);
 }
 
-// ── XLSX PARSER: WEEKLY ──
-async function parseXLSXWeekly(file) {
-  const ab = await file.arrayBuffer();
-  const wb = XLSX.read(ab, { type:'array' });
-  const sheetName = wb.SheetNames.find(s => s.toUpperCase()==='WEEKEND') || wb.SheetNames[0];
-  const ws = wb.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
-  const parseAED = v => parseFloat(String(v||'').replace(/AED|,|\s/g,'').replace(/[^\d.\-]/g,''))||0;
-  const normalizeLabel = v => String(v || '').trim().toUpperCase().replace(/\s+/g, ' ');
-  const hairStaff=[], beautyStaff=[];
-  let summary={}, inBeauty=false, hairHdr=false, beautyHdr=false;
-  for (let i=0;i<rows.length;i++) {
-    const cols=rows[i].map(c=>c!==null&&c!==undefined?String(c).trim():'');
-    const first=cols[0];
-    const firstLabel = normalizeLabel(first);
-    if (!first&&cols.every(c=>!c)) continue;
-    if (cols.includes('HAIR SALES TAKE')&&!inBeauty){hairHdr=true;continue;}
-    if (cols.includes('BEAUTY SALES TAKE')){inBeauty=true;beautyHdr=true;continue;}
-    if (firstLabel==='TOTAL CLIENTS'){summary.totalClients=parseInt(cols[1])||0;continue;}
-    if (firstLabel==='HAIR RETAIL SALES' || firstLabel==='RETAIL SALES' || firstLabel==='RETAIL %'){summary.hairRetail=parseAED(cols[1]);continue;}
-    if (firstLabel==='TREATMENT SALES'){summary.treatmentSales=parseAED(cols[1]);continue;}
-    if (firstLabel==='COL TAKE AED'){summary.colTake=parseAED(cols[1]);continue;}
-    if (firstLabel==='BEAUTY SALES'){summary.beautySales=parseAED(cols[1]);continue;}
-    if (firstLabel==='NET SALON TAKE'){summary.netTake=parseAED(cols[1]);summary.avgBill=parseFloat(cols[2])||0;continue;}
-    if (!inBeauty&&hairHdr&&first&&first!=='STAFF'&&first!=='TOTALS'){
-      const s={name:first,total:parseInt(cols[7])||0,hairSales:parseAED(cols[8]),hairSalesNet:parseAED(cols[9]),retail:parseAED(cols[22]),treatments:parseAED(cols[29]),totalNet:parseAED(cols[31])};
-      if(s.total>0) hairStaff.push(s);
-    }
-    if (inBeauty&&beautyHdr&&first&&first!=='STAFF'&&first!=='TOTALS'){
-      const s={name:first,total:parseInt(cols[7])||0,beautySales:parseAED(cols[8]),beautyNet:parseAED(cols[9])};
-      if(s.total>0) beautyStaff.push(s);
-    }
-    if (!inBeauty&&first==='TOTALS'){summary.totals={hairSales:parseAED(cols[8]),hairSalesNet:parseAED(cols[9]),retail:parseAED(cols[22]),treatments:parseAED(cols[29])};}
-  }
-  // Fallback: if hairRetail is 0, sum RETAIL TOTAL from each day sheet
-  if (!summary.hairRetail) {
-    const DAY_SHEETS_W = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
-    let retailSum = 0;
-    for (const sn of wb.SheetNames) {
-      if (!DAY_SHEETS_W.includes(sn.toUpperCase())) continue;
-      const dayRows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header:1, defval:null });
-      for (const row of dayRows) {
-        const r = row.map(c=>c!==null&&c!==undefined?String(c).trim():'');
-        if (normalizeLabel(r[0])==='RETAIL TOTAL') { retailSum += parseAED(r[3]); break; }
-      }
-    }
-    if (retailSum > 0) summary.hairRetail = retailSum;
-  }
-  return { hairStaff, beautyStaff, summary };
-}
-
 // ── XLSX PARSER: DAILY ──
 async function parseXLSXDaily(file, branchCode) {
   const ab = await file.arrayBuffer();
@@ -639,6 +589,34 @@ async function uploadAllWeekly() {
     try {
       const data = await parseXLSXWeekly(fileSlots[code]);
       document.getElementById('pb_'+code).style.width='60%';
+
+      // ── RETAIL AUDIT BADGE ─────────────────────────────────
+      // Surface where retail came from + flag mismatches before insert.
+      const rd = data.summary && data.summary._retailDebug;
+      if (rd) {
+        const retailVal = data.summary.hairRetail || 0;
+        let badge = '';
+        if (retailVal === 0) {
+          badge = `<div style="margin-top:4px;padding:6px 8px;background:rgba(239,68,68,.15);border-left:3px solid #ef4444;border-radius:4px;font-size:11px;color:#fca5a5">⚠️ <strong>${BRANCHES[code].name}:</strong> No retail detected (source: ${rd.source}). Check spreadsheet labels.</div>`;
+        } else if (rd.mismatch) {
+          const m = rd.mismatch;
+          badge = `<div style="margin-top:4px;padding:6px 8px;background:rgba(251,191,36,.12);border-left:3px solid #fbbf24;border-radius:4px;font-size:11px;color:#fcd34d">⚠️ <strong>${BRANCHES[code].name}:</strong> Retail mismatch — daily AED ${m.daily.toLocaleString()} vs summary AED ${m.summary.toLocaleString()} (${m.pctDiff}% drift). Using daily total.</div>`;
+        } else {
+          badge = `<div style="margin-top:4px;padding:4px 8px;font-size:10px;color:var(--muted)">Retail: AED ${retailVal.toLocaleString()} (source: ${rd.source}, ${rd.daysWithRetail}/${rd.daysScanned} days)</div>`;
+        }
+        const psEl = document.getElementById('ps_'+code);
+        if (psEl && psEl.parentElement) {
+          // Append after the prog-row
+          const audit = document.createElement('div');
+          audit.id = 'audit_'+code;
+          audit.innerHTML = badge;
+          // Remove prior audit if re-uploading
+          const prior = document.getElementById('audit_'+code);
+          if (prior) prior.remove();
+          psEl.parentElement.insertAdjacentElement('afterend', audit);
+        }
+      }
+
       const {error} = await sb.from('weekly_data').insert({branch:code,week_label:weekLabel,data});
       if (error) throw error;
       document.getElementById('pb_'+code).style.width='100%';
@@ -656,7 +634,10 @@ async function uploadAllWeekly() {
     showToast('✅ All weekly files uploaded!');
     document.getElementById('weekLabel').value='';
     BRANCH_KEYS.forEach(k=>{if(fileSlots[k])clearSlot(k);});
-    setTimeout(()=>{prog.style.display='none';prog.innerHTML='';},2000);
+    // Hide faster if no audit warnings, slower if there are warnings to read
+    const hasWarnings = document.querySelectorAll('[id^="audit_"]').length > 0;
+    const hideDelay = hasWarnings ? 12000 : 2000;
+    setTimeout(()=>{prog.style.display='none';prog.innerHTML='';},hideDelay);
   }
   document.getElementById('uploadWeeklyBtn').disabled=false;
   document.getElementById('uploadWeeklyBtn').textContent='Upload All';
