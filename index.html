@@ -334,6 +334,46 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .ms-opt.all-opt{font-weight:600;border-bottom:1px solid var(--border);border-left:3px solid transparent}
 .ms-opt.all-opt.selected{color:var(--accent);background:var(--surface2);border-left-color:var(--accent)}
 
+/* DATE RANGE PICKER */
+.date-pill-btn{min-width:220px}
+.date-pill-btn.active{border-color:var(--accent);background:var(--surface2)}
+.date-picker-pop{display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.28);padding:16px;width:300px}
+.date-picker-pop.open{display:block}
+/* Step indicator */
+.cal-steps{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border2)}
+.cal-step{flex:1;background:var(--surface2);border-radius:10px;padding:7px 10px;border:1.5px solid var(--border)}
+.cal-step.active-step{border-color:var(--accent)}
+.cal-step-label{display:block;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.cal-step-val{display:block;font-size:12px;font-weight:600;color:var(--text)}
+.cal-step-val.set{color:var(--good)}
+.cal-step-arrow{color:var(--muted);font-size:14px;flex-shrink:0}
+.date-picker-clear{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:10px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.date-picker-clear:hover{border-color:var(--bad);color:var(--bad)}
+/* Calendar nav */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-nav-center{display:flex;gap:6px;align-items:center}
+.cal-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
+.cal-nav-btn:hover{border-color:var(--accent);color:var(--text)}
+.cal-sel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 6px;font-size:12px;font-weight:600;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;appearance:none;-webkit-appearance:none}
+.cal-sel:focus{outline:none;border-color:var(--accent)}
+/* Calendar grid */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:12px}
+.cal-day-hdr{font-size:9px;text-align:center;color:var(--muted2);padding:3px 0;letter-spacing:0.05em}
+.cal-day{font-size:11px;text-align:center;padding:6px 2px;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s;user-select:none}
+.cal-day:hover:not(.cal-day-empty){background:var(--surface2);color:var(--text)}
+.cal-day.cal-day-empty{cursor:default;opacity:.25;pointer-events:none}
+.cal-day.cal-day-today{color:var(--accent);font-weight:700}
+.cal-day.cal-day-selected{background:var(--accent);color:var(--accent-fg);font-weight:700}
+.cal-day.cal-day-in-range{background:rgba(255,212,217,0.18);color:var(--text);border-radius:0}
+.cal-day.cal-day-range-start{background:var(--accent);color:var(--accent-fg);font-weight:700;border-radius:6px 0 0 6px}
+.cal-day.cal-day-range-end{background:var(--accent);color:var(--accent-fg);font-weight:700;border-radius:0 6px 6px 0}
+/* Footer */
+.date-picker-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.date-picker-selection{font-size:11px;color:var(--muted)}
+.date-picker-selection.has-range{color:var(--good);font-weight:600}
+.date-picker-apply{padding:7px 16px;background:var(--btn);color:var(--btn-fg);border:none;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.date-picker-apply:hover{background:var(--btn-hover)}
+
 /* MAIN */
 main{max-width:1400px;margin:0 auto;padding:10px 28px 48px}
 .section-label{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-top:16px;margin-bottom:8px}
@@ -701,34 +741,54 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
         <div id="drop-branch" class="ms-drop"></div>
       </div>
     </div>
-    <!-- YEAR -->
+    <!-- DATE RANGE PILL -->
     <div class="ctrl-group">
-      <div class="ctrl-label">Year</div>
-      <div class="ms-wrap">
-        <button id="btn-year" class="ms-btn" onclick="toggleDrop('year')">
-          <span id="lbl-year">All years</span>
+      <div class="ctrl-label">Date Range</div>
+      <div class="ms-wrap" id="dateRangeWrap">
+        <button class="ms-btn date-pill-btn" id="btn-daterange" onclick="toggleDatePicker()">
+          <span id="lbl-daterange">Select Date/s From and To</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" id="daterange-chevron"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <div id="drop-year" class="ms-drop"></div>
-      </div>
-    </div>
-    <!-- MONTH -->
-    <div class="ctrl-group">
-      <div class="ctrl-label">Month</div>
-      <div class="ms-wrap">
-        <button id="btn-month" class="ms-btn" onclick="toggleDrop('month')">
-          <span id="lbl-month">All months</span>
-        </button>
-        <div id="drop-month" class="ms-drop"></div>
-      </div>
-    </div>
-    <!-- WEEK -->
-    <div class="ctrl-group">
-      <div class="ctrl-label">Week</div>
-      <div class="ms-wrap">
-        <button id="btn-week" class="ms-btn" onclick="toggleDrop('week')">
-          <span id="lbl-week">All weeks</span>
-        </button>
-        <div id="drop-week" class="ms-drop"></div>
+        <!-- DATE PICKER POPOVER -->
+        <div class="date-picker-pop" id="datePickerPop" style="display:none">
+          <!-- STEP INDICATOR -->
+          <div class="cal-steps">
+            <div class="cal-step" id="calStepFrom">
+              <span class="cal-step-label">FROM</span>
+              <span class="cal-step-val" id="calStepFromVal">Select start</span>
+            </div>
+            <div class="cal-step-arrow">→</div>
+            <div class="cal-step" id="calStepTo">
+              <span class="cal-step-label">TO</span>
+              <span class="cal-step-val" id="calStepToVal">Select end</span>
+            </div>
+            <button class="date-picker-clear" onclick="clearDateRange()">Clear</button>
+          </div>
+          <!-- CALENDAR NAV -->
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="shiftCal(-1)">‹</button>
+            <div class="cal-nav-center">
+              <select class="cal-sel" id="calMonthSel" onchange="calMonthChange()">
+                <option value="0">January</option><option value="1">February</option>
+                <option value="2">March</option><option value="3">April</option>
+                <option value="4">May</option><option value="5">June</option>
+                <option value="6">July</option><option value="7">August</option>
+                <option value="8">September</option><option value="9">October</option>
+                <option value="10">November</option><option value="11">December</option>
+              </select>
+              <select class="cal-sel" id="calYearSel" onchange="calYearChange()">
+              </select>
+            </div>
+            <button class="cal-nav-btn" onclick="shiftCal(1)">›</button>
+          </div>
+          <!-- CALENDAR GRID -->
+          <div class="cal-grid" id="calGrid"></div>
+          <!-- FOOTER -->
+          <div class="date-picker-footer">
+            <span class="date-picker-selection" id="date-picker-selection">Click a date to set FROM</span>
+            <button class="date-picker-apply" onclick="applyDateRange()">Apply</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -934,7 +994,9 @@ const MONTH_ORDER=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','
 
 let allData=[];
 let charts={};
-const sel={branch:['all'],year:['all'],month:['all'],week:['all']};
+const sel={branch:['all']};
+let dateFrom=null;
+let dateTo=null;
 
 function toggleTheme(){
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -1008,8 +1070,6 @@ function toggleOpt(key,val){
     else sel[key].push(val);
     if(!sel[key].length) sel[key]=['all'];
   }
-  if(key==='year'){sel.month=['all'];}
-  if(key==='year'||key==='month'){sel.week=['all'];}
   rebuildDependentDrops();
   const drop=document.getElementById('drop-'+key);
   const isAllNow=sel[key].includes('all');
@@ -1039,31 +1099,17 @@ function updateLabel(key,options){
 }
 
 function rebuildDependentDrops(){
-  const years=[...new Set(allData.map(d=>getYear(d.week_label,d.uploaded_at)))].sort((a,b)=>b-a);
-  buildDrop('year',years.map(y=>({val:y,label:y})));
-  const f1=getFilteredData(true,true);
-  const months=[...new Set(f1.map(d=>getMonth(d.week_label,d.uploaded_at)))].filter(m=>m!=='—').sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
-  buildDrop('month',months.map(m=>({val:m,label:m})));
-  const f2=allData.filter(d=>{
-    const yr=getYear(d.week_label,d.uploaded_at);
-    const mo=getMonth(d.week_label,d.uploaded_at);
-    if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
-    if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
-    return true;
-  });
-  const seenLabels=new Set();
-  const weeks=f2.filter(d=>{if(seenLabels.has(d.week_label))return false;seenLabels.add(d.week_label);return true;}).map(d=>({val:d.week_label,label:d.week_label}));
-  buildDrop('week',weeks);
+  buildDrop('branch',Object.entries(BRANCH_INFO).map(([k,v])=>({val:k,label:v.name})));
 }
 
-function getFilteredData(ignoreBranch=false,ignoreMonth=false,ignoreWeek=false){
+function getFilteredData(ignoreBranch=false){
   return allData.filter(d=>{
     if(!ignoreBranch&&!sel.branch.includes('all')&&!sel.branch.includes(d.branch))return false;
-    const yr=getYear(d.week_label,d.uploaded_at);
-    if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
-    const mo=getMonth(d.week_label,d.uploaded_at);
-    if(!ignoreMonth&&!sel.month.includes('all')&&!sel.month.includes(mo))return false;
-    if(!ignoreWeek&&!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
+    if(dateFrom||dateTo){
+      const up=new Date(d.uploaded_at);up.setHours(0,0,0,0);
+      if(dateFrom&&up<dateFrom)return false;
+      if(dateTo&&up>dateTo)return false;
+    }
     return true;
   });
 }
@@ -1119,11 +1165,11 @@ function aggByBranch(){
   Object.keys(BRANCH_INFO).forEach(code=>{
     const rows=allData.filter(d=>{
       if(d.branch!==code)return false;
-      const yr=getYear(d.week_label,d.uploaded_at);
-      const mo=getMonth(d.week_label,d.uploaded_at);
-      if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
-      if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
-      if(!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
+      if(dateFrom||dateTo){
+        const up=new Date(d.uploaded_at);up.setHours(0,0,0,0);
+        if(dateFrom&&up<dateFrom)return false;
+        if(dateTo&&up>dateTo)return false;
+      }
       return true;
     });
     result[code]=aggData(rows.map(d=>d.data));
@@ -1612,12 +1658,15 @@ function renderDashboard(){
   (function(){
     const WEEKLY_GOALS_MAP={SAA:[450000,550000],KCA:[320000,420000],AQ:[500000,650000],MC:[350000,450000],FRT:[200000,260000]};
     const activeBranches=sel.branch.includes('all')?Object.keys(WEEKLY_GOALS_MAP):sel.branch;
-    const hasWeek=!sel.week.includes('all');
+    const hasDateRange=!!(dateFrom&&dateTo);
     let weekCount=1;
-    if(!hasWeek){
+    if(!hasDateRange){
       const weekSet=new Set(filtered.map(d=>d.week_label));
       const branchCount=activeBranches.length||1;
       weekCount=Math.max(1,Math.round(weekSet.size/branchCount));
+    } else {
+      const diffDays=Math.round((dateTo-dateFrom)/(1000*60*60*24))+1;
+      weekCount=Math.max(1,Math.round(diffDays/7));
     }
     let wMin=0,wMax=0;
     activeBranches.forEach(b=>{if(WEEKLY_GOALS_MAP[b]){wMin+=WEEKLY_GOALS_MAP[b][0];wMax+=WEEKLY_GOALS_MAP[b][1];}});
@@ -1625,7 +1674,7 @@ function renderDashboard(){
     const gMin=wMin*weekCount, gMax=wMax*weekCount;
     const goalMid=(gMin+gMax)/2;
     const pct=Math.min(s.netTake/goalMid,1.05);
-    const periodLabel=hasWeek?'week':weekCount===4?'month (~4 wks)':weekCount+' week'+(weekCount>1?'s':'');
+    const periodLabel=hasDateRange?weekCount+' week'+(weekCount>1?'s':''):weekCount===4?'month (~4 wks)':weekCount+' week'+(weekCount>1?'s':'');
     const canvas=document.getElementById('dialCanvas');
     if(canvas){
       const ctx=canvas.getContext('2d');
@@ -1678,8 +1727,6 @@ function renderDashboard(){
 
 // ── TEAM PERFORMANCE VIEW ──
 const selT={branch:['all'],year:['all'],month:['all'],week:['all']};
-// ── COMPARATOR-ONLY FUNNEL ──
-const selCmp={year:['all'],month:['all'],week:['all']};
 let teamCharts={};
 
 function toggleDropT(key){
@@ -1749,125 +1796,16 @@ function getFilteredDataT(ignoreBranch=false,ignoreMonth=false,ignoreWeek=false)
   });
 }
 
-// ── COMPARATOR FUNNEL HELPERS ──
-function getCmpFilteredData(ignoreMonth=false,ignoreWeek=false){
-  return allData.filter(d=>{
-    const yr=getYear(d.week_label,d.uploaded_at);
-    if(!selCmp.year.includes('all')&&!selCmp.year.includes(yr))return false;
-    const mo=getMonth(d.week_label,d.uploaded_at);
-    if(!ignoreMonth&&!selCmp.month.includes('all')&&!selCmp.month.includes(mo))return false;
-    if(!ignoreWeek&&!selCmp.week.includes('all')&&!selCmp.week.includes(d.week_label))return false;
-    return true;
-  });
-}
-
-function rebuildCmpDrops(){
-  const years=[...new Set(allData.map(d=>getYear(d.week_label,d.uploaded_at)))].sort((a,b)=>b-a);
-  buildCmpDrop('cmp-year',years,'year');
-  const f1=getCmpFilteredData(true,true);
-  const months=[...new Set(f1.map(d=>getMonth(d.week_label,d.uploaded_at)))].filter(m=>m!=='—').sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
-  buildCmpDrop('cmp-month',months,'month');
-  const f2=getCmpFilteredData(false,true);
-  const seenW=new Set();
-  const weeks=f2.filter(d=>{if(seenW.has(d.week_label))return false;seenW.add(d.week_label);return true;}).map(d=>d.week_label);
-  buildCmpDrop('cmp-week',weeks,'week');
-}
-
-function buildCmpDrop(id,options,key){
-  const sel=document.getElementById(id);
-  if(!sel)return;
-  const cur=selCmp[key];
-  sel.innerHTML=`<option value="all">${key==='week'?'All weeks':'All '+key+'s'}</option>`+options.map(o=>`<option value="${o}">${o}</option>`).join('');
-  sel.value=cur.includes('all')?'all':cur[0]||'all';
-}
-
-function onCmpFunnelChange(){
-  const yr=document.getElementById('cmp-year');
-  const mo=document.getElementById('cmp-month');
-  const wk=document.getElementById('cmp-week');
-  if(!yr)return;
-  selCmp.year=yr.value==='all'?['all']:[yr.value];
-  selCmp.month=['all'];selCmp.week=['all'];
-  rebuildCmpDrops();
-  // re-read month and week after rebuild
-  const mo2=document.getElementById('cmp-month');
-  const wk2=document.getElementById('cmp-week');
-  if(mo2&&mo.value!=='all'){mo2.value=mo.value;selCmp.month=[mo.value];}
-  if(wk2&&wk.value!=='all'){wk2.value=wk.value;selCmp.week=[wk.value];}
-  refreshCmpData();
-}
-
-function onCmpMonthChange(){
-  const mo=document.getElementById('cmp-month');
-  if(!mo)return;
-  selCmp.month=mo.value==='all'?['all']:[mo.value];
-  selCmp.week=['all'];
-  rebuildCmpDrops();
-  refreshCmpData();
-}
-
-function onCmpWeekChange(){
-  const wk=document.getElementById('cmp-week');
-  if(!wk)return;
-  selCmp.week=wk.value==='all'?['all']:[wk.value];
-  refreshCmpData();
-}
-
-function refreshCmpData(){
-  // Rebuild cmpBranchMap with the comparator's own filter
-  const newMap={};
-  const newHair=[];
-  const newBeauty=[];
-  Object.keys(BRANCH_INFO).forEach(code=>{
-    const rows=getCmpFilteredData().filter(d=>d.branch===code);
-    const bd=aggData(rows.map(d=>d.data));
-    if(!bd)return;
-    const hairList=bd.hairStaff.map(s=>({...s,isBeauty:false,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
-    const beautyList=bd.beautyStaff.map(s=>({...s,isBeauty:true,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
-    hairList.forEach(s=>newHair.push(s));
-    beautyList.forEach(s=>newBeauty.push(s));
-    const all=[...hairList,...beautyList];
-    if(all.length)newMap[code]=all;
-  });
-  // Replace window references entirely
-  window._cmpBranchMap=newMap;
-  window._cmpAllHair=newHair;
-  window._cmpAllBeauty=newBeauty;
-  // Re-populate branch→stylist selects and re-render radars for all 3 slots
-  for(let n=1;n<=3;n++){
-    const branchSel=document.getElementById('cmpBranch'+n);
-    if(!branchSel||!branchSel.value)continue;
-    const prevName=document.getElementById('cmpName'+n)?.value||'';
-    onCmpBranchChange(n);
-    // Restore previously selected stylist if still available in filtered data
-    const nameSel=document.getElementById('cmpName'+n);
-    if(nameSel&&prevName){
-      nameSel.value=prevName;
-      // If name not in new options (no data for period), inject a placeholder
-      if(nameSel.value!==prevName){
-        const noDataOpt=document.createElement('option');
-        noDataOpt.value=prevName;
-        noDataOpt.textContent=prevName;
-        noDataOpt.dataset.nodata='1';
-        nameSel.appendChild(noDataOpt);
-        nameSel.value=prevName;
-      }
-    }
-  }
-  // Re-render all radars with updated data
-  if(window.onCmpNameChange) onCmpNameChange();
-}
-
 function aggByBranchT(){
   const result={};
   Object.keys(BRANCH_INFO).forEach(code=>{
     const rows=allData.filter(d=>{
       if(d.branch!==code)return false;
-      const yr=getYear(d.week_label,d.uploaded_at);
-      const mo=getMonth(d.week_label,d.uploaded_at);
-      if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
-      if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
-      if(!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
+      if(dateFrom||dateTo){
+        const up=new Date(d.uploaded_at);up.setHours(0,0,0,0);
+        if(dateFrom&&up<dateFrom)return false;
+        if(dateTo&&up>dateTo)return false;
+      }
       return true;
     });
     result[code]=aggData(rows.map(d=>d.data));
@@ -1910,27 +1848,15 @@ function renderTeam(){
     bd.beautyStaff.forEach(st=>allBeautyWithBranch.push({...st,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color,isBeauty:true}));
   });
 
-  // ── COMPARATOR: build branch→stylists map using comparator's own funnel (selCmp) ──
+  // ── COMPARATOR: build branch→stylists map from ALL data (unaffected by global filter) ──
   const cmpBranchMap={};
-  const cmpAllHair=[];
-  const cmpAllBeauty=[];
   Object.keys(BRANCH_INFO).forEach(code=>{
-    const rows=getCmpFilteredData().filter(d=>d.branch===code);
-    const bd=aggData(rows.map(d=>d.data));
-    if(!bd)return;
-    const hairList=bd.hairStaff.map(s=>({...s,isBeauty:false,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
-    const beautyList=bd.beautyStaff.map(s=>({...s,isBeauty:true,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}));
-    hairList.forEach(s=>cmpAllHair.push(s));
-    beautyList.forEach(s=>cmpAllBeauty.push(s));
-    const all=[...hairList,...beautyList];
+    const allRows=allData.filter(d=>d.branch===code);
+    const bdAll=aggData(allRows.map(d=>d.data));
+    if(!bdAll)return;
+    const all=[...bdAll.hairStaff.map(s=>({...s,isBeauty:false,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color})),...bdAll.beautyStaff.map(s=>({...s,isBeauty:true,branchCode:code,branchName:BRANCH_INFO[code].name,branchColor:BRANCH_INFO[code].color}))];
     if(all.length) cmpBranchMap[code]=all;
   });
-  // Expose on window so refreshCmpData() can update them in place
-  window._cmpBranchMap=cmpBranchMap;
-  window._cmpAllHair=cmpAllHair;
-  window._cmpAllBeauty=cmpAllBeauty;
-  // Populate comparator funnel dropdowns
-  setTimeout(()=>rebuildCmpDrops(),0);
 
   teamContent.innerHTML=`
 
@@ -1975,28 +1901,13 @@ function renderTeam(){
      CUSTOM STYLIST / BEAUTICIAN COMPARISON: 
 ══════════════════════════════════════════════════ -->
 <div class="section-label" style="display:flex;align-items:center;gap:7px;margin-top:20px;margin-bottom:8px">
-  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);flex-shrink:0"></span>
+  <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#99F6E4;flex-shrink:0"></span>
   Custom Stylist  / Beautician Comparison: 
   <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:4px">Compare up to 3 stylists across branches</span>
-  <span style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--good);font-weight:600;margin-left:8px;background:var(--good-bg);padding:2px 7px;border-radius:20px;border:1px solid var(--good);opacity:0.85">All-data · unaffected by filters</span>
 </div>
 
 <div class="card" style="margin-bottom:12px">
-  <!-- Comparator own funnel -->
-  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:10px 10px 0 0;flex-wrap:wrap">
-    <span style="font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--good);font-weight:700;flex-shrink:0">Filter this section:</span>
-    <select id="cmp-year" onchange="onCmpFunnelChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
-      <option value="all">All years</option>
-    </select>
-    <select id="cmp-month" onchange="onCmpMonthChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
-      <option value="all">All months</option>
-    </select>
-    <select id="cmp-week" onchange="onCmpWeekChange()" style="padding:5px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer">
-      <option value="all">All weeks</option>
-    </select>
-    <span style="font-size:9px;color:var(--muted2);margin-left:auto">Independent of global filters</span>
-  </div>
-  <div style="padding:14px">
+  <!-- Slot row -->
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px" id="cmpSlots">
     ${[1,2,3].map(n=>`
     <div style="border:1px dashed var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--surface2)" id="cmpSlot${n}">
@@ -2020,7 +1931,6 @@ function renderTeam(){
         Select a stylist above<br>to view radar
       </div>
     </div>`).join('')}
-  </div>
   </div>
 </div>
 
@@ -2211,7 +2121,7 @@ function renderTeam(){
     teamCharts.radar=new Chart(ctx,{
       type:'radar',
       data:{labels,datasets:[{label:st.name,data:vals,backgroundColor:accent+'33',borderColor:accent,borderWidth:2,pointBackgroundColor:accent,pointRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},angleLines:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},pointLabels:{color:tc,font:{family:'DM Sans',size:10}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},angleLines:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},pointLabels:{color:tc,font:{family:'DM Sans',size:10}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
     });
   }
 
@@ -2242,7 +2152,7 @@ function renderTeam(){
     nameSel.disabled=!code;
     tag.textContent='';
     if(!code)return;
-    const stList=(window._cmpBranchMap||cmpBranchMap)[code]||[];
+    const stList=cmpBranchMap[code]||[];
     stList.forEach(st=>{
       const opt=document.createElement('option');
       opt.value=st.name;
@@ -2260,10 +2170,7 @@ function renderTeam(){
       const tag=document.getElementById('cmpSlotTag'+n);
       const nameSel=document.getElementById('cmpName'+n);
       const selOpt=nameSel.options[nameSel.selectedIndex];
-      if(selOpt&&selOpt.dataset.nodata){
-        tag.innerHTML=`<span style="font-size:10px;color:var(--muted2);font-style:italic">No data for selected period</span>`;
-        noDataSlotRadar(n,selOpt.value);
-      } else if(selOpt&&selOpt.dataset.st){
+      if(selOpt&&selOpt.dataset.st){
         try{
           const st=JSON.parse(selOpt.dataset.st);
           const revenue=st.isBeauty?(st.beautySales||0):(st.hairSalesNet||0);
@@ -2280,22 +2187,9 @@ function renderTeam(){
     if(wrap) wrap.innerHTML=`<div style="text-align:center;color:var(--muted2);font-size:11px;line-height:1.8;padding:16px"><div style="font-size:24px;margin-bottom:6px;opacity:0.4">◎</div>Select a stylist above<br>to view radar</div>`;
   }
 
-  function noDataSlotRadar(n,name){
-    if(cmpRadarCharts[n]){try{cmpRadarCharts[n].destroy();}catch(e){}cmpRadarCharts[n]=null;}
-    const wrap=document.getElementById('cmpRadarWrap'+n);
-    if(wrap) wrap.innerHTML=`
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;gap:8px">
-        <div style="font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--text);opacity:0.5">${name}</div>
-        <div style="font-size:22px;opacity:0.25">◎</div>
-        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted2);font-weight:600">No Data</div>
-        <div style="font-size:10px;color:var(--muted2);opacity:0.7;margin-top:2px">No records for<br>the selected period</div>
-      </div>`;
-  }
-
   function buildSlotRadar(n,st){
     const accent=st.color||'#C4B5FD';
-    // Use the comparator's own unfiltered pools — not affected by global branch/year/month/week filters
-    const refPool=st.isBeauty?(window._cmpAllBeauty||cmpAllBeauty):(window._cmpAllHair||cmpAllHair);
+    const refPool=st.isBeauty?allBeautyWithBranch:allHairWithBranch;
     const maxRev=Math.max(...refPool.map(s=>s.isBeauty?(s.beautySales||0):(s.hairSalesNet||0)),1);
     const maxClients=Math.max(...refPool.map(s=>s.total||0),1);
     const maxBill=Math.max(...refPool.map(s=>s.avgBill||0),1);
@@ -2337,7 +2231,7 @@ function renderTeam(){
     cmpRadarCharts[n]=new Chart(ctx,{
       type:'radar',
       data:{labels,datasets:[{label:st.name,data:vals,backgroundColor:accent+'33',borderColor:accent,borderWidth:2,pointBackgroundColor:accent,pointRadius:3}]},
-      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},angleLines:{color:isDark()?'rgba(250,248,243,0.3)':'rgba(92,85,87,0.65)'},pointLabels:{color:tc,font:{family:'DM Sans',size:9}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
+      options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},angleLines:{color:dark?'rgba(250,248,243,0.1)':'rgba(92,85,87,0.1)'},pointLabels:{color:tc,font:{family:'DM Sans',size:9}}}},plugins:{legend:{display:false},tooltip:{...ttStyle,callbacks:{label:c=>` ${c.raw}/100`}}}}
     });
   }
 
