@@ -37,6 +37,7 @@ const rankSymbols = ['🥇','🥈','🥉'];
 // ── STATE ───────────────────────────────────────────────────
 
 let allData = [];
+let allDailyData = [];
 let charts  = {};
 const sel   = { branch: ['all'] };
 let dateFrom = null; // JS Date object
@@ -397,16 +398,68 @@ function getWeekDatesFromLabel(label) {
 }
 
 function getFilteredData(ignoreBranch = false) {
+  if ((dateFrom || dateTo) && allDailyData.length) {
+    return allDailyData.filter(d => {
+      if (!ignoreBranch && !sel.branch.includes('all') && !sel.branch.includes(d.branch)) return false;
+      const rowDate = new Date(d.date + 'T00:00:00');
+      if (dateFrom && rowDate < dateFrom) return false;
+      if (dateTo   && rowDate > dateTo)   return false;
+      return true;
+    });
+  }
   return allData.filter(d => {
     if (!ignoreBranch && !sel.branch.includes('all') && !sel.branch.includes(d.branch)) return false;
-    if (dateFrom || dateTo) {
-      const weekDates = getWeekDatesFromLabel(d.week_label);
-      const checkDate = weekDates ? weekDates.start : (new Date(d.uploaded_at), (() => { const u = new Date(d.uploaded_at); u.setHours(0,0,0,0); return u; })());
-      if (dateFrom && checkDate < dateFrom) return false;
-      if (dateTo   && checkDate > dateTo)   return false;
-    }
     return true;
   });
+}
+
+function aggDailyData(rows) {
+  if (!rows.length) return null;
+  const hairMap = {};
+  const s = { totalClients:0, hairRetail:0, treatmentSales:0, beautySales:0, netTake:0, _retailWarnings:[] };
+  let totalRebooked = 0, totalHairClients = 0;
+  rows.forEach(d => {
+    const hairSales  = Number(d.hair_sales)||0;
+    const retail     = Number(d.retail_total)||0;
+    const treatments = Number(d.treatments_total)||0;
+    const beauty     = Number(d.beauty_sales)||0;
+    const total      = Number(d.total)||0;
+    const rebooked   = Number(d.hair_rebooked)||0;
+    const newC       = Number(d.hair_new)||0;
+    const req        = Number(d.hair_clients_request)||0;
+    const salon      = Number(d.hair_clients_salon)||0;
+    s.totalClients  += total;
+    s.hairRetail    += retail;
+    s.treatmentSales+= treatments;
+    s.beautySales   += beauty;
+    s.netTake       += hairSales + retail + beauty;
+    totalRebooked   += rebooked;
+    totalHairClients+= total;
+    const key = d.branch;
+    if (!hairMap[key]) hairMap[key] = { name:key, total:0, newC:0, rebooked:0, hairSalesNet:0, retail:0, treatments:0, req:0, salon:0 };
+    const h = hairMap[key];
+    h.total+=total; h.newC+=newC; h.rebooked+=rebooked;
+    h.hairSalesNet+=hairSales; h.retail+=retail; h.treatments+=treatments;
+    h.req+=req; h.salon+=salon;
+  });
+  s.avgBill       = s.totalClients ? (s.netTake/s.totalClients) : 0;
+  s.treatmentPct  = s.netTake ? (s.treatmentSales/s.netTake*100) : 0;
+  s.hairRetailPct = s.netTake ? (s.hairRetail/s.netTake*100) : 0;
+  s.rebookPct     = totalHairClients ? (totalRebooked/totalHairClients*100) : 0;
+  s.beautyPct     = s.netTake ? (s.beautySales/s.netTake*100) : 0;
+  const totalNewC = Object.values(hairMap).reduce((a,st)=>a+(st.newC||0),0);
+  s.ncrPct        = s.totalClients ? (totalNewC/s.totalClients*100) : 0;
+  s.retentionPct  = 0; s.conversionPct = 0; s.beautyRebookPct = 0;
+  const hairStaff = Object.values(hairMap).map((st,i) => ({
+    ...st,
+    avgBill:       st.total ? st.hairSalesNet/st.total : 0,
+    rebookPct:     st.total ? (st.rebooked/st.total*100) : 0,
+    retentionPct:  st.total ? ((st.req+st.salon)/st.total*100) : 0,
+    conversionPct: (st.req+st.salon) ? (st.rebooked/(st.req+st.salon)*100) : 0,
+    ncrPct:        st.total ? (st.newC/st.total*100) : 0,
+    color: SCOLS[i % SCOLS.length]
+  }));
+  return { summary:s, hairStaff, beautyStaff:[] };
 }
 
 
@@ -617,8 +670,8 @@ function renderDashboard() {
     return;
   }
 
-  const datasets = filtered.map(d => d.data);
-  const d = aggData(datasets);
+  const usingDaily = (dateFrom || dateTo) && allDailyData.length;
+  const d = usingDaily ? aggDailyData(filtered) : aggData(filtered.map(r => r.data));
   if (!d) return;
   const s = d.summary;
 
@@ -1632,6 +1685,10 @@ async function loadData() {
     document.getElementById('mainContent').innerHTML = '<div class="empty">No data available yet.</div>';
     return;
   }
+
+  const { data: dailyRows, error: dailyErr } = await sb.from('daily_data').select('*').order('date', { ascending: true });
+  if (!dailyErr && dailyRows) allDailyData = dailyRows;
+
   allData = data;
   const branches = Object.entries(BRANCH_INFO).map(([k,v]) => ({ val:k, label:v.name }));
   buildDrop('branch', branches);
