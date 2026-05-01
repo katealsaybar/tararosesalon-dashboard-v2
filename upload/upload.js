@@ -865,8 +865,16 @@ function extractMonth(label,uploaded_at){
   if(label){
     const upper=label.toUpperCase();
     for(const mo of MONTH_ORDER){
-      if(upper.includes(mo.toUpperCase()))return mo;
+      if(upper.includes(mo.toUpperCase())){
+        console.log('MATCH:', label, '→', mo);
+        return mo;
+      }
     }
+    console.log('NO MATCH:', label);
+  }
+  if(uploaded_at)return new Date(uploaded_at).toLocaleDateString('en-GB',{month:'short'});
+  return '—';
+}
   }
   if(uploaded_at)return new Date(uploaded_at).toLocaleDateString('en-GB',{month:'short'});
   return '—';
