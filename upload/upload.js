@@ -742,6 +742,12 @@ function renderColumns() {
       if(!byYear[yr][mo])byYear[yr][mo]=[];
       byYear[yr][mo].push(d);
     });
+    // Sort each month's entries newest first by uploaded_at
+    Object.keys(byYear).forEach(yr=>{
+      Object.keys(byYear[yr]).forEach(mo=>{
+        byYear[yr][mo].sort((a,b)=>new Date(b.uploaded_at)-new Date(a.uploaded_at));
+      });
+    });
     const years=Object.keys(byYear).sort((a,b)=>b-a);
     return `
       <div class="branch-col">
