@@ -1,0 +1,546 @@
+const SUPA_URL = 'https://gvijxenafoowajqktqvd.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2aWp4ZW5hZm9vd2FqcWt0cXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTA1OTksImV4cCI6MjA5MTI4NjU5OX0.GL3YXupXOBGfN4FCyelbQWraUw12VJNJu-wUB3zR7Zw';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+const BRANCH_INFO = {
+  KCA:{ name:'Khalifa City',  color:'#FFD4D9' },
+  SAA:{ name:'Saadiyat',      color:'#C4B5FD' },
+  MC: { name:'Motor City',    color:'#99F6E4' },
+  AQ: { name:'AQ Ladies',     color:'#FF9B9B' },
+  FRT:{ name:'Fratelli',      color:'#EEF3C7' },
+};
+const BEAUTY_NAMES = new Set(['MIMI','GRACE','SHILA','KIM','KIMBERLY','REDA','CHONA']);
+const SKIP_NAMES   = new Set(['STAFF','TOTALS','TYPE','TYPE ','BUSINESS','TARA','ASISSTANTS','ASSISTANTS',
+  'HAIR RETAIL SALES','TREATMENT SALES','COL TAKE AED','CBD TAKE AED','BEAUTY SALES','BEAUTY RETAIL SALES',
+  'NET SALON TAKE','TOTAL CLIENTS']);
+
+const AVATAR_COLORS = ['#C4B5FD','#99F6E4','#FFD4D9','#FF9B9B','#EEF3C7','#B5EAD7','#FFDAC1','#D4E4FF'];
+const fmtAED = n  => 'AED ' + Math.round(n||0).toLocaleString();
+const fmtPct = n  => (+(n||0)).toFixed(1) + '%';
+const initials = n => n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+
+let dateFrom = null;
+let dateTo = null;
+
+// ── STATE ──────────────────────────────────────────────────
+let allRows = [];         // raw supabase records
+let stylistMap = {};      // name -> { weeks:[], hair/beautyStaff data consolidated }
+let typeFilter = 'all';
+let sortKey    = 'hairSalesNet';
+let selectedStylist = null;
+let activeChart = null;
+let viewMode = 'weekly';
+
+//CHART VIEW MODES
+function setChartView(mode, el){
+  viewMode = mode;
+
+  document.querySelectorAll('.chart-toggle-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+
+  // re-render ONLY the detail chart
+  if(selectedStylist && stylistMap[selectedStylist]){
+    const s = stylistMap[selectedStylist];
+    s._stats = getStats(s);
+    drawChart(s._stats, s.isBeauty);
+  }
+}
+
+// ── THEME ──────────────────────────────────────────────────
+function toggleTheme(){
+  const dark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('themeLbl').textContent = dark ? 'Dark' : 'Light';
+}
+
+
+function toggleWeekPills(){
+    document.body.classList.toggle('hide-week-pills');
+  
+    const btn = document.getElementById('toggleWeeksBtn');
+    const hidden = document.body.classList.contains('hide-week-pills');
+  
+    btn.textContent = hidden ? 'Show Weeks' : 'Hide Weeks';
+  }
+
+// ── FILTER HELPERS ─────────────────────────────────────────
+function setTypeFilter(type, el){
+  typeFilter = type;
+  document.querySelectorAll('#filterAll,#filterHair,#filterBeauty').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+function setSort(key, el){
+  sortKey = key;
+  document.querySelectorAll('#sortSales,#sortClients,#sortRebook,#sortAvgBill').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+// ── LOAD DATA ──────────────────────────────────────────────
+async function loadData(){
+  const { data, error } = await sb
+  .from('weekly_data')
+  .select('*')
+  .order('uploaded_at', { ascending: true });
+  if(error){ document.getElementById('loadingEl').innerHTML='<div style="color:var(--bad)">Error loading data: '+error.message+'</div>'; return; }
+  allRows = data || [];
+
+  const dates = allRows.map(r => new Date(r.uploaded_at)).filter(d => !isNaN(d));
+
+if(dates.length){
+  const min = new Date(Math.min(...dates));
+  const max = new Date(Math.max(...dates));
+
+  document.getElementById('dateFromInput').value = min.toISOString().split('T')[0];
+  document.getElementById('dateToInput').value   = max.toISOString().split('T')[0];
+
+  dateFrom = new Date(min);
+  dateFrom.setHours(0,0,0,0);
+
+  dateTo = new Date(max);
+  dateTo.setHours(23,59,59,999);
+}
+
+  buildStylistMap();
+  document.getElementById('loadingEl').style.display='none';
+  document.getElementById('mainContent').style.display='block';
+  renderGrid();
+}
+
+function isSkip(name){
+  const n = name.toUpperCase().trim();
+  if(SKIP_NAMES.has(n)) return true;
+  if(n.includes('RETAIL') || n.includes('TREATMENT') || n.includes('TAKE') || n.includes('TOTAL') || n.includes('SALES')) return true;
+  return false;
+}
+
+function buildStylistMap(){
+  stylistMap = {};
+  for(const row of allRows){
+    const { branch, week_label, data: d, uploaded_at } = row;
+    if(!d) continue;
+    const allStaff = [
+      ...(d.hairStaff||[]).map(s=>({...s, isBeauty:false})),
+      ...(d.beautyStaff||[]).map(s=>({...s, isBeauty:true})),
+    ];
+    for(const st of allStaff){
+      const name = (st.name||'').trim().toUpperCase();
+      if(!name || isSkip(name)) continue;
+      // Decide type: explicitly beauty OR in beauty names list
+      const isBeauty = st.isBeauty || BEAUTY_NAMES.has(name);
+      if(!stylistMap[name]){
+        stylistMap[name] = { name, isBeauty, weeks:[], color: AVATAR_COLORS[Object.keys(stylistMap).length % AVATAR_COLORS.length] };
+      }
+      stylistMap[name].weeks.push({
+        week_label: week_label||'—',
+        branch: branch||'—',
+        uploaded_at,
+        total:        st.total||0,
+        req:          st.req||0,
+        salon:        st.salon||0,
+        newC:         st.newC||0,
+        rebooked:     st.rebooked||0,
+        rebookPct:    st.rebookPct||0,
+        hairSalesNet: st.hairSalesNet||0,
+        hairSales:    st.hairSales||0,
+        beautySales:  st.beautySales||0,
+        avgBill:      st.avgBill||0,
+        col:          st.col||0,
+        colPct:       st.colPct||0,
+        retail:       st.retail||0,
+        treatments:   st.treatments||0,
+        ncrPct:       st.ncrPct||0,
+      });
+    }
+  }
+}
+
+
+// ── COMPUTE CONSOLIDATED STATS ─────────────────────────────
+function getStats(stylist){
+  let weeks = stylist.weeks;
+
+  if(window.DEBUG) console.log('FILTERED WEEKS:', weeks.length);
+
+// 🔥 DATE FILTER 
+if (dateFrom || dateTo) {
+  weeks = weeks.filter(w => {
+    if (!w.uploaded_at) return false;
+
+    const d = new Date(w.uploaded_at);
+    d.setHours(0,0,0,0);
+
+    if (dateFrom && d < dateFrom) return false;
+    if (dateTo && d > dateTo) return false;
+
+    return true;
+  });
+}
+
+  if(!weeks.length) return null;
+  const sum = (key) => weeks.reduce((a,w)=>a+(w[key]||0),0);
+  const avg = (key) => sum(key)/weeks.length;
+  const totalClients = sum('total');
+  const netRevTotal  = sum('hairSalesNet') + sum('beautySales');
+
+  return {
+    weeksActive:   weeks.length,
+    total:         sum('total'),
+    req:           sum('req'),
+    salon:         sum('salon'),
+    newC:          sum('newC'),
+    rebooked:      sum('rebooked'),
+    rebookPct:     totalClients>0 ? sum('rebooked')/totalClients*100 : avg('rebookPct'),
+    hairSalesNet:  sum('hairSalesNet'),
+    hairSales:     sum('hairSales'),
+    beautySales:   sum('beautySales'),
+    netRevTotal,
+    avgBill:       totalClients>0 ? netRevTotal/totalClients : avg('avgBill'),
+    col:           sum('col'),
+    colPct:        avg('colPct'),
+    retail:        sum('retail'),
+    treatments:    sum('treatments'),
+    ncrPct:        avg('ncrPct'),
+    weeks,
+  };
+}
+
+// ── RENDER GRID ────────────────────────────────────────────
+function renderGrid(){
+  const search = document.getElementById('searchInput').value.trim().toUpperCase();
+
+  let stylists = Object.values(stylistMap).filter(s=>{
+    if(search && !s.name.includes(search)) return false;
+    const stats = getStats(s);
+    if(!stats) return false;
+    s._stats = stats;
+    return true;
+  });
+
+  if(!stylists.length){
+    console.warn('No results after filtering. Check date range.');
+  }
+
+  const hair   = stylists.filter(s=>!s.isBeauty);
+  const beauty = stylists.filter(s=>s.isBeauty);
+
+  const doSort = arr => arr.sort((a,b)=>{
+    const aVal = sortKey==='hairSalesNet' ? (a._stats.hairSalesNet+a._stats.beautySales) : (a._stats[sortKey]||0);
+    const bVal = sortKey==='hairSalesNet' ? (b._stats.hairSalesNet+b._stats.beautySales) : (b._stats[sortKey]||0);
+    return bVal - aVal;
+  });
+  doSort(hair); 
+  doSort(beauty);
+
+  const showHair   = typeFilter==='all'||typeFilter==='hair';
+  const showBeauty = typeFilter==='all'||typeFilter==='beauty';
+
+  document.getElementById('hairSection').style.display   = showHair   && hair.length   ? 'block' : 'none';
+  document.getElementById('beautySection').style.display = showBeauty && beauty.length ? 'block' : 'none';
+
+  const isEmpty = (!showHair || !hair.length) && (!showBeauty || !beauty.length);
+  document.getElementById('emptyState').style.display = isEmpty ? 'block' : 'none';
+
+  if(isEmpty && (dateFrom || dateTo)){
+    console.warn('Date filter too strict');
+  }
+
+  if(showHair)   renderSection(hair,   'hairGrid',   'Hair Stylists',  hair.length,   'hairSectionTitle');
+  if(showBeauty) renderSection(beauty, 'beautyGrid', 'Beauticians',    beauty.length, 'beautySectionTitle');
+
+  if(selectedStylist && stylistMap[selectedStylist]){
+    const s = stylistMap[selectedStylist];
+    s._stats = getStats(s);
+    if(s._stats) renderDetail(s);
+    else { 
+      document.getElementById('detailPanel').style.display='none'; 
+      selectedStylist=null; 
+    }
+  }
+}
+
+function renderSection(list, gridId, title, count, titleId){
+  document.getElementById(titleId).textContent = `${title} · ${count} ${count===1?'person':'people'}`;
+  const grid = document.getElementById(gridId);
+
+  grid.innerHTML = list.map(s=>{
+    const st   = s._stats;
+    const rev  = s.isBeauty ? st.beautySales : st.hairSalesNet;
+    const revLabel = s.isBeauty ? 'Beauty Sales' : 'Net Hair Rev';
+
+    // Week pills: all weeks this stylist appears in (highlight ones matching filter)
+    const allWeeks  = [...new Set(s.weeks.map(w=>w.week_label))].sort();
+    const activeWks = new Set(st.weeks.map(w=>w.week_label));
+    const pillsHTML = allWeeks.map(w=>`<span class="week-pill ${activeWks.has(w)?'active':''}">${w}</span>`).join('');
+
+    return `<div class="stylist-card ${selectedStylist===s.name?'selected':''}" onclick="selectStylist('${s.name}')">
+      <div class="stylist-card-top">
+        <div class="stylist-avatar" style="background:${s.color}">${initials(s.name)}</div>
+        <div>
+          <div class="stylist-card-name">${s.name}</div>
+          <div class="stylist-card-type">
+  ${s.isBeauty ? '💅 Beautician' : '✂️ Hair Stylist'} · ${st.weeksActive}w · ${[...new Set(st.weeks.map(w=>BRANCH_INFO[w.branch]?.name||w.branch))].join(', ')} 
+        </div>
+        </div>
+      </div>
+      <div class="stylist-card-stat"><span>${revLabel}</span><span class="stylist-card-val">${fmtAED(rev)}</span></div>
+      <div class="stylist-card-stat"><span>Clients</span><span class="stylist-card-val">${st.total}</span></div>
+      <div class="stylist-card-stat"><span>Rebook</span><span class="stylist-card-val">${fmtPct(st.rebookPct)}</span></div>
+      <div class="stylist-card-stat"><span>Avg Bill</span><span class="stylist-card-val">${fmtAED(st.avgBill)}</span></div>
+      <div class="stylist-weeks-pills">${pillsHTML}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── SELECT + DETAIL ────────────────────────────────────────
+function selectStylist(name){
+  if(selectedStylist===name){ closeDetail(); return; }
+  selectedStylist = name;
+  const s  = stylistMap[name];
+  s._stats = getStats(s);
+  renderDetail(s);
+  renderGrid(); // re-highlight card
+  document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeDetail(){
+  selectedStylist = null;
+  document.getElementById('detailPanel').style.display='none';
+  if(activeChart){ activeChart.destroy(); activeChart=null; }
+  renderGrid();
+}
+
+function renderDetail(s){
+  const st = s._stats;
+  const panel = document.getElementById('detailPanel');
+  panel.style.display='block';
+
+  const isBeauty = s.isBeauty;
+  const rev = isBeauty ? st.beautySales : st.hairSalesNet;
+
+  // Target benchmarks
+  const rebookClass = st.rebookPct >= 45 ? 'good' : st.rebookPct >= 30 ? '' : 'bad';
+  const ncrClass    = st.ncrPct >= 20 ? 'good' : st.ncrPct >= 10 ? '' : 'bad';
+  const avgBillClass= st.avgBill >= 650 ? 'good' : st.avgBill >= 500 ? '' : 'bad';
+  const colClass    = !isBeauty && st.colPct >= 60 ? 'good' : !isBeauty && st.colPct >= 40 ? '' : '';
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-avatar" style="background:${s.color}">${initials(s.name)}</div>
+      <div>
+        <div class="detail-name">${s.name}</div>
+        <div class="detail-sub">${isBeauty?'Beautician':'Hair Stylist'} · Active ${st.weeksActive} week${st.weeksActive!==1?'s':''} · ${[...new Set(st.weeks.map(w=>BRANCH_INFO[w.branch]?.name||w.branch))].join(', ')}</div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">✕ Close</button>
+    </div>
+
+    <div class="metrics-row">
+      <div class="metric-box">
+        <div class="metric-box-label">${isBeauty?'Beauty Sales':'Net Hair Revenue'}</div>
+        <div class="metric-box-value">${fmtAED(rev)}</div>
+        <div class="metric-box-sub">across ${st.weeksActive} weeks</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box-label">Total Clients</div>
+        <div class="metric-box-value">${st.total}</div>
+        <div class="metric-box-sub">${Math.round(st.total/Math.max(1,st.weeksActive))}/week avg</div>
+      </div>
+      <div class="metric-box ${avgBillClass}">
+        <div class="metric-box-label">Avg Bill</div>
+        <div class="metric-box-value">${fmtAED(st.avgBill)}</div>
+        <div class="metric-box-sub">Target: AED 650</div>
+      </div>
+      <div class="metric-box ${rebookClass}">
+        <div class="metric-box-label">Rebooking %</div>
+        <div class="metric-box-value">${fmtPct(st.rebookPct)}</div>
+        <div class="metric-box-sub">Target: 45%</div>
+      </div>
+      <div class="metric-box ${ncrClass}">
+        <div class="metric-box-label">NCR %</div>
+        <div class="metric-box-value">${fmtPct(st.ncrPct)}</div>
+        <div class="metric-box-sub">Target: 20%</div>
+      </div>
+      ${!isBeauty ? `
+      <div class="metric-box ${colClass}">
+        <div class="metric-box-label">Colour %</div>
+        <div class="metric-box-value">${fmtPct(st.colPct)}</div>
+        <div class="metric-box-sub">Colour clients</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box-label">Retail Sales</div>
+        <div class="metric-box-value">${fmtAED(st.retail)}</div>
+        <div class="metric-box-sub">total</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-box-label">Treatments</div>
+        <div class="metric-box-value">${fmtAED(st.treatments)}</div>
+        <div class="metric-box-sub">total</div>
+      </div>
+      ` : `
+      <div class="metric-box">
+        <div class="metric-box-label">Rebooked</div>
+        <div class="metric-box-value">${st.rebooked}</div>
+        <div class="metric-box-sub">clients</div>
+      </div>
+      `}
+    </div>
+
+    <!-- WEEKLY BREAKDOWN TABLE -->
+    <div class="chart-title" style="margin-bottom:8px;margin-top:4px">WEEK-BY-WEEK BREAKDOWN</div>
+    <div class="weekly-table-wrap">
+      ${renderWeekTable(st, isBeauty)}
+    </div>
+
+    <!-- TREND CHART -->
+    <div class="chart-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <div class="chart-title">
+  ${isBeauty?'Beauty Sales':'Net Revenue'} + Clients · ${viewMode.toUpperCase()} Trend
+</div>
+
+    <div class="tabs" style="margin-bottom:0;">
+      <button class="tab-btn chart-toggle-btn active" onclick="setChartView('weekly', this)">Weekly</button>
+      <button class="tab-btn chart-toggle-btn" onclick="setChartView('monthly', this)">Monthly</button>
+      <button class="tab-btn chart-toggle-btn" onclick="setChartView('yearly', this)">Yearly</button>
+    </div>
+  </div>
+
+  <canvas id="trendChart"></canvas>
+</div>
+  `;
+
+  // Draw chart after DOM is ready
+  setTimeout(()=>drawChart(st, isBeauty), 50);
+}
+
+function renderWeekTable(st, isBeauty){
+  const weeks = [...st.weeks].sort((a,b)=>a.week_label.localeCompare(b.week_label));
+  const cols = isBeauty
+    ? ['week_label','branch','total','rebooked','rebookPct','beautySales','avgBill']
+    : ['week_label','branch','total','rebooked','rebookPct','hairSalesNet','avgBill','col','colPct','retail','treatments'];
+  const heads = isBeauty
+    ? ['Week','Branch','Clients','Rebooked','Rebook %','Beauty Sales','Avg Bill']
+    : ['Week','Branch','Clients','Rebooked','Rebook %','Net Revenue','Avg Bill','Colour','Col %','Retail','Treatment'];
+
+  // Totals row
+  const totals = {};
+  for(const c of cols){
+    if(c==='week_label') totals[c]='TOTAL';
+    else if(c==='branch') totals[c]='';
+    else if(c==='rebookPct') totals[c] = st.total>0 ? st.rebooked/st.total*100 : 0;
+    else if(c==='colPct') totals[c] = weeks.length>0 ? weeks.reduce((a,w)=>a+(w.colPct||0),0)/weeks.length : 0;
+    else if(c==='avgBill') totals[c] = st.total>0 ? (st.hairSalesNet+st.beautySales)/st.total : 0;
+    else totals[c] = weeks.reduce((a,w)=>a+(w[c]||0),0);
+  }
+
+  const fmtCell = (col, val, isTotal=false) => {
+    if(col==='week_label'||col==='branch') return val || '—';
+    if(col==='rebookPct'||col==='colPct') return fmtPct(val);
+    return fmtAED(val);
+  };
+  const cellClass = (col, val) => {
+    if(col==='rebookPct') return val>=45?'good':val>=30?'':'bad';
+    if(col==='colPct')    return val>=60?'good':val>=40?'':'';
+    if(col==='avgBill')   return val>=650?'good':val>=500?'':'bad';
+    return val===0?'zero':'';
+  };
+
+  const bodyRows = weeks.map(w=>`
+    <tr>
+      ${cols.map(c=>`<td class="${cellClass(c,w[c]||0)}">${fmtCell(c,w[c])}</td>`).join('')}
+    </tr>
+  `).join('');
+
+  const totalRow = `<tr class="total-row">${cols.map(c=>`<td class="${c==='week_label'?'':''}${cellClass(c,totals[c])}">${fmtCell(c,totals[c],true)}</td>`).join('')}</tr>`;
+
+  return `<table>
+    <thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${bodyRows}${totalRow}</tbody>
+  </table>`;
+}
+
+function drawChart(st, isBeauty){
+  const canvas = document.getElementById('trendChart');
+  if(!canvas) return;
+  if(activeChart){ activeChart.destroy(); activeChart=null; }
+
+  let grouped = {};
+
+for(const w of st.weeks){
+  const d = new Date(w.uploaded_at);
+
+  let key;
+
+  if(viewMode === 'monthly'){
+    key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  else if(viewMode === 'yearly'){
+    key = d.getFullYear();
+  }
+  else{
+    key = w.week_label;
+  }
+
+  if(!grouped[key]){
+    grouped[key] = { rev:0, clients:0 };
+  }
+
+  grouped[key].rev += isBeauty ? w.beautySales : w.hairSalesNet;
+  grouped[key].clients += w.total;
+}
+
+const labels = Object.keys(grouped).sort();
+const revData = labels.map(k=>grouped[k].rev);
+const clData  = labels.map(k=>grouped[k].clients);
+
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const textColor = isDark ? 'rgba(250,248,243,0.55)' : '#9a8a87';
+  const gridColor = isDark ? 'rgba(250,248,243,0.06)' : 'rgba(92,85,87,0.08)';
+
+  activeChart = new Chart(canvas, {
+    data:{
+      labels,
+      datasets:[
+        { type:'bar', label: isBeauty?'Beauty Sales':'Net Revenue', data:revData,
+          backgroundColor: 'rgba(196,181,253,0.5)', borderColor:'#C4B5FD', borderWidth:1, borderRadius:6, yAxisID:'y' },
+        { type:'line', label:'Clients', data:clData,
+          borderColor:'#FF9B9B', backgroundColor:'transparent', pointBackgroundColor:'#FF9B9B',
+          pointRadius:4, tension:0.3, borderWidth:2, yAxisID:'y2' },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      plugins:{ legend:{ labels:{ color:textColor, font:{size:11}, boxWidth:12 } } },
+      scales:{
+        x:{ ticks:{ color:textColor, font:{size:10} }, grid:{ color:gridColor } },
+        y:{ ticks:{ color:textColor, font:{size:10}, callback:v=>'AED '+Math.round(v/1000)+'k' }, grid:{ color:gridColor }, position:'left' },
+        y2:{ ticks:{ color:textColor, font:{size:10} }, grid:{ display:false }, position:'right' },
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('searchInput').addEventListener('input', renderGrid);
+    document.getElementById('dateFromInput').addEventListener('change', applyDateRange);
+    document.getElementById('dateToInput').addEventListener('change', applyDateRange);
+    document.body.classList.add('hide-week-pills');
+    
+    loadData();
+  });
+
+
+function applyDateRange(){
+  const fromVal = document.getElementById('dateFromInput').value;
+  const toVal   = document.getElementById('dateToInput').value;
+
+  dateFrom = fromVal ? new Date(fromVal) : null;
+  dateTo   = toVal   ? new Date(toVal)   : null;
+
+  if (dateFrom) dateFrom.setHours(0,0,0,0);
+  if (dateTo)   dateTo.setHours(23,59,59,999);
+
+  renderGrid();
+}

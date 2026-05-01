@@ -7,7 +7,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tara Rose Ladies Salon — Dashboard</title>
+<title>Tara Rose Salon — Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -58,17 +58,15 @@
 
 /* 🔥 CONTROLS */
 .controls{
-  display:flex;
   position:sticky;
   top:0;
   z-index:50;
   background:var(--bg);
   border-bottom:1px solid var(--border);
-  padding:10px 28px 14px;
+  padding:8px 28px;
   flex-wrap:wrap;
   gap:10px;
   align-items:flex-end;
-  flex-shrink:0;
 }
 
 .grid-main{
@@ -160,7 +158,7 @@
 
 .main-content{
   flex:1;
-  padding:0;
+  padding:20px 24px;
   overflow-x:hidden;
   overflow-y:auto;
   height:100%;
@@ -168,7 +166,7 @@
 /* mobile spacing */
 @media(max-width:900px){
   .main-content{
-    padding:0;
+    padding:16px;
     height:auto;
     overflow-y:visible;
   }
@@ -313,13 +311,12 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .toggle-track{width:38px;height:20px;border-radius:10px;background:var(--border);position:relative;transition:background .3s;flex-shrink:0;border:1px solid var(--border)}
 .toggle-thumb{width:14px;height:14px;border-radius:50%;background:var(--toggle-knob);position:absolute;top:2px;left:2px;transition:transform .25s ease,background .3s}
 [data-theme="dark"] .toggle-thumb{transform:translateX(18px)}
-
 /* hide decorative bits at small widths so header never wraps */
 @media(max-width:700px){.dash-label,.logo-strip{display:none}}
 @media(max-width:500px){.last-updated,.logo-text .logo-sub{display:none}}
 
 /* CONTROLS */
-.controls{display:flex;flex-wrap:wrap;gap:10px;padding:8px 28px;align-items:flex-end;position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);margin-top:0;}
+.controls{display:flex;flex-wrap:wrap;gap:10px;padding:10px 28px 0;align-items:flex-end}
 .ctrl-group{display:flex;flex-direction:column;gap:4px}
 .ctrl-label{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
 .ms-wrap{position:relative}
@@ -334,46 +331,6 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .ms-opt.selected{color:var(--accent);background:var(--surface2);border-left-color:var(--accent);font-weight:600}
 .ms-opt.all-opt{font-weight:600;border-bottom:1px solid var(--border);border-left:3px solid transparent}
 .ms-opt.all-opt.selected{color:var(--accent);background:var(--surface2);border-left-color:var(--accent)}
-
-/* DATE RANGE PICKER */
-.date-pill-btn{min-width:220px}
-.date-pill-btn.active{border-color:var(--accent);background:var(--surface2)}
-.date-picker-pop{display:none;position:fixed;z-index:300;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.28);padding:16px;width:300px}
-.date-picker-pop.open{display:block}
-/* Step indicator */
-.cal-steps{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border2)}
-.cal-step{flex:1;background:var(--surface2);border-radius:10px;padding:7px 10px;border:1.5px solid var(--border)}
-.cal-step.active-step{border-color:var(--accent)}
-.cal-step-label{display:block;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
-.cal-step-val{display:block;font-size:12px;font-weight:600;color:var(--text)}
-.cal-step-val.set{color:var(--good)}
-.cal-step-arrow{color:var(--muted);font-size:14px;flex-shrink:0}
-.date-picker-clear{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:10px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
-.date-picker-clear:hover{border-color:var(--bad);color:var(--bad)}
-/* Calendar nav */
-.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.cal-nav-center{display:flex;gap:6px;align-items:center}
-.cal-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:inherit}
-.cal-nav-btn:hover{border-color:var(--accent);color:var(--text)}
-.cal-sel{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 6px;font-size:12px;font-weight:600;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;appearance:none;-webkit-appearance:none}
-.cal-sel:focus{outline:none;border-color:var(--accent)}
-/* Calendar grid */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:12px}
-.cal-day-hdr{font-size:9px;text-align:center;color:var(--muted2);padding:3px 0;letter-spacing:0.05em}
-.cal-day{font-size:11px;text-align:center;padding:6px 2px;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s;user-select:none}
-.cal-day:hover:not(.cal-day-empty){background:var(--surface2);color:var(--text)}
-.cal-day.cal-day-empty{cursor:default;opacity:.25;pointer-events:none}
-.cal-day.cal-day-today{color:var(--accent);font-weight:700}
-.cal-day.cal-day-selected{background:var(--accent);color:var(--accent-fg);font-weight:700}
-.cal-day.cal-day-in-range{background:rgba(255,212,217,0.18);color:var(--text);border-radius:0}
-.cal-day.cal-day-range-start{background:var(--accent);color:var(--accent-fg);font-weight:700;border-radius:6px 0 0 6px}
-.cal-day.cal-day-range-end{background:var(--accent);color:var(--accent-fg);font-weight:700;border-radius:0 6px 6px 0}
-/* Footer */
-.date-picker-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
-.date-picker-selection{font-size:11px;color:var(--muted)}
-.date-picker-selection.has-range{color:var(--good);font-weight:600}
-.date-picker-apply{padding:7px 16px;background:var(--btn);color:var(--btn-fg);border:none;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
-.date-picker-apply:hover{background:var(--btn-hover)}
 
 /* MAIN */
 main{max-width:1400px;margin:0 auto;padding:10px 28px 48px}
@@ -480,7 +437,7 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 @media(max-width:1100px){.top3-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:900px){
   header{padding:12px 18px}
-  .controls{padding:8px 18px;background:var(--bg);}
+  .controls{padding:14px 18px 0}
   main{padding:18px 18px 40px}
   .last-updated{display:none}
 
@@ -519,6 +476,10 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 /* ===== DESKTOP LAYOUT FIX (DO NOT TOUCH ABOVE CODE) ===== */
 
+.main{
+  /* margin-left removed — layout uses flex, not absolute positioning */
+}
+
 .page{
   max-width:1200px !important;
   margin:0 auto !important;
@@ -541,152 +502,38 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
   height:280px !important;
 }
 
-/* ── LOGIN GATE ── */
-#loginGate{
-  position:fixed;inset:0;z-index:9999;
-  background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  font-family:'DM Sans',sans-serif;
-}
-.login-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:36px 32px 28px;
-  width:100%;max-width:380px;
-  box-shadow:0 8px 40px rgba(0,0,0,0.18);
-  display:flex;flex-direction:column;gap:16px;
-}
-.login-logo{
-  display:flex;align-items:center;gap:14px;
-}
-.login-logo img{
-  width:44px;height:44px;object-fit:contain;flex-shrink:0;
-}
-.login-brand{
-  font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;
-  letter-spacing:0.18em;text-transform:uppercase;color:var(--text);line-height:1;
-}
-.login-brand-sub{
-  font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:var(--muted);margin-top:3px;
-}
-.login-strip{
-  height:2px;width:80px;margin-top:5px;
-  background:linear-gradient(to right,#99F6E4,#EEF3C7,#C4B5FD,#FF9B9B,#FFD4D9);
-  border-radius:2px;
-}
-.login-dash-lbl{
-  font-family:'Cormorant Garamond',serif;
-  font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
-  color:var(--muted);margin-top:3px;
-}
-.login-divider{height:1px;background:var(--border);}
-.login-label{
-  font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
-  color:var(--muted);
-}
-.login-input-wrap{
-  position:relative;display:flex;align-items:center;
-}
-.login-input{
-  width:100%;padding:10px 40px 10px 14px;
-  border:1px solid var(--border);border-radius:10px;
-  background:var(--surface2);color:var(--text);
-  font-family:'DM Sans',sans-serif;font-size:13px;
-  outline:none;transition:border-color .2s;
-}
-.login-input:focus{border-color:var(--accent);}
-.login-eye{
-  position:absolute;right:10px;
-  background:none;border:none;cursor:pointer;
-  color:var(--muted);padding:4px;display:flex;
-  transition:color .2s;
-}
-.login-eye:hover{color:var(--text);}
-.login-error{
-  font-size:12px;color:var(--bad);min-height:16px;
-  display:none;
-}
-.login-error.visible{display:block;}
-.login-btn{
-  padding:11px 0;border-radius:10px;
-  background:var(--accent);color:var(--accent-fg);
-  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;
-  font-weight:700;font-size:13px;letter-spacing:0.08em;
-  transition:opacity .2s;
-}
-.login-btn:hover{opacity:0.88;}
-.login-footer{
-  font-size:10px;color:var(--muted2);text-align:center;
-  letter-spacing:0.1em;
+@media(min-width:1400px){
+  .page{
+    max-width:1000px !important;
+  }
+
+  .g2{
+    grid-template-columns: 0.55fr 1.45fr !important;
+  }
+
+  .chart{
+    height:320px !important;
+  }
+
+  /* ADD THIS */
+  .grid-main{
+    grid-template-columns: 0.55fr 1.45fr;
+  }
+
+  .grid-sub{
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 </style>
+  
 </head>
 <body>
-
-<!-- ══════════════════════════════════════════════════
-     PASSWORD GATE
-══════════════════════════════════════════════════ -->
-<div id="loginGate">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="image-asset-removebg-preview.png" alt="Tara Rose Ladies">
-      <div>
-        <div class="login-brand">Tara Rose Ladies</div>
-        <div class="login-brand-sub">Salon</div>
-        <div class="login-strip"></div>
-        <div class="login-dash-lbl">Internal Dashboard</div>
-      </div>
-    </div>
-    <div class="login-divider"></div>
-    <div class="login-label">Enter your access password</div>
-    <div class="login-input-wrap">
-      <input type="password" id="loginInput" class="login-input" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="login-eye" onclick="toggleLoginEye()" id="loginEyeBtn" title="Show/hide password">
-        <svg id="eyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-    </div>
-    <div id="loginError" class="login-error"></div>
-    <button class="login-btn" onclick="doLogin()">Access Dashboard</button>
-    <div class="login-footer">Tara Rose Ladies Salon &nbsp;·&nbsp; Confidential</div>
-    <div id="loginLastUpdated" style="text-align:center;font-size:9px;color:var(--muted2);letter-spacing:0.08em;margin-top:-8px;opacity:0.7;">Checking data freshness...</div>
-  </div>
-</div>
-
-<script>
-// Pre-fetch latest upload timestamp for login page display (GST)
-(function(){
-  const SUPA_URL2 = 'https://gvijxenafoowajqktqvd.supabase.co';
-  const SUPA_KEY2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2aWp4ZW5hZm9vd2FqcWt0cXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTA1OTksImV4cCI6MjA5MTI4NjU5OX0.GL3YXupXOBGfN4FCyelbQWraUw12VJNJu-wUB3zR7Zw';
-  fetch(`${SUPA_URL2}/rest/v1/weekly_data?select=uploaded_at&order=uploaded_at.desc&limit=1`,{
-    headers:{'apikey':SUPA_KEY2,'Authorization':'Bearer '+SUPA_KEY2}
-  }).then(r=>r.json()).then(rows=>{
-    const el=document.getElementById('loginLastUpdated');
-    if(!el||!rows||!rows.length)return;
-    const latest=new Date(rows[0].uploaded_at);
-    const gstOffset=4*60;
-    const gstDate=new Date(latest.getTime()+(gstOffset-latest.getTimezoneOffset())*60000);
-    const dateFmt=gstDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    const timeFmt=gstDate.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:true});
-    el.textContent=`Data as of ${dateFmt} · ${timeFmt} GST`;
-  }).catch(()=>{
-    const el=document.getElementById('loginLastUpdated');
-    if(el)el.style.display='none';
-  });
-})();
-</script>
-
-<!-- ══════════════════════════════════════════════════
-     DASHBOARD (hidden until login)
-══════════════════════════════════════════════════ -->
-<div id="dashboardWrap" style="display:none">
-
 <header>
   <div class="logo">
     <img src="image-asset-removebg-preview.png" style="width:36px;height:36px;object-fit:contain">
     <div class="logo-text">
-      <div class="logo-name">Tara Rose Ladies</div>
+      <div class="logo-name">Tara Rose</div>
       <div class="logo-sub">Salon</div>
       <div class="logo-strip"></div>
       <div class="dash-label">Dashboard Overview</div>
@@ -706,53 +553,42 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
   <!-- SIDEBAR -->
  <aside class="sidebar">
 
-  <!-- Level 1 + 2: Dashboards -->
   <div class="nav-group">
     <div class="nav-title">DASHBOARDS</div>
     <div class="nav-sub" onclick="showView('dashboard', this)">KPI Metrics</div>
     <div class="nav-sub" onclick="showView('team', this)">Team Performance</div>
-    <a href="stylist.html" target="_blank" class="nav-sub" style="text-decoration:none">Stylist View ↗</a>
   </div>
 
-  <!-- Level 1 + 2: Reviews -->
   <div class="nav-group">
     <div class="nav-title">REVIEWS</div>
     <div class="nav-sub" onclick="showView('reviews', this)">Salon Reviews</div>
   </div>
 
-  <!-- Level 1 + 2: Giveaways -->
   <div class="nav-group">
     <div class="nav-title">STRATEGIES</div>
     <div class="nav-sub" onclick="showView('giveaway', this)">Giveaways April 2026</div>
   </div>
 
-  <!-- Level 2 only: Content + Admin -->
-  <div class="nav-group nav-admin-only" style="display:none">
+  <div class="nav-group">
     <div class="nav-title">CONTENT</div>
     <div class="nav-sub" onclick="showView('calendar', this)">Content Calendar</div>
     <div class="nav-sub" onclick="showView('trk', this)">Personal Brand</div>
   </div>
 
-  <div class="nav-group nav-admin-only" style="display:none">
-    <div class="nav-title">ADMIN</div>
-    <div class="nav-sub" onclick="window.open('upload.html','_blank')">Upload Data</div>
+  <div class="nav-group">
+  <div class="nav-title">ADMIN</div>
+  <div class="nav-sub" onclick="window.open('upload.html','_blank')">
+    Upload Data
   </div>
-
-  <!-- Logout button -->
-  <div class="nav-group" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
-    <div class="nav-sub" onclick="doLogout()" style="display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;letter-spacing:0.04em">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Log Out
-    </div>
-  </div>
+</div>
 
 </aside>
 
   <!-- MAIN VIEW -->
-<div class="main-content" style="display:flex;flex-direction:column;">
+<div class="main-content">
 
   <!-- GLOBAL FILTER BAR: sticky, shown only for KPI Metrics + Team Performance -->
-  <div class="controls" id="controls" style="display:none;flex-shrink:0;">
+  <div class="controls" id="controls" style="display:none;">
     <!-- BRANCH -->
     <div class="ctrl-group">
       <div class="ctrl-label">Branch</div>
@@ -763,60 +599,37 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
         <div id="drop-branch" class="ms-drop"></div>
       </div>
     </div>
-    <!-- DATE RANGE PILL -->
+    <!-- YEAR -->
     <div class="ctrl-group">
-      <div class="ctrl-label">Date Range</div>
-      <div class="ms-wrap" id="dateRangeWrap">
-        <button class="ms-btn date-pill-btn" id="btn-daterange" onclick="event.stopPropagation();toggleDatePicker()">
-          <span id="lbl-daterange">Select Date/s From and To</span>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" id="daterange-chevron"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="ctrl-label">Year</div>
+      <div class="ms-wrap">
+        <button id="btn-year" class="ms-btn" onclick="toggleDrop('year')">
+          <span id="lbl-year">All years</span>
         </button>
-        <!-- DATE PICKER POPOVER -->
-        <div class="date-picker-pop" id="datePickerPop" style="display:none" onclick="event.stopPropagation()">
-          <!-- STEP INDICATOR -->
-          <div class="cal-steps">
-            <div class="cal-step" id="calStepFrom">
-              <span class="cal-step-label">FROM</span>
-              <span class="cal-step-val" id="calStepFromVal">Select start</span>
-            </div>
-            <div class="cal-step-arrow">→</div>
-            <div class="cal-step" id="calStepTo">
-              <span class="cal-step-label">TO</span>
-              <span class="cal-step-val" id="calStepToVal">Select end</span>
-            </div>
-            <button class="date-picker-clear" onclick="clearDateRange()">Clear</button>
-          </div>
-          <!-- CALENDAR NAV -->
-          <div class="cal-nav">
-            <button class="cal-nav-btn" onclick="shiftCal(-1)">‹</button>
-            <div class="cal-nav-center">
-              <select class="cal-sel" id="calMonthSel" onchange="calMonthChange()">
-                <option value="0">January</option><option value="1">February</option>
-                <option value="2">March</option><option value="3">April</option>
-                <option value="4">May</option><option value="5">June</option>
-                <option value="6">July</option><option value="7">August</option>
-                <option value="8">September</option><option value="9">October</option>
-                <option value="10">November</option><option value="11">December</option>
-              </select>
-              <select class="cal-sel" id="calYearSel" onchange="calYearChange()">
-              </select>
-            </div>
-            <button class="cal-nav-btn" onclick="shiftCal(1)">›</button>
-          </div>
-          <!-- CALENDAR GRID -->
-          <div class="cal-grid" id="calGrid"></div>
-          <!-- FOOTER -->
-          <div class="date-picker-footer">
-            <span class="date-picker-selection" id="date-picker-selection">Click a date to set FROM</span>
-            <button class="date-picker-apply" onclick="applyDateRange()">Apply</button>
-          </div>
-        </div>
+        <div id="drop-year" class="ms-drop"></div>
+      </div>
+    </div>
+    <!-- MONTH -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Month</div>
+      <div class="ms-wrap">
+        <button id="btn-month" class="ms-btn" onclick="toggleDrop('month')">
+          <span id="lbl-month">All months</span>
+        </button>
+        <div id="drop-month" class="ms-drop"></div>
+      </div>
+    </div>
+    <!-- WEEK -->
+    <div class="ctrl-group">
+      <div class="ctrl-label">Week</div>
+      <div class="ms-wrap">
+        <button id="btn-week" class="ms-btn" onclick="toggleDrop('week')">
+          <span id="lbl-week">All weeks</span>
+        </button>
+        <div id="drop-week" class="ms-drop"></div>
       </div>
     </div>
   </div>
-
-  <!-- SCROLLABLE CONTENT AREA -->
-  <div style="flex:1;overflow-y:auto;overflow-x:hidden;">
 
   <!-- DASHBOARD -->
   <div id="view-dashboard">
@@ -864,8 +677,6 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
     </iframe>
   </div>
 
-  </div><!-- end scrollable content area -->
-
 </div>
 
 
@@ -880,9 +691,8 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
 
 </div>
 
-
 <footer style="text-align:center;">
-  Tara Rose Ladies Salon &nbsp;·&nbsp; Internal Dashboard &nbsp;·&nbsp; Confidential
+  Tara Rose Salon &nbsp;·&nbsp; Internal Dashboard &nbsp;·&nbsp; Confidential
   <br><br>
   <span style="opacity:0.7;">
     Dashboard Content prepared and designed by:
@@ -895,91 +705,13 @@ footer{text-align:center;padding:18px 28px;border-top:1px solid var(--border);fo
   </span>
 </footer>
 
-</div><!-- end #dashboardWrap -->
-
-
 <script>
 
-// ── PASSWORD GATE ────────────────────────────────────────────
-const PASSWORDS = {
-  'Coordinators2026@': 'coordinator',
-  'AbuDhabi2026@':     'admin'
-};
-
-function doLogin(){
-  const val = document.getElementById('loginInput').value;
-  const role = PASSWORDS[val];
-  const errEl = document.getElementById('loginError');
-  if(!role){
-    errEl.textContent = 'Incorrect password. Please try again.';
-    errEl.classList.add('visible');
-    document.getElementById('loginInput').value = '';
-    document.getElementById('loginInput').focus();
-    return;
-  }
-  errEl.classList.remove('visible');
-  localStorage.setItem('trsRole', role);
-  applyRole(role);
-  document.getElementById('loginGate').style.display = 'none';
-  document.getElementById('dashboardWrap').style.display = 'block';
-  loadData().then(() => {
-    setInterval(loadData, 60000);
-    const params = new URLSearchParams(window.location.search);
-    const activeView = params.get('view') || 'dashboard';
-    const btn = document.querySelector(`[onclick*="${activeView}"]`);
-    showView(activeView, btn || null);
-  });
-}
-
-function applyRole(role){
-  document.querySelectorAll('.nav-admin-only').forEach(el => {
-    el.style.display = role === 'admin' ? '' : 'none';
-  });
-}
-
-function doLogout(){
-  localStorage.removeItem('trsRole');
-  document.getElementById('dashboardWrap').style.display = 'none';
-  document.getElementById('loginGate').style.display = 'flex';
-  document.getElementById('loginInput').value = '';
-  document.getElementById('loginInput').focus();
-}
-
-function toggleLoginEye(){
-  const inp = document.getElementById('loginInput');
-  const icon = document.getElementById('eyeIcon');
-  if(inp.type === 'password'){
-    inp.type = 'text';
-    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
-  } else {
-    inp.type = 'password';
-    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-  }
-}
-
-// Check if already logged in (persists across hard refresh)
-(async function checkSession(){
-  const role = localStorage.getItem('trsRole');
-  if(role && Object.values(PASSWORDS).includes(role)){
-    applyRole(role);
-    document.getElementById('loginGate').style.display = 'none';
-    document.getElementById('dashboardWrap').style.display = 'block';
-    await loadData();
-    setInterval(loadData, 60000);
-    const params = new URLSearchParams(window.location.search);
-    const activeView = params.get('view') || 'dashboard';
-    const btn = document.querySelector(`[onclick*="${activeView}"]`);
-    showView(activeView, btn || null);
-  } else {
-    document.getElementById('loginInput').focus();
-  }
-})();
-
-// ── VIEW SWITCHER
+// 🔥 VIEW SWITCHER
 function showView(view, el){
   ['dashboard','team','reviews','calendar','giveaway','trk','khalifa','saadiyat'].forEach(v=>{
-    const node=document.getElementById('view-'+v);
-    if(node) node.style.display='none';
+    const el=document.getElementById('view-'+v);
+    if(el) el.style.display='none';
   });
 
   const target=document.getElementById('view-'+view);
@@ -999,7 +731,21 @@ function showView(view, el){
   window.scrollTo(0, 0);
 }
 
-// ── SUPABASE
+// 🔥 LOAD DEFAULT / URL VIEW
+const params = new URLSearchParams(window.location.search);
+const viewFromURL = params.get('view');
+
+// default = dashboard kung walang ?view=
+const activeView = viewFromURL || 'dashboard';
+
+// hanapin matching button
+const btn = document.querySelector(`[onclick*="${activeView}"]`);
+
+// show view
+showView(activeView, btn || null);
+
+
+// 🔥 SUPABASE
 const SUPA_URL = 'https://gvijxenafoowajqktqvd.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd2aWp4ZW5hZm9vd2FqcWt0cXZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MTA1OTksImV4cCI6MjA5MTI4NjU5OX0.GL3YXupXOBGfN4FCyelbQWraUw12VJNJu-wUB3zR7Zw';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
@@ -1017,137 +763,7 @@ const MONTH_ORDER=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','
 
 let allData=[];
 let charts={};
-const sel={branch:['all']};
-let dateFrom=null;
-let dateTo=null;
-
-// ── DATE RANGE PICKER ──────────────────────────────────────────
-const calState={year:new Date().getFullYear(),month:new Date().getMonth()};
-let pickerFromDate=null,pickerToDate=null,pickingStep='from';
-
-function toggleDatePicker(){
-  const pop=document.getElementById('datePickerPop');
-  const btn=document.getElementById('btn-daterange');
-  const isOpen=pop.classList.contains('open');
-  document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
-  const branchBtn=document.getElementById('btn-branch');
-  if(branchBtn)branchBtn.classList.remove('open');
-  if(isOpen){pop.style.display='none';pop.classList.remove('open');btn.classList.remove('active');return;}
-  const now=new Date();
-  if(dateFrom){calState.year=dateFrom.getFullYear();calState.month=dateFrom.getMonth();}
-  else{calState.year=now.getFullYear();calState.month=now.getMonth();}
-  pickerFromDate=dateFrom?new Date(dateFrom):null;
-  pickerToDate=dateTo?new Date(dateTo):null;
-  pickingStep=pickerFromDate?(pickerToDate?'from':'to'):'from';
-  // Position using fixed coords
-  const rect=btn.getBoundingClientRect();
-  pop.style.top=(rect.bottom+8)+'px';
-  pop.style.left=rect.left+'px';
-  pop.style.display='block';pop.classList.add('open');btn.classList.add('active');
-  buildYearOptions();renderCalendar();updateStepUI();
-}
-function buildYearOptions(){
-  const s=document.getElementById('calYearSel');if(!s)return;
-  const cur=calState.year;s.innerHTML='';
-  for(let y=cur-3;y<=cur+2;y++){const o=document.createElement('option');o.value=y;o.textContent=y;if(y===cur)o.selected=true;s.appendChild(o);}
-}
-function calMonthChange(){const s=document.getElementById('calMonthSel');if(s)calState.month=parseInt(s.value);renderCalendar();}
-function calYearChange(){const s=document.getElementById('calYearSel');if(s)calState.year=parseInt(s.value);buildYearOptions();renderCalendar();}
-function shiftCal(dir){
-  calState.month+=dir;
-  if(calState.month>11){calState.month=0;calState.year++;}
-  if(calState.month<0){calState.month=11;calState.year--;}
-  const ms=document.getElementById('calMonthSel');if(ms)ms.value=calState.month;
-  buildYearOptions();renderCalendar();
-}
-function renderCalendar(){
-  const{year,month}=calState;
-  const ms=document.getElementById('calMonthSel');if(ms)ms.value=month;
-  const firstDay=new Date(year,month,1).getDay();
-  const dim=new Date(year,month+1,0).getDate();
-  const today=new Date();today.setHours(0,0,0,0);
-  const DAYS=['Su','Mo','Tu','We','Th','Fr','Sa'];
-  let html=DAYS.map(d=>`<div class="cal-day-hdr">${d}</div>`).join('');
-  for(let i=0;i<firstDay;i++)html+=`<div class="cal-day cal-day-empty"></div>`;
-  for(let d=1;d<=dim;d++){
-    const date=new Date(year,month,d);date.setHours(0,0,0,0);
-    const isToday=date.getTime()===today.getTime();
-    const isFrom=pickerFromDate&&date.getTime()===pickerFromDate.getTime();
-    const isTo=pickerToDate&&date.getTime()===pickerToDate.getTime();
-    const inRange=pickerFromDate&&pickerToDate&&date>pickerFromDate&&date<pickerToDate;
-    let cls='cal-day';
-    if(isFrom&&isTo)cls+=' cal-day-selected';
-    else if(isFrom)cls+=' cal-day-range-start';
-    else if(isTo)cls+=' cal-day-range-end';
-    else if(inRange)cls+=' cal-day-in-range';
-    if(isToday)cls+=' cal-day-today';
-    html+=`<div class="${cls}" data-y="${year}" data-m="${month}" data-d="${d}">${d}</div>`;
-  }
-  const grid=document.getElementById('calGrid');
-  grid.innerHTML=html;
-  // Event delegation — attach once to grid
-  grid.onclick=function(e){
-    const el=e.target.closest('.cal-day');
-    if(!el||el.classList.contains('cal-day-empty'))return;
-    e.stopPropagation();
-    const y=parseInt(el.dataset.y),m=parseInt(el.dataset.m),dd=parseInt(el.dataset.d);
-    pickDay(y,m,dd);
-  };
-}
-function pickDay(year,month,day){
-  const date=new Date(year,month,day);date.setHours(0,0,0,0);
-  if(pickingStep==='from'){pickerFromDate=date;pickerToDate=null;pickingStep='to';}
-  else{if(date<pickerFromDate){pickerToDate=pickerFromDate;pickerFromDate=date;}else{pickerToDate=date;}pickingStep='from';}
-  renderCalendar();updateStepUI();
-}
-function updateStepUI(){
-  const fmt=d=>d?d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):null;
-  const fromEl=document.getElementById('calStepFrom');
-  const toEl=document.getElementById('calStepTo');
-  const fromVal=document.getElementById('calStepFromVal');
-  const toVal=document.getElementById('calStepToVal');
-  const selEl=document.getElementById('date-picker-selection');
-  if(fromEl)fromEl.classList.toggle('active-step',pickingStep==='from');
-  if(toEl)toEl.classList.toggle('active-step',pickingStep==='to');
-  if(fromVal){fromVal.textContent=pickerFromDate?fmt(pickerFromDate):'Select start';fromVal.className='cal-step-val'+(pickerFromDate?' set':'');}
-  if(toVal){toVal.textContent=pickerToDate?fmt(pickerToDate):'Select end';toVal.className='cal-step-val'+(pickerToDate?' set':'');}
-  if(selEl){
-    if(!pickerFromDate){selEl.textContent='Click a date to set FROM';selEl.className='date-picker-selection';}
-    else if(!pickerToDate){selEl.textContent='Now click a date to set TO';selEl.className='date-picker-selection';}
-    else{selEl.textContent=`${fmt(pickerFromDate)} → ${fmt(pickerToDate)}`;selEl.className='date-picker-selection has-range';}
-  }
-}
-function applyDateRange(){
-  dateFrom=pickerFromDate;
-  // Set dateTo to end of selected day (23:59:59) for inclusive comparison
-  if(pickerToDate||pickerFromDate){
-    const to=new Date(pickerToDate||pickerFromDate);
-    to.setHours(23,59,59,999);
-    dateTo=to;
-  } else {
-    dateTo=null;
-  }
-  const lbl=document.getElementById('lbl-daterange');
-  if(!dateFrom){lbl.textContent='Select Date/s From and To';}
-  else{
-    const fmt=d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'});
-    const displayTo=pickerToDate||pickerFromDate;
-    lbl.textContent=(displayTo&&displayTo.getTime()!==dateFrom.getTime())?`${fmt(dateFrom)} – ${fmt(displayTo)}`:fmt(dateFrom);
-  }
-  const pop=document.getElementById('datePickerPop');
-  const btn=document.getElementById('btn-daterange');
-  if(pop){pop.style.display='none';pop.classList.remove('open');}
-  if(btn)btn.classList.remove('active');
-  renderDashboard();
-  const tv=document.getElementById('view-team');
-  if(tv&&tv.style.display!=='none')renderTeam();
-}
-function clearDateRange(){
-  dateFrom=null;dateTo=null;pickerFromDate=null;pickerToDate=null;pickingStep='from';
-  document.getElementById('lbl-daterange').textContent='Select Date/s From and To';
-  renderCalendar();updateStepUI();
-  renderDashboard();
-}
+const sel={branch:['all'],year:['all'],month:['all'],week:['all']};
 
 function toggleTheme(){
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -1194,17 +810,10 @@ function toggleDrop(key){
   if(!isOpen){drop.classList.add('open');btn.classList.add('open');}
 }
 document.addEventListener('click',e=>{
-  // Close branch dropdown
   if(!e.target.closest('.ms-wrap')){
     document.querySelectorAll('.ms-drop').forEach(d=>d.classList.remove('open'));
-    const branchBtn=document.getElementById('btn-branch');
-    if(branchBtn)branchBtn.classList.remove('open');
+    document.querySelectorAll('.ms-btn').forEach(b=>b.classList.remove('open'));
   }
-  // Close date picker — only fires if click wasn't stopped by pill or popover
-  const pop=document.getElementById('datePickerPop');
-  const btn=document.getElementById('btn-daterange');
-  if(pop&&pop.classList.contains('open')){pop.style.display='none';pop.classList.remove('open');}
-  if(btn)btn.classList.remove('active');
 });
 
 function buildDrop(key,options){
@@ -1228,6 +837,8 @@ function toggleOpt(key,val){
     else sel[key].push(val);
     if(!sel[key].length) sel[key]=['all'];
   }
+  if(key==='branch'||key==='year'){sel.month=['all'];}
+  if(key==='branch'||key==='year'||key==='month'){sel.week=['all'];}
   rebuildDependentDrops();
   const drop=document.getElementById('drop-'+key);
   const isAllNow=sel[key].includes('all');
@@ -1257,74 +868,31 @@ function updateLabel(key,options){
 }
 
 function rebuildDependentDrops(){
-  buildDrop('branch',Object.entries(BRANCH_INFO).map(([k,v])=>({val:k,label:v.name})));
+  const years=[...new Set(allData.map(d=>getYear(d.week_label,d.uploaded_at)))].sort((a,b)=>b-a);
+  buildDrop('year',years.map(y=>({val:y,label:y})));
+  const f1=getFilteredData(false,true);
+  const months=[...new Set(f1.map(d=>getMonth(d.week_label,d.uploaded_at)))].filter(m=>m!=='—').sort((a,b)=>MONTH_ORDER.indexOf(a)-MONTH_ORDER.indexOf(b));
+  buildDrop('month',months.map(m=>({val:m,label:m})));
+  const f2=allData.filter(d=>{
+    const yr=getYear(d.week_label,d.uploaded_at);
+    const mo=getMonth(d.week_label,d.uploaded_at);
+    if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
+    if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
+    return true;
+  });
+  const seenLabels=new Set();
+  const weeks=f2.filter(d=>{if(seenLabels.has(d.week_label))return false;seenLabels.add(d.week_label);return true;}).map(d=>({val:d.week_label,label:d.week_label}));
+  buildDrop('week',weeks);
 }
 
-function getWeekDatesFromLabel(label) {
-  if (!label) return null;
-  const MMAP = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11,
-    january:0,february:1,march:2,april:3,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
-  const yearMatch = label.match(/20\d\d/);
-  const year = yearMatch ? parseInt(yearMatch[0]) : 2026;
-  const lbl = label.toLowerCase();
-  function getMo(str){if(!str)return undefined;const k=str.toLowerCase().replace(/[^a-z]/g,'').slice(0,3);return MMAP[k];}
-
-  // Look inside parens first, else whole label
-  const inParens = label.match(/\(([^)]+)\)/);
-  const rangeSrc = inParens ? inParens[1] : label;
-
-  // Pattern 1: "Mar 30 - Apr 5" cross-month (month first)
-  const cross1 = rangeSrc.match(/([a-z]+)\s*(\d+)\s*[-–]\s*([a-z]+)\s*(\d+)/i);
-  if (cross1) {
-    const mo1=getMo(cross1[1]), mo2=getMo(cross1[3]);
-    if (mo1!==undefined && mo2!==undefined)
-      return {start:new Date(year,mo1,parseInt(cross1[2])), end:new Date(year,mo2,parseInt(cross1[4]))};
-  }
-
-  // Pattern 2: "30th-5th Apr" or "30 - 5 Apr" (day range, month at end)
-  const cross2 = rangeSrc.match(/(\d+)(?:st|nd|rd|th)?\s*[-–]\s*(\d+)(?:st|nd|rd|th)?\s+([a-z]+)/i);
-  if (cross2) {
-    const mo=getMo(cross2[3]);
-    if (mo!==undefined) {
-      const d1=parseInt(cross2[1]), d2=parseInt(cross2[2]);
-      const mo1 = d1>d2 ? (mo===0?11:mo-1) : mo;
-      return {start:new Date(year,mo1,d1), end:new Date(year,mo,d2)};
-    }
-  }
-
-  // Pattern 3: simple "20-26" or "6-12" inside parens, get month from label
-  // Also handles "APR 6-12" inside parens
-  const simple = inParens && inParens[1].match(/(\d+)\s*[-–]\s*(\d+)/);
-  if (simple) {
-    const moMatch = lbl.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
-    const mo = moMatch ? MMAP[moMatch[1]] : undefined;
-    if (mo!==undefined) {
-      const d1=parseInt(simple[1]), d2=parseInt(simple[2]);
-      const mo1 = d1>d2 ? (mo===0?11:mo-1) : mo;
-      return {start:new Date(year,mo1,d1), end:new Date(year,mo,d2)};
-    }
-  }
-
-  // Fallback: full month
-  const moMatch = lbl.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
-  if (moMatch) {
-    const mo=MMAP[moMatch[1]];
-    return {start:new Date(year,mo,1), end:new Date(year,mo+1,0)};
-  }
-  return null;
-}
-
-function getFilteredData(ignoreBranch=false){
+function getFilteredData(ignoreBranch=false,ignoreMonth=false,ignoreWeek=false){
   return allData.filter(d=>{
     if(!ignoreBranch&&!sel.branch.includes('all')&&!sel.branch.includes(d.branch))return false;
-    if(dateFrom||dateTo){
-      const wd = getWeekDatesFromLabel(d.week_label);
-      if(!wd) return true;
-      const wStart = wd.start;
-      const wEnd   = wd.end;
-      if(dateFrom && wEnd < dateFrom) return false;
-      if(dateTo   && wStart > dateTo) return false;
-    }
+    const yr=getYear(d.week_label,d.uploaded_at);
+    if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
+    const mo=getMonth(d.week_label,d.uploaded_at);
+    if(!ignoreMonth&&!sel.month.includes('all')&&!sel.month.includes(mo))return false;
+    if(!ignoreWeek&&!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
     return true;
   });
 }
@@ -1339,20 +907,7 @@ async function loadData(){
   renderDashboard();
   if(data.length){
     const latest=new Date(data[data.length-1].uploaded_at);
-    // Convert to GST (UTC+4)
-    const gstOffset = 4 * 60;
-    const gstDate = new Date(latest.getTime() + (gstOffset - latest.getTimezoneOffset()) * 60000);
-    const dateFmt = gstDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    const timeFmt = gstDate.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:true});
-    // Latest data period (most recent week label)
-    const latestLabel = data[data.length-1].week_label || '';
-    const latestBranch = data[data.length-1].branch || '';
-    const dataLine = latestLabel ? `<br><span style="font-size:9px;letter-spacing:0.06em;opacity:0.55">Latest data: ${latestLabel}${latestBranch?' · '+latestBranch:''}</span>` : '';
-    document.getElementById('lastUpdated').innerHTML=
-      `Updated ${dateFmt} · ${timeFmt} GST${dataLine}`;
-    // Also update login page indicator if still visible
-    const loginTs = document.getElementById('loginLastUpdated');
-    if(loginTs) loginTs.textContent = `Data as of ${dateFmt} · ${timeFmt} GST`;
+    document.getElementById('lastUpdated').innerHTML='Updated '+latest.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'<br><span style="font-size:10px;letter-spacing:0.04em;opacity:0.7">Gulf Standard Time +04:00</span>';
   }
 }
 
@@ -1361,29 +916,15 @@ function aggData(datasets){
   const hairMap={},beautyMap={};
   const s={totalClients:0,hairRetail:0,treatmentSales:0,colTake:0,beautySales:0,netTake:0,colPct:0,rebookPct:0};
   let totalRebooked=0,totalHairClients=0;
-  // Track retail provenance across all weeks aggregated so we can surface mismatches in UI
-  const retailWarnings=[];
   datasets.forEach(d=>{
     if(!d)return;
     const sm=d.summary||{};
-    s.totalClients+=sm.totalClients||0;
-    // Retail: use summary.hairRetail (already daily-sum-prioritised by parser).
-    // Fallback: staff retail sum if summary is 0.
-    let weekRetail = Number(sm.hairRetail) || 0;
-    if (!weekRetail && Array.isArray(d.hairStaff)) {
-      weekRetail = d.hairStaff.reduce((a,st)=>a+(Number(st.retail)||0), 0);
-    }
-    s.hairRetail += weekRetail;
-    // Collect debug + mismatch info for badge surfacing
-    if (sm._retailDebug && sm._retailDebug.mismatch) {
-      retailWarnings.push(sm._retailDebug.mismatch);
-    }
-    s.treatmentSales+=sm.treatmentSales||0;
+    s.totalClients+=sm.totalClients||0;s.hairRetail+=sm.hairRetail||0;s.treatmentSales+=sm.treatmentSales||0;
     s.colTake+=sm.colTake||0;s.beautySales+=sm.beautySales||0;s.netTake+=sm.netTake||0;
     if(sm.totals){totalRebooked+=sm.totals.rebooked||0;totalHairClients+=sm.totals.total||0;}
     (d.hairStaff||[]).forEach(st=>{
-      if(!hairMap[st.name])hairMap[st.name]={...st, retail: Number(st.retail)||0};
-      else{const a=hairMap[st.name];a.total+=st.total;a.newC+=st.newC;a.rebooked+=st.rebooked;a.hairSalesNet+=st.hairSalesNet;a.retail+=Number(st.retail)||0;a.treatments+=st.treatments;}
+      if(!hairMap[st.name])hairMap[st.name]={...st};
+      else{const a=hairMap[st.name];a.total+=st.total;a.newC+=st.newC;a.rebooked+=st.rebooked;a.hairSalesNet+=st.hairSalesNet;a.retail+=st.retail;a.treatments+=st.treatments;}
     });
     (d.beautyStaff||[]).forEach(st=>{
       if(!beautyMap[st.name])beautyMap[st.name]={...st};
@@ -1392,32 +933,13 @@ function aggData(datasets){
   });
   s.avgBill=s.totalClients?(s.netTake/s.totalClients):0;
   s.treatmentPct=s.netTake?(s.treatmentSales/s.netTake*100):0;
-  // Retail % per locked decision: Retail ÷ Total Revenue (Net Salon Take)
   s.hairRetailPct=s.netTake?(s.hairRetail/s.netTake*100):0;
-  s._retailWarnings=retailWarnings;
   s.rebookPct=totalHairClients?(totalRebooked/totalHairClients*100):0;
   s.beautyPct=s.netTake?(s.beautySales/s.netTake*100):0;
   const totalNewC=Object.values(hairMap).reduce((acc,st)=>acc+(st.newC||0),0);
   s.ncrPct=s.totalClients?(totalNewC/s.totalClients*100):0;
-  
-  const hairStaff=Object.values(hairMap).map((st,i)=>{
-    const hReturning=(st.req||0)+(st.salon||0);
-    const hRebookPct=st.total?(st.rebooked/st.total*100):0;
-    const hRetentionPct=st.total?(hReturning/st.total*100):0;
-    const hConvPct=hReturning?(st.rebooked/hReturning*100):0;
-    return{...st,avgBill:st.total?st.hairSalesNet/st.total:0,rebookPct:hRebookPct,retentionPct:hRetentionPct,conversionPct:hConvPct,ncrPct:st.total?(st.newC/st.total*100):0,color:SCOLS[i%SCOLS.length]};
-  });
-  const beautyStaff=Object.values(beautyMap).map((st,i)=>{
-    const bReturning=(st.req||0)+(st.salon||0);
-    const bRebookPct=st.total?((st.rebooked||0)/st.total*100):0;
-    return{...st,avgBill:st.total?st.beautySales/st.total:0,rebookPct:bRebookPct,ncrPct:st.total?((st.newC||0)/st.total*100):0,color:SCOLS[(i+3)%SCOLS.length]};
-  });
-  const totalReturningH=Object.values(hairMap).reduce((a,st)=>a+(st.req||0)+(st.salon||0),0);
-  s.retentionPct=totalHairClients?(totalReturningH/totalHairClients*100):0;
-  s.conversionPct=Math.min(totalReturningH?(totalRebooked/totalReturningH*100):0, 100);
-  const totalBeautyClients=Object.values(beautyMap).reduce((a,st)=>a+(st.total||0),0);
-  const totalBeautyRebooked=Object.values(beautyMap).reduce((a,st)=>a+(st.rebooked||0),0);
-  s.beautyRebookPct=totalBeautyClients?(totalBeautyRebooked/totalBeautyClients*100):0;
+  const hairStaff=Object.values(hairMap).map((st,i)=>({...st,avgBill:st.total?st.hairSalesNet/st.total:0,rebookPct:st.total?(st.rebooked/st.total*100):0,ncrPct:st.total?(st.newC/st.total*100):0,color:SCOLS[i%SCOLS.length]}));
+  const beautyStaff=Object.values(beautyMap).map((st,i)=>({...st,avgBill:st.total?st.beautySales/st.total:0,rebookPct:st.rebookPct||0,ncrPct:st.total?(st.newC/st.total*100):0,color:SCOLS[(i+3)%SCOLS.length]}));
   return{summary:s,hairStaff,beautyStaff};
 }
 
@@ -1426,12 +948,11 @@ function aggByBranch(){
   Object.keys(BRANCH_INFO).forEach(code=>{
     const rows=allData.filter(d=>{
       if(d.branch!==code)return false;
-      if(dateFrom||dateTo){
-        const wd=getWeekDatesFromLabel(d.week_label);
-        if(!wd)return true;
-        if(dateFrom&&wd.end<dateFrom)return false;
-        if(dateTo&&wd.start>dateTo)return false;
-      }
+      const yr=getYear(d.week_label,d.uploaded_at);
+      const mo=getMonth(d.week_label,d.uploaded_at);
+      if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
+      if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
+      if(!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
       return true;
     });
     result[code]=aggData(rows.map(d=>d.data));
@@ -1685,19 +1206,12 @@ function renderDashboard(){
     <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
       <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#EEF3C7;flex-shrink:0"></span>
       <span class="section-label" style="margin:0;letter-spacing:0.16em;flex-shrink:0;white-space:nowrap">Revenue Run</span>
-      <span style="font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Service Sales · Treatment % · Retail Sales · Retail % · Hair Avg Bill · Beauty Avg Bill</span>
+      <span style="font-size:10px;color:var(--muted);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Service Sales · Treatment % · Retail % · Hair Avg Bill · Beauty Avg Bill</span>
     </div>
     <span class="support-toggle-arrow" id="arrow-revenueRun">▼</span>
   </div>
   <div class="support-section-body" id="body-revenueRun" style="display:none">
-    ${(s._retailWarnings && s._retailWarnings.length) ? `
-      <div style="margin:8px 0;padding:10px 12px;background:rgba(251,191,36,.08);border-left:3px solid #fbbf24;border-radius:6px;font-size:11px;color:var(--text)">
-        <strong style="color:#fbbf24">⚠️ Retail data mismatch detected</strong> across ${s._retailWarnings.length} week(s).
-        Daily-sheet sum (used) differs from weekly summary row.
-        ${s._retailWarnings.slice(0,3).map(m => `Daily AED ${Math.round(m.daily).toLocaleString()} vs Summary AED ${Math.round(m.summary).toLocaleString()} (${m.pctDiff}% drift)`).join(' · ')}
-      </div>
-    ` : ''}
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:12px 0 4px">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:12px 0 4px">
 
       <!-- Service Sales -->
       <div class="metric m-lime">
@@ -1715,15 +1229,6 @@ function renderDashboard(){
         <div class="metric-value ${sc(s.treatmentPct, TARGETS.treatmentPct)}" style="font-size:20px">${fmtPct(s.treatmentPct)}</div>
         <div class="metric-target">Target: ≥ ${TARGETS.treatmentPct}%</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Upsell indicator</div>
-      </div>
-
-      <!-- Retail Sales (AED) — paired with Retail % -->
-      <div class="metric m-lime">
-        <div class="metric-label">Retail Sales</div>
-        <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Total retail / product sales)</em></div>
-        <div class="metric-value" style="font-size:20px">${fmtAED(s.hairRetail||0)}</div>
-        <div class="metric-target">Branch-based target</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px">${(s._retailWarnings && s._retailWarnings.length) ? '⚠️ Source mismatch — see upload audit' : 'Product revenue'}</div>
       </div>
 
       <!-- Retail % -->
@@ -1783,7 +1288,7 @@ function renderDashboard(){
       <div class="metric m-lav">
         <div class="metric-label">NCR (New Client Requests)</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(New clients requesting specific staff)</em></div>
-        <div class="metric-value" style="font-size:20px">${d.hairStaff.reduce((a,st)=>a+(st.req||0),0)}</div>
+        <div class="metric-value" style="font-size:20px">${Math.round(s.ncrPct * s.totalClients / 100)}</div>
         <div class="metric-target">Increase weekly</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Demand indicator</div>
       </div>
@@ -1792,7 +1297,7 @@ function renderDashboard(){
       <div class="metric m-lav">
         <div class="metric-label">Request Clients %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Request clients ÷ Total clients)</em></div>
-        <div class="metric-value ${sc(d.hairStaff.reduce((a,st)=>a+(st.req||0),0)/Math.max(1,s.totalClients)*100, 40)}" style="font-size:20px">${fmtPct(d.hairStaff.reduce((a,st)=>a+(st.req||0),0)/Math.max(1,s.totalClients)*100)}</div>
+        <div class="metric-value ${sc(s.ncrPct, 40)}" style="font-size:20px">${fmtPct(s.ncrPct)}</div>
         <div class="metric-target">Target: ≥ 40%</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Loyalty indicator</div>
       </div>
@@ -1854,7 +1359,7 @@ function renderDashboard(){
       <div class="metric m-rose">
         <div class="metric-label">Retention %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(Returning clients over time)</em></div>
-        <div class="metric-value ${sc(s.retentionPct||0, 60)}" style="font-size:20px">${fmtPct(s.retentionPct||0)}</div>
+        <div class="metric-value ${sc(s.rebookPct, 60)}" style="font-size:20px">${fmtPct(s.rebookPct)}</div>
         <div class="metric-target">Target: ≥ 60–70%</div>
         <div style="font-size:10px;color:var(--muted);margin-top:4px">Long-term loyalty</div>
       </div>
@@ -1863,9 +1368,9 @@ function renderDashboard(){
       <div class="metric m-rose">
         <div class="metric-label">Conversion %</div>
         <div style="font-size:10px;color:var(--muted);margin:3px 0 7px"><em>(New → returning clients)</em></div>
-        <div class="metric-value" style="font-size:20px;color:var(--muted)">—</div>
+        <div class="metric-value ${sc(s.rebookPct, 50)}" style="font-size:20px">${fmtPct(s.rebookPct)}</div>
         <div class="metric-target">Target: ≥ 50%</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:4px">Requires Phorest client history</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">Client stickiness</div>
       </div>
 
     </div>
@@ -1936,15 +1441,12 @@ function renderDashboard(){
   (function(){
     const WEEKLY_GOALS_MAP={SAA:[450000,550000],KCA:[320000,420000],AQ:[500000,650000],MC:[350000,450000],FRT:[200000,260000]};
     const activeBranches=sel.branch.includes('all')?Object.keys(WEEKLY_GOALS_MAP):sel.branch;
-    const hasDateRange=!!(dateFrom&&dateTo);
+    const hasWeek=!sel.week.includes('all');
     let weekCount=1;
-    if(!hasDateRange){
+    if(!hasWeek){
       const weekSet=new Set(filtered.map(d=>d.week_label));
       const branchCount=activeBranches.length||1;
       weekCount=Math.max(1,Math.round(weekSet.size/branchCount));
-    } else {
-      const diffDays=Math.round((dateTo-dateFrom)/(1000*60*60*24))+1;
-      weekCount=Math.max(1,Math.round(diffDays/7));
     }
     let wMin=0,wMax=0;
     activeBranches.forEach(b=>{if(WEEKLY_GOALS_MAP[b]){wMin+=WEEKLY_GOALS_MAP[b][0];wMax+=WEEKLY_GOALS_MAP[b][1];}});
@@ -1952,7 +1454,7 @@ function renderDashboard(){
     const gMin=wMin*weekCount, gMax=wMax*weekCount;
     const goalMid=(gMin+gMax)/2;
     const pct=Math.min(s.netTake/goalMid,1.05);
-    const periodLabel=hasDateRange?weekCount+' week'+(weekCount>1?'s':''):weekCount===4?'month (~4 wks)':weekCount+' week'+(weekCount>1?'s':'');
+    const periodLabel=hasWeek?'week':weekCount===4?'month (~4 wks)':weekCount+' week'+(weekCount>1?'s':'');
     const canvas=document.getElementById('dialCanvas');
     if(canvas){
       const ctx=canvas.getContext('2d');
@@ -2031,8 +1533,29 @@ function buildDropT(key,options){
 }
 
 function toggleOptT(key,val){
-  // Team view shares same sel state and dropdowns as KPI view
-  toggleOpt(key,val);
+  const rawKey=key.replace('-t','');
+  if(val==='all'){selT[rawKey]=['all'];}
+  else{
+    selT[rawKey]=selT[rawKey].filter(x=>x!=='all');
+    if(selT[rawKey].includes(val)) selT[rawKey]=selT[rawKey].filter(x=>x!==val);
+    else selT[rawKey].push(val);
+    if(!selT[rawKey].length) selT[rawKey]=['all'];
+  }
+  if(rawKey==='branch'||rawKey==='year'){selT.month=['all'];}
+  if(rawKey==='branch'||rawKey==='year'||rawKey==='month'){selT.week=['all'];}
+  rebuildDependentDropsT();
+  const drop=document.getElementById('drop-'+key);
+  const isAllNow=selT[rawKey].includes('all');
+  drop.querySelectorAll('.ms-opt').forEach(el=>{
+    const v=el.dataset.val;
+    if(el.classList.contains('all-opt')) el.classList.toggle('selected',isAllNow);
+    else el.classList.toggle('selected',!isAllNow&&selT[rawKey].includes(v));
+  });
+  drop.classList.add('open');
+  document.getElementById('btn-'+key).classList.add('open');
+  const allOptions=[...drop.querySelectorAll('.ms-opt:not(.all-opt)')].map(el=>({val:el.dataset.val,label:el.textContent.trim()}));
+  updateLabelT(key,allOptions);
+  renderTeam();
 }
 
 function updateLabelT(key,options){
@@ -2079,12 +1602,11 @@ function aggByBranchT(){
   Object.keys(BRANCH_INFO).forEach(code=>{
     const rows=allData.filter(d=>{
       if(d.branch!==code)return false;
-      if(dateFrom||dateTo){
-        const wd=getWeekDatesFromLabel(d.week_label);
-        if(!wd)return true;
-        if(dateFrom&&wd.end<dateFrom)return false;
-        if(dateTo&&wd.start>dateTo)return false;
-      }
+      const yr=getYear(d.week_label,d.uploaded_at);
+      const mo=getMonth(d.week_label,d.uploaded_at);
+      if(!sel.year.includes('all')&&!sel.year.includes(yr))return false;
+      if(!sel.month.includes('all')&&!sel.month.includes(mo))return false;
+      if(!sel.week.includes('all')&&!sel.week.includes(d.week_label))return false;
       return true;
     });
     result[code]=aggData(rows.map(d=>d.data));
@@ -2923,6 +2445,8 @@ function restoreSections(){
   Object.keys(sectionState).forEach(id => applySection(id));
 }
 
+loadData();
+setInterval(loadData,60000);
 </script>
 </body>
 </html>
