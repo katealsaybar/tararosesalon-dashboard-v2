@@ -860,7 +860,7 @@ function toggleSection(key){
 }
 
 // ── HELPERS ──
-function extractYear(label,uploaded_at){const m=label&&label.match(/20\d\d/);if(m)return m[0];return uploaded_at?new Date(uploaded_at).getFullYear().toString():'2026';}
+function extractYear(label,uploaded_at){const m=label&&label.match(/20\d\d/);if(m)return m[0];return '2026';}
 function extractMonth(label,uploaded_at){
   if(label){
     const upper=label.toUpperCase();
