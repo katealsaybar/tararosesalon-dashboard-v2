@@ -28,6 +28,7 @@ let allRows = [];         // raw supabase records
 let stylistMap = {};      // name -> { weeks:[], hair/beautyStaff data consolidated }
 let typeFilter = 'all';
 let sortKey    = 'hairSalesNet';
+let branchFilter = 'all';
 let selectedStylist = null;
 let activeChart = null;
 let viewMode = 'weekly';
@@ -55,15 +56,6 @@ function toggleTheme(){
 }
 
 
-function toggleWeekPills(){
-    document.body.classList.toggle('hide-week-pills');
-  
-    const btn = document.getElementById('toggleWeeksBtn');
-    const hidden = document.body.classList.contains('hide-week-pills');
-  
-    btn.textContent = hidden ? 'Show Weeks' : 'Hide Weeks';
-  }
-
 // ── FILTER HELPERS ─────────────────────────────────────────
 function setTypeFilter(type, el){
   typeFilter = type;
@@ -89,24 +81,46 @@ async function loadData(){
 
   const dates = allRows.map(r => new Date(r.uploaded_at)).filter(d => !isNaN(d));
 
-if(dates.length){
-  const min = new Date(Math.min(...dates));
-  const max = new Date(Math.max(...dates));
-
-  document.getElementById('dateFromInput').value = min.toISOString().split('T')[0];
-  document.getElementById('dateToInput').value   = max.toISOString().split('T')[0];
-
-  dateFrom = new Date(min);
-  dateFrom.setHours(0,0,0,0);
-
-  dateTo = new Date(max);
-  dateTo.setHours(23,59,59,999);
-}
+  if(allRows.length){
+    // Use week_label to get true date range, not uploaded_at
+    let minDate = null, maxDate = null;
+    for(const row of allRows){
+      const wd = getWeekDatesFromLabel(row.week_label);
+      const d = wd ? wd.start : null;
+      if(!d) continue;
+      if(!minDate || d < minDate) minDate = d;
+      if(!maxDate || d > maxDate) maxDate = d;
+    }
+    if(!minDate){
+      // fallback to uploaded_at but strip timezone properly
+      const raw = allRows.map(r => new Date(r.uploaded_at)).filter(d => !isNaN(d));
+      const minRaw = new Date(Math.min(...raw));
+      const maxRaw = new Date(Math.max(...raw));
+      minDate = new Date(minRaw.getFullYear(), minRaw.getMonth(), minRaw.getDate());
+      maxDate = new Date(maxRaw.getFullYear(), maxRaw.getMonth(), maxRaw.getDate());
+    }
+  
+    calFrom = new Date(minDate);
+    calTo   = new Date(maxDate);
+    calYear = calFrom.getFullYear(); calMonth = calFrom.getMonth();
+  
+    dateFrom = new Date(minDate); dateFrom.setHours(0,0,0,0);
+    dateTo   = new Date(maxDate); dateTo.setHours(23,59,59,999);
+  
+    const fmt = dt => dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+    document.getElementById('dateFromInput').value = minDate.getFullYear()+'-'+String(minDate.getMonth()+1).padStart(2,'0')+'-'+String(minDate.getDate()).padStart(2,'0');
+    document.getElementById('dateToInput').value   = maxDate.getFullYear()+'-'+String(maxDate.getMonth()+1).padStart(2,'0')+'-'+String(maxDate.getDate()).padStart(2,'0');
+    document.getElementById('datePickerLabel').textContent = fmt(calFrom) + ' → ' + fmt(calTo);
+    document.getElementById('calFromDisplay').textContent = fmt(calFrom);
+    document.getElementById('calToDisplay').textContent   = fmt(calTo);
+  }
 
   buildStylistMap();
   document.getElementById('loadingEl').style.display='none';
   document.getElementById('mainContent').style.display='block';
   renderGrid();
+  console.log('SAMPLE week_label:', allRows[0]?.week_label);
+  console.log('SAMPLE uploaded_at:', allRows[0]?.uploaded_at);
 }
 
 function isSkip(name){
@@ -118,6 +132,8 @@ function isSkip(name){
 
 function buildStylistMap(){
   stylistMap = {};
+  console.log('BUILDING MAP from rows:', allRows.length);
+  console.log('SAMPLE ROW:', JSON.stringify(allRows[0], null, 2));
   for(const row of allRows){
     const { branch, week_label, data: d, uploaded_at } = row;
     if(!d) continue;
@@ -158,6 +174,23 @@ function buildStylistMap(){
 }
 
 
+function getWeekDatesFromLabel(label) {
+  if (!label) return null;
+  const monthMap = { JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11 };
+  const m = label.match(/\(([A-Z]{3})\s+(\d+)\s*[–\-]\s*([A-Z]{3})\s+(\d+)\)/i);
+  if (!m) return null;
+  const startMon = m[1].toUpperCase(), startDay = parseInt(m[2]);
+  const endMon   = m[3].toUpperCase(), endDay   = parseInt(m[4]);
+  const yearMatch = label.match(/20\d\d/);
+  const endYear   = yearMatch ? parseInt(yearMatch[0]) : new Date().getFullYear();
+  const endMonth   = monthMap[endMon];
+  const startMonth = monthMap[startMon];
+  const startYear = (startMonth === 11 && endMonth === 0) ? endYear - 1 : endYear;
+  const start = new Date(startYear, startMonth, startDay); start.setHours(0,0,0,0);
+  const end   = new Date(endYear,   endMonth,   endDay);   end.setHours(0,0,0,0);
+  return { start, end };
+}
+
 // ── COMPUTE CONSOLIDATED STATS ─────────────────────────────
 function getStats(stylist){
   let weeks = stylist.weeks;
@@ -167,16 +200,31 @@ function getStats(stylist){
 // 🔥 DATE FILTER 
 if (dateFrom || dateTo) {
   weeks = weeks.filter(w => {
-    if (!w.uploaded_at) return false;
-
-    const d = new Date(w.uploaded_at);
-    d.setHours(0,0,0,0);
-
-    if (dateFrom && d < dateFrom) return false;
-    if (dateTo && d > dateTo) return false;
-
+    // Parse date from week_label e.g. "W14 2026 (APR 1 – APR 7)"
+    const weekDates = getWeekDatesFromLabel(w.week_label);
+    let checkDate;
+    if (weekDates) {
+      checkDate = weekDates.start;
+    } else {
+      // fallback to uploaded_at as local date
+      const u = new Date(w.uploaded_at);
+      checkDate = new Date(u.getFullYear(), u.getMonth(), u.getDate());
+    }
+    if (dateFrom && checkDate < dateFrom) return false;
+    if (dateTo   && checkDate > dateTo)   return false;
     return true;
   });
+}
+
+console.log('DATE FILTER:', {
+  from: dateFrom,
+  to: dateTo,
+  remainingWeeks: weeks.length
+});
+
+// Branch filter
+if (branchFilter !== 'all') {
+  weeks = weeks.filter(w => w.branch === branchFilter);
 }
 
   if(!weeks.length) return null;
@@ -210,6 +258,7 @@ if (dateFrom || dateTo) {
 // ── RENDER GRID ────────────────────────────────────────────
 function renderGrid(){
   const search = document.getElementById('searchInput').value.trim().toUpperCase();
+  branchFilter = document.getElementById('branchFilter')?.value || 'all';
 
   let stylists = Object.values(stylistMap).filter(s=>{
     if(search && !s.name.includes(search)) return false;
@@ -222,6 +271,10 @@ function renderGrid(){
   if(!stylists.length){
     console.warn('No results after filtering. Check date range.');
   }
+
+  console.log('ALL ROWS:', allRows.length);
+  console.log('DATE FROM:', dateFrom);
+  console.log('DATE TO:', dateTo);
 
   const hair   = stylists.filter(s=>!s.isBeauty);
   const beauty = stylists.filter(s=>s.isBeauty);
@@ -393,15 +446,22 @@ function renderDetail(s){
       ${renderWeekTable(st, isBeauty)}
     </div>
 
+    <!-- RADAR CHART -->
+    <div class="chart-wrap" style="margin-bottom:16px">
+      <div class="chart-title" style="margin-bottom:12px">PERFORMANCE RADAR</div>
+      <canvas id="radarChart" style="max-height:260px"></canvas>
+    </div>
+
     <!-- TREND CHART -->
     <div class="chart-wrap">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
     <div class="chart-title">
-  ${isBeauty?'Beauty Sales':'Net Revenue'} + Clients · ${viewMode.toUpperCase()} Trend
+  ${isBeauty?'Beauty Sales':'Net Revenue'} + Clients · ${viewMode.charAt(0).toUpperCase()+viewMode.slice(1)} Trend
 </div>
 
     <div class="tabs" style="margin-bottom:0;">
-      <button class="tab-btn chart-toggle-btn active" onclick="setChartView('weekly', this)">Weekly</button>
+      <button class="tab-btn chart-toggle-btn active" onclick="setChartView('daily', this)">Daily</button>
+      <button class="tab-btn chart-toggle-btn" onclick="setChartView('weekly', this)">Weekly</button>
       <button class="tab-btn chart-toggle-btn" onclick="setChartView('monthly', this)">Monthly</button>
       <button class="tab-btn chart-toggle-btn" onclick="setChartView('yearly', this)">Yearly</button>
     </div>
@@ -411,8 +471,8 @@ function renderDetail(s){
 </div>
   `;
 
-  // Draw chart after DOM is ready
-  setTimeout(()=>drawChart(st, isBeauty), 50);
+  // Draw charts after DOM is ready
+  setTimeout(()=>{ drawChart(st, isBeauty); drawRadar(st, isBeauty); }, 50);
 }
 
 function renderWeekTable(st, isBeauty){
@@ -461,6 +521,56 @@ function renderWeekTable(st, isBeauty){
   </table>`;
 }
 
+function drawRadar(st, isBeauty){
+  const canvas = document.getElementById('radarChart');
+  if(!canvas) return;
+  if(window._activeRadar){ window._activeRadar.destroy(); window._activeRadar=null; }
+
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const textColor = isDark ? 'rgba(250,248,243,0.55)' : '#9a8a87';
+  const gridColor = isDark ? 'rgba(250,248,243,0.08)' : 'rgba(92,85,87,0.1)';
+
+  // Normalize each metric 0-100 against targets
+  const rebookScore  = Math.min(100, (st.rebookPct / 45) * 100);
+  const avgBillScore = Math.min(100, (st.avgBill / 650) * 100);
+  const ncrScore     = Math.min(100, (st.ncrPct / 20) * 100);
+  const colScore     = isBeauty ? 50 : Math.min(100, (st.colPct / 60) * 100);
+  const clientScore  = Math.min(100, st.total > 0 ? Math.min(st.total / Math.max(1, st.total) * 100, 100) : 0);
+
+  // Use weeks active as a proxy for consistency (capped at 100)
+  const consistencyScore = Math.min(100, (st.weeksActive / 10) * 100);
+
+  window._activeRadar = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: ['Rebook %', 'Avg Bill', 'NCR %', isBeauty ? 'Beauty' : 'Colour %', 'Clients', 'Consistency'],
+      datasets: [{
+        label: st.name || 'Stylist',
+        data: [rebookScore, avgBillScore, ncrScore, colScore, 100, consistencyScore],
+        backgroundColor: 'rgba(196,181,253,0.2)',
+        borderColor: '#C4B5FD',
+        borderWidth: 2,
+        pointBackgroundColor: '#FF9B9B',
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        r: {
+          min: 0, max: 100,
+          ticks: { display: false },
+          grid: { color: gridColor },
+          angleLines: { color: gridColor },
+          pointLabels: { color: textColor, font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
 function drawChart(st, isBeauty){
   const canvas = document.getElementById('trendChart');
   if(!canvas) return;
@@ -468,32 +578,26 @@ function drawChart(st, isBeauty){
 
   let grouped = {};
 
-for(const w of st.weeks){
-  const d = new Date(w.uploaded_at);
-
-  let key;
-
-  if(viewMode === 'monthly'){
-    key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-  }
-  else if(viewMode === 'yearly'){
-    key = d.getFullYear();
-  }
-  else{
-    key = w.week_label;
-  }
-
-  if(!grouped[key]){
-    grouped[key] = { rev:0, clients:0 };
+  for(const w of st.weeks){
+    const d = new Date(w.uploaded_at);
+    let key;
+    if(viewMode === 'daily'){
+      key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    } else if(viewMode === 'monthly'){
+      key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    } else if(viewMode === 'yearly'){
+      key = String(d.getFullYear());
+    } else {
+      key = w.week_label;
+    }
+    if(!grouped[key]) grouped[key] = { rev:0, clients:0 };
+    grouped[key].rev += isBeauty ? w.beautySales : w.hairSalesNet;
+    grouped[key].clients += w.total;
   }
 
-  grouped[key].rev += isBeauty ? w.beautySales : w.hairSalesNet;
-  grouped[key].clients += w.total;
-}
-
-const labels = Object.keys(grouped).sort();
-const revData = labels.map(k=>grouped[k].rev);
-const clData  = labels.map(k=>grouped[k].clients);
+  const labels = Object.keys(grouped).sort();
+  const revData = labels.map(k=>grouped[k].rev);
+  const clData  = labels.map(k=>grouped[k].clients);
 
   const isDark = document.documentElement.getAttribute('data-theme')==='dark';
   const textColor = isDark ? 'rgba(250,248,243,0.55)' : '#9a8a87';
@@ -522,12 +626,118 @@ const clData  = labels.map(k=>grouped[k].clients);
   });
 }
 
+
+// ── DATE PICKER CALENDAR ───────────────────────────────────
+let calYear, calMonth, calSelectingFrom = true, calFrom = null, calTo = null;
+
+function initCal(){
+  // Default to the month of calFrom if already set (from data), else current month
+  const ref = calFrom || new Date();
+  calYear = ref.getFullYear();
+  calMonth = ref.getMonth();
+  renderCal();
+}
+
+function calNav(dir){
+  calMonth += dir;
+  if(calMonth > 11){ calMonth = 0; calYear++; }
+  if(calMonth < 0){ calMonth = 11; calYear--; }
+  renderCal();
+}
+
+function renderCal(){
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent = months[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('calGrid');
+  const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  let html = days.map(d=>`<div style="font-size:9px;text-align:center;color:var(--muted);padding:4px;letter-spacing:.05em">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++) html += '<div></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const thisDate = new Date(calYear, calMonth, d);
+    const iso = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    let bg = 'transparent', color = 'var(--text)', fw = '400';
+    const calFromIso = calFrom ? calFrom.getFullYear()+'-'+String(calFrom.getMonth()+1).padStart(2,'0')+'-'+String(calFrom.getDate()).padStart(2,'0') : null;
+    const calToIso = calTo ? calTo.getFullYear()+'-'+String(calTo.getMonth()+1).padStart(2,'0')+'-'+String(calTo.getDate()).padStart(2,'0') : null;
+    const isFrom = calFromIso === iso;
+    const isTo = calToIso === iso;
+    const inRange = calFrom && calTo && thisDate > calFrom && thisDate < calTo;
+    if(isFrom || isTo){ bg = 'var(--accent)'; color = 'var(--accent-fg)'; fw = '700'; }
+    else if(inRange){ bg = 'var(--surface2)'; }
+    html += `<div onclick="calPickDay('${iso}')" style="
+      text-align:center;padding:5px 2px;font-size:11px;cursor:pointer;border-radius:6px;
+      background:${bg};color:${color};font-weight:${fw};transition:background .15s
+    " onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function calPickDay(iso){
+  const [y,m,day] = iso.split('-').map(Number);
+const d = new Date(y, m-1, day);
+  if(!calFrom || (calFrom && calTo)){
+    calFrom = d; calTo = null; calSelectingFrom = false;
+  } else {
+    if(d < calFrom){ calTo = calFrom; calFrom = d; }
+    else { calTo = d; }
+    calSelectingFrom = true;
+  }
+  const fmt = dt => dt ? dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '';
+  document.getElementById('calFromDisplay').textContent = fmt(calFrom) || 'Select start';
+  document.getElementById('calToDisplay').textContent = fmt(calTo) || 'Select end';
+  renderCal();
+}
+
+function clearDateRange(){
+  calFrom = null; calTo = null;
+  document.getElementById('calFromDisplay').textContent = 'Select start';
+  document.getElementById('calToDisplay').textContent = 'Select end';
+  document.getElementById('datePickerLabel').textContent = 'Select Date/s From and To';
+  document.getElementById('dateFromInput').value = '';
+  document.getElementById('dateToInput').value = '';
+  dateFrom = null; dateTo = null;
+  renderCal();
+  renderGrid();
+}
+
+function applyDatePicker(){
+  if(!calFrom){ return; }
+  const effectiveTo = calTo || calFrom;
+  const fmt = dt => dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('datePickerLabel').textContent = fmt(calFrom) + ' → ' + fmt(effectiveTo);
+  document.getElementById('dateFromInput').value = calFrom.toISOString().split('T')[0];
+  document.getElementById('dateToInput').value = effectiveTo.toISOString().split('T')[0];
+  dateFrom = new Date(calFrom); dateFrom.setHours(0,0,0,0);
+  dateTo = new Date(effectiveTo); dateTo.setHours(23,59,59,999);
+  document.getElementById('datePickerDropdown').style.display = 'none';
+  renderGrid();
+}
+
+// Close picker on outside click
+let _pickerJustOpened = false;
+
+function toggleDatePicker(){
+  const dd = document.getElementById('datePickerDropdown');
+  const isOpen = dd.style.display !== 'none';
+  dd.style.display = isOpen ? 'none' : 'block';
+  if(!isOpen){ renderCal(); _pickerJustOpened = true; }
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('dateRangeWrap');
+  if(wrap && !wrap.contains(e.target)){
+    const dd = document.getElementById('datePickerDropdown');
+    if(dd) dd.style.display = 'none';
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchInput').addEventListener('input', renderGrid);
     document.getElementById('dateFromInput').addEventListener('change', applyDateRange);
     document.getElementById('dateToInput').addEventListener('change', applyDateRange);
-    document.body.classList.add('hide-week-pills');
-    
+    document.body.classList.add('hide-week-pills'); // keeps pills hidden by default
+    initCal();
     loadData();
   });
 
@@ -536,8 +746,8 @@ function applyDateRange(){
   const fromVal = document.getElementById('dateFromInput').value;
   const toVal   = document.getElementById('dateToInput').value;
 
-  dateFrom = fromVal ? new Date(fromVal) : null;
-  dateTo   = toVal   ? new Date(toVal)   : null;
+  dateFrom = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  dateTo   = toVal   ? new Date(toVal + 'T23:59:59') : null;
 
   if (dateFrom) dateFrom.setHours(0,0,0,0);
   if (dateTo)   dateTo.setHours(23,59,59,999);
