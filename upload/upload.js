@@ -311,7 +311,8 @@ async function uploadAllWeekly() {
         }
       }
 
-      const {error} = await sb.from('weekly_data').insert({branch:code,week_label:weekLabel,data});
+      await sb.from('weekly_data').delete().eq('branch',code).eq('week_label',weekLabel);
+const {error} = await sb.from('weekly_data').insert({branch:code,week_label:weekLabel,data});
       if (error) throw error;
       document.getElementById('pb_'+code).style.width='100%';
       document.getElementById('ps_'+code).textContent='✅ Done';
