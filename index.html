@@ -1016,6 +1016,7 @@ const SCOLS=['#FFD4D9','#FF9B9B','#C4B5FD','#99F6E4','#EEF3C7','#FFB6C1','#B5EAD
 const MONTH_ORDER=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 let allData=[];
+let allDailyData=[];
 let charts={};
 const sel={branch:['all']};
 let dateFrom=null;
@@ -1315,44 +1316,47 @@ function getWeekDatesFromLabel(label) {
 }
 
 function getFilteredData(ignoreBranch=false){
+  if((dateFrom||dateTo) && allDailyData.length){
+    return allDailyData.filter(d=>{
+      if(!ignoreBranch&&!sel.branch.includes('all')&&!sel.branch.includes(d.branch))return false;
+      const rowDate=new Date(d.date+'T00:00:00');
+      if(dateFrom && rowDate < dateFrom) return false;
+      if(dateTo   && rowDate > dateTo)   return false;
+      return true;
+    });
+  }
   return allData.filter(d=>{
     if(!ignoreBranch&&!sel.branch.includes('all')&&!sel.branch.includes(d.branch))return false;
-    if(dateFrom||dateTo){
-      const wd = getWeekDatesFromLabel(d.week_label);
-      if(!wd) return true;
-      const wStart = wd.start;
-      const wEnd   = wd.end;
-      if(dateFrom && wEnd < dateFrom) return false;
-      if(dateTo   && wStart > dateTo) return false;
-    }
     return true;
   });
 }
 
 async function loadData(){
+  // Load weekly data (for no-date-filter view)
   const{data,error}=await sb.from('weekly_data').select('*').order('uploaded_at',{ascending:true});
   if(error||!data){document.getElementById('mainContent').innerHTML='<div class="empty">No data available yet.</div>';return;}
   allData=data;
+
+  // Also load daily data for date-filtered views
+  const{data:dailyRows,error:dailyErr}=await sb.from('daily_data').select('*').order('date',{ascending:true});
+  if(!dailyErr && dailyRows) allDailyData=dailyRows;
+
   const branches=Object.entries(BRANCH_INFO).map(([k,v])=>({val:k,label:v.name}));
   buildDrop('branch',branches);
   rebuildDependentDrops();
   renderDashboard();
   if(data.length){
     const latest=new Date(data[data.length-1].uploaded_at);
-    // Convert to GST (UTC+4)
-    const gstOffset = 4 * 60;
-    const gstDate = new Date(latest.getTime() + (gstOffset - latest.getTimezoneOffset()) * 60000);
-    const dateFmt = gstDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-    const timeFmt = gstDate.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:true});
-    // Latest data period (most recent week label)
-    const latestLabel = data[data.length-1].week_label || '';
-    const latestBranch = data[data.length-1].branch || '';
-    const dataLine = latestLabel ? `<br><span style="font-size:9px;letter-spacing:0.06em;opacity:0.55">Latest data: ${latestLabel}${latestBranch?' · '+latestBranch:''}</span>` : '';
-    document.getElementById('lastUpdated').innerHTML=
-      `Updated ${dateFmt} · ${timeFmt} GST${dataLine}`;
-    // Also update login page indicator if still visible
-    const loginTs = document.getElementById('loginLastUpdated');
-    if(loginTs) loginTs.textContent = `Data as of ${dateFmt} · ${timeFmt} GST`;
+    const gstOffset=4*60;
+    const gstDate=new Date(latest.getTime()+(gstOffset-latest.getTimezoneOffset())*60000);
+    const dateFmt=gstDate.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const timeFmt=gstDate.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',hour12:true});
+    const latestLabel=data[data.length-1].week_label||'';
+    const latestBranch=data[data.length-1].branch||'';
+    const dataLine=latestLabel?`<br><span style="font-size:9px;letter-spacing:0.06em;opacity:0.55">Latest data: ${latestLabel}${latestBranch?' · '+latestBranch:''}</span>`:'';
+    document.getElementById('lastUpdated').innerHTML=`Updated ${dateFmt} · ${timeFmt} GST${dataLine}`;
+    const loginTs=document.getElementById('loginLastUpdated');
+    if(loginTs)loginTs.textContent=`Data as of ${dateFmt} · ${timeFmt} GST`;
   }
 }
 
@@ -1419,6 +1423,54 @@ function aggData(datasets){
   const totalBeautyRebooked=Object.values(beautyMap).reduce((a,st)=>a+(st.rebooked||0),0);
   s.beautyRebookPct=totalBeautyClients?(totalBeautyRebooked/totalBeautyClients*100):0;
   return{summary:s,hairStaff,beautyStaff};
+}
+
+function aggDailyData(rows){
+  if(!rows.length) return null;
+  const hairMap={};
+  const s={totalClients:0,hairRetail:0,treatmentSales:0,colTake:0,beautySales:0,netTake:0,rebookPct:0,_retailWarnings:[]};
+  let totalRebooked=0, totalHairClients=0;
+  rows.forEach(d=>{
+    const hairSales=Number(d.hair_sales)||0;
+    const retail=Number(d.retail_total)||0;
+    const treatments=Number(d.treatments_total)||0;
+    const beauty=Number(d.beauty_sales)||0;
+    const total=Number(d.total)||0;
+    const rebooked=Number(d.hair_rebooked)||0;
+    const newC=Number(d.hair_new)||0;
+    const req=Number(d.hair_clients_request)||0;
+    const salon=Number(d.hair_clients_salon)||0;
+    s.totalClients+=total;
+    s.hairRetail+=retail;
+    s.treatmentSales+=treatments;
+    s.beautySales+=beauty;
+    s.netTake+=hairSales+retail+beauty;
+    totalRebooked+=rebooked;
+    totalHairClients+=total;
+    const key=d.branch;
+    if(!hairMap[key])hairMap[key]={name:key,total:0,newC:0,rebooked:0,hairSalesNet:0,retail:0,treatments:0,req:0,salon:0};
+    const h=hairMap[key];
+    h.total+=total;h.newC+=newC;h.rebooked+=rebooked;
+    h.hairSalesNet+=hairSales;h.retail+=retail;h.treatments+=treatments;
+    h.req+=req;h.salon+=salon;
+  });
+  s.avgBill=s.totalClients?(s.netTake/s.totalClients):0;
+  s.treatmentPct=s.netTake?(s.treatmentSales/s.netTake*100):0;
+  s.hairRetailPct=s.netTake?(s.hairRetail/s.netTake*100):0;
+  s.rebookPct=totalHairClients?(totalRebooked/totalHairClients*100):0;
+  s.beautyPct=s.netTake?(s.beautySales/s.netTake*100):0;
+  const totalNewC=Object.values(hairMap).reduce((a,st)=>a+(st.newC||0),0);
+  s.ncrPct=s.totalClients?(totalNewC/s.totalClients*100):0;
+  s.retentionPct=0;s.conversionPct=0;s.beautyRebookPct=0;
+  const hairStaff=Object.values(hairMap).map((st,i)=>({
+    ...st,avgBill:st.total?st.hairSalesNet/st.total:0,
+    rebookPct:st.total?(st.rebooked/st.total*100):0,
+    retentionPct:st.total?((st.req+st.salon)/st.total*100):0,
+    conversionPct:(st.req+st.salon)?((st.rebooked/(st.req+st.salon))*100):0,
+    ncrPct:st.total?(st.newC/st.total*100):0,
+    color:SCOLS[i%SCOLS.length]
+  }));
+  return{summary:s,hairStaff,beautyStaff:[]};
 }
 
 function aggByBranch(){
@@ -1521,8 +1573,8 @@ function renderDashboard(){
     return;
   }
 
-  const datasets = filtered.map(d=>d.data);
-  const d = aggData(datasets);
+  const usingDaily=(dateFrom||dateTo)&&allDailyData.length;
+  const d=usingDaily?aggDailyData(filtered):aggData(filtered.map(r=>r.data));
   if(!d) return;
 
   const s = d.summary;
